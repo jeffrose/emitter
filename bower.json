@@ -14,7 +14,10 @@
   "license": "Apache-2.0",
   "ignore": [
     "**/.*",
+    "*.json",
+    "gulpfile.js",
     "node_modules",
+    "src",
     "test"
   ]
 }
