@@ -1,6 +1,6 @@
 {
     "name": "ee.js",
-    "description": "EventEmitter.",
+    "description": "A modern event emitter implementation.",
     "version": "0.1.0",
     "repository": "https://github.com/jeffrose/ee.js.git",
     "homepage": "https://github.com/jeffrose/ee.js",
@@ -11,12 +11,11 @@
         "eventemitter",
         "event"
     ],
-    "main": "index.js",
+    "main": "dist/ee.js",
     "dependencies": {
-        "gulp-util": "3.0.4"
+        
     },
     "devDependencies": {
-        "babel": "4.7.16",
         "chai": "2.1.2",
         "gulp": "3.8.11",
         "gulp-babel": "4.0.0",

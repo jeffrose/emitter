@@ -12,7 +12,7 @@ gulp.task( 'dist', function(){
         .pipe( babel( {
             modules: 'umd'
         } ) )
-        .pipe( rename( 'eventEmitter.js' ) )
+        .pipe( rename( 'ee.js' ) )
         .pipe( gulp.dest( 'dist' ) );
 } );
 
