@@ -1,0 +1,14 @@
+# Top-most Editor Config file
+root = true
+
+# All files
+[*]
+charset = utf-8
+end_of_line = lf
+trim_trailing_whitespace = true
+
+# Non-library JavaScript files
+[index.js,gulpfile.js,test/test.js]
+indent_style = space
+indent_size = 4
+insert_final_newline = true
