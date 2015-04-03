@@ -3,7 +3,7 @@
 var chai            = require( 'chai' ),
     sinon           = require( 'sinon' ),
     sinon_chai      = require( 'sinon-chai' ),
-    EventEmitter    = require( '../' ),
+    EventEmitter    = require( '../src' ),
     
     expect          = chai.expect;
 
