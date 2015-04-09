@@ -1,59 +1,65 @@
 'use strict';
 
+const events = Symbol( '@@events' ),
+    maxListeners = Symbol( '@@maxListeners' );
+
 export default class EventEmitter {
     static listenerCount( emitter, type ){
         var count;
     
-        if( !emitter._events || !emitter._events[ type ] ){
+        // Empty
+        if( !emitter[ events ] || !emitter[ events ][ type ] ){
             count = 0;
-        } else if( typeof emitter._events[ type ] === 'function' ){
+        
+        // Function
+        } else if( typeof emitter[ events ][ type ] === 'function' ){
             count = 1;
+        
+        // Array
         } else {
-            count = emitter._events[ type ].length;
+            count = emitter[ events ][ type ].length;
         }
         
         return count;
     }
     
-    constructor( events ){
-        for( let event in events ){
-            let listeners = events[ event ];
+    constructor( bindings ){
+        if( !this[ events ] || this[ events ] === Object.getPrototypeOf( this )[ events ] ){
+            this[ events ] = {};
+        }
+        
+        for( let type in bindings ){
+            let listeners = bindings[ type ];
             
             if( Array.isArray( listeners ) ){
-                for( let i = 0, l = listeners.length; i < l; i++ ){
-                    this.on( event, listeners[ i ] );
-                }
+                listeners.forEach( listener => this.on( type, listener ) );
             } else {
-                this.on( event, listeners );
+                this.on( type, listeners );
             }
         }
         
-        if( !this._events || this._events === Object.getPrototypeOf( this )._events ){
-            this._events = {};
-        }
-        
-        this._maxListeners = this._maxListeners || undefined;
+        this[ maxListeners ] = this[ maxListeners ] || undefined;
     }
     
     allOff( type ){
         var handler;
         
-        if( !this._events ){
+        if( !this[ events ] ){
             return this;
         }
         
-        if( !this._events.removeListener ){
+        if( !this[ events ].removeListener ){
             if( arguments.length === 0 ){
-                this._events = {};
-            } else if( this._events[ type ] ){
-                delete this._events[ type ];
+                this[ events ] = {};
+            } else if( this[ events ][ type ] ){
+                delete this[ events ][ type ];
             }
             
             return this;
         }
         
         if( arguments.length === 0 ){
-            for( let key in this._events ){
+            for( let key in this[ events ] ){
                 if( key === 'removeListener' ){
                     continue;
                 }
@@ -63,22 +69,20 @@ export default class EventEmitter {
             
             this.allOff( 'removeListener' );
             
-            this._events = {};
+            this[ events ] = {};
             
             return this;
         }
         
-        handler = this._events[ type ];
+        handler = this[ events ][ type ];
         
         if( typeof handler === 'function' ){
             this.off( type, handler );
         } else if( Array.isArray( handler ) ){
-            while( handler.length ){
-                this.off( type, handler[ handler.length - 1 ] );
-            }
+            handler.forEach( listener => this.off( type, listener ) );
         }
         
-        delete this._events[ type ];
+        delete this[ events ][ type ];
         
         return this;
     }
@@ -86,11 +90,11 @@ export default class EventEmitter {
     emit( type ){
         var args, handler, length;
         
-        if( !this._events ){
-            this._events = {};
+        if( !this[ events ] ){
+            this[ events ] = {};
         }
         
-        if( type === 'error' && !this._events.error ){
+        if( type === 'error' && !this[ events ].error ){
             var error = arguments[ 1 ];
             
             if( error instanceof Error ){
@@ -102,7 +106,7 @@ export default class EventEmitter {
             return false;
         }
         
-        handler = this._events[ type ];
+        handler = this[ events ][ type ];
         
         if( typeof handler === 'undefined' ){
             return false;
@@ -127,7 +131,7 @@ export default class EventEmitter {
                     }
                     handler.apply( this, args );
             }
-        } else if( typeof handler === 'object' ){
+        } else if( Array.isArray( handler ) ){
             let listeners;
             
             length = arguments.length;
@@ -156,12 +160,12 @@ export default class EventEmitter {
     listeners( type ){
         var listeners;
         
-        if( !this._events || !this._events[ type ] ){
+        if( !this[ events ] || !this[ events ][ type ] ){
             listeners = [];
-        } else if( typeof this._events[ type ] === 'function' ){
-            listeners = [ this._events[ type ] ];
+        } else if( typeof this[ events ][ type ] === 'function' ){
+            listeners = [ this[ events ][ type ] ];
         } else {
-            listeners = this._events[ type ].slice();
+            listeners = this[ events ][ type ].slice();
         }
         
         return listeners;
@@ -176,12 +180,12 @@ export default class EventEmitter {
             throw new TypeError( 'listener must be a function' );
         }
         
-        var manyListener = function(){
-                if( --times === 0 ){
-                    this.off( type, manyListener );
-                }
-                listener.apply( this, arguments );
-            };
+        function manyListener(){
+            if( --times === 0 ){
+                this.off( type, manyListener );
+            }
+            listener.apply( this, arguments );
+        }
         
         manyListener.listener = listener;
         
@@ -197,19 +201,19 @@ export default class EventEmitter {
             throw new TypeError( 'listener must be a function' );
         }
         
-        if( !this._events || !this._events[ type ] ){
+        if( !this[ events ] || !this[ events ][ type ] ){
             return this;
         }
         
-        handler = this._events[ type ];
+        handler = this[ events ][ type ];
         index = -1;
         
         if( handler === listener || ( typeof handler.listener === 'function' && handler.listener === listener ) ){
-            delete this._events[ type ];
-            if( this._events.removeListener ){
+            delete this[ events ][ type ];
+            if( this[ events ].removeListener ){
                 this.emit( 'removeListener', type, listener );
             }
-        } else if( typeof handler === 'object' ){
+        } else if( Array.isArray( handler ) ){
             for( let i = handler.length; i-- > 0; ){
                 if( handler[ i ] === listener || ( handler[ i ].listener && handler[ i ].listener === listener ) ){
                     index = i;
@@ -224,12 +228,12 @@ export default class EventEmitter {
         
         if( handler.length === 1 ){
             handler.length = 0;
-            delete this._events[ type ];
+            delete this[ events ][ type ];
         } else {
             handler.splice( index, 1 );
         }
         
-        if( this._events.removeListener ){
+        if( this[ events ].removeListener ){
             this.emit( 'removeListener', type, listener );
         }
         
@@ -241,39 +245,35 @@ export default class EventEmitter {
             throw new TypeError( 'listener must be a function' );
         }
         
-        if( !this._events ){
-            this._events = {};
+        if( !this[ events ] ){
+            this[ events ] = {};
         }
         
-        if( this._events.newListener ){
+        if( this[ events ].newListener ){
             this.emit( 'newListener', type, typeof listener.listener === 'function' ? listener.listener : listener );
         }
         
         // Single listener
-        if( !this._events[ type ] ){
-            this._events[ type ] = listener;
+        if( !this[ events ][ type ] ){
+            this[ events ][ type ] = listener;
         
         // Multiple listeners
-        } else if( typeof this._events[ type ] === 'object' ){
-            this._events[ type ].push( listener );
+        } else if( Array.isArray( this[ events ][ type ] ) ){
+            this[ events ][ type ].push( listener );
         
         // Transition from single to multiple listeners
         } else {
-            this._events[ type ] = [ this._events[ type ], listener ];
+            this[ events ][ type ] = [ this[ events ][ type ], listener ];
         }
         
-        if( typeof this._events[ type ] === 'object' && !this._events[ type ].warned ){
-            var maxListeners;
+        if( Array.isArray( this[ events ][ type ] ) && !this[ events ][ type ].warned ){
+            var max = typeof this[ maxListeners ] !== 'undefined' ?
+                    this[ maxListeners ] :
+                    EventEmitter.defaultMaxListeners;
             
-            if( typeof this._maxListeners !== 'undefined' ){
-                maxListeners = this._maxListeners;
-            } else {
-                maxListeners = EventEmitter.defaultMaxListeners;
-            }
-            
-            if( maxListeners && maxListeners > 0 && this._events[ type ].length > maxListeners ){
-                this.emit( 'warn', type, listener );
-                this._events[ type ].warned = true;
+            if( max && max > 0 && this[ events ][ type ].length > max ){
+                this.emit( 'maxListeners', type, listener );
+                this[ events ][ type ].warned = true;
             }
         }
         
@@ -289,7 +289,7 @@ export default class EventEmitter {
             throw TypeError( 'n must be a positive number' );
         }
         
-        this._maxListeners = n;
+        this[ maxListeners ] = n;
         
         return this;
     }

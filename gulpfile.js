@@ -17,6 +17,7 @@ gulp.task( 'dist', function(){
 } );
 
 gulp.task( 'test', function( done ){
+    require( 'babel/register' );
     gulp.src( [ 'src/index.js' ] )
         .pipe( istanbul( {
             instrumenter: isparta.Instrumenter
