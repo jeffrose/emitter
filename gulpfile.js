@@ -8,9 +8,11 @@ var gulp = require( 'gulp' ),
     rename = require( 'gulp-rename' );
 
 gulp.task( 'dist', function(){
+    require( 'babel/register' );
     return gulp.src( [ 'src/index.js' ] )
         .pipe( babel( {
-            modules: 'umd'
+            modules: 'umd',
+            optional: [ 'runtime' ]
         } ) )
         .pipe( rename( 'ee.js' ) )
         .pipe( gulp.dest( 'dist' ) );

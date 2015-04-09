@@ -1,60 +1,68 @@
 (function (factory) {
     if (typeof define === "function" && define.amd) {
-        define(["exports", "module"], factory);
+        define(["exports", "module", "babel-runtime/helpers/class-call-check", "babel-runtime/helpers/create-class", "babel-runtime/core-js"], factory);
     } else if (typeof exports !== "undefined" && typeof module !== "undefined") {
-        factory(exports, module);
+        factory(exports, module, require("babel-runtime/helpers/class-call-check"), require("babel-runtime/helpers/create-class"), require("babel-runtime/core-js"));
     }
-})(function (exports, module) {
+})(function (exports, module, _babelRuntimeHelpersClassCallCheck, _babelRuntimeHelpersCreateClass, _babelRuntimeCoreJs) {
     "use strict";
 
-    var _createClass = (function () { function defineProperties(target, props) { for (var key in props) { var prop = props[key]; prop.configurable = true; if (prop.value) prop.writable = true; } Object.defineProperties(target, props); } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-    var _classCallCheck = function (instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } };
+    var _classCallCheck = _babelRuntimeHelpersClassCallCheck["default"];
+    var _createClass = _babelRuntimeHelpersCreateClass["default"];
+    var _core = _babelRuntimeCoreJs["default"];
+    var events = _core.Symbol("@@events"),
+        maxListeners = _core.Symbol("@@maxListeners");
 
     var EventEmitter = (function () {
-        function EventEmitter(events) {
+        function EventEmitter(bindings) {
+            var _this = this;
+
             _classCallCheck(this, EventEmitter);
 
-            for (var _event in events) {
-                var listeners = events[_event];
+            if (!this[events] || this[events] === _core.Object.getPrototypeOf(this)[events]) {
+                this[events] = {};
+            }
 
-                if (Array.isArray(listeners)) {
-                    for (var i = 0, l = listeners.length; i < l; i++) {
-                        this.on(_event, listeners[i]);
+            for (var type in bindings) {
+                (function (type) {
+                    var listeners = bindings[type];
+
+                    if (Array.isArray(listeners)) {
+                        listeners.forEach(function (listener) {
+                            return _this.on(type, listener);
+                        });
+                    } else {
+                        _this.on(type, listeners);
                     }
-                } else {
-                    this.on(_event, listeners);
-                }
+                })(type);
             }
 
-            if (!this._events || this._events === Object.getPrototypeOf(this)._events) {
-                this._events = {};
-            }
-
-            this._maxListeners = this._maxListeners || undefined;
+            this[maxListeners] = this[maxListeners] || undefined;
         }
 
         _createClass(EventEmitter, {
             allOff: {
                 value: function allOff(type) {
+                    var _this = this;
+
                     var handler;
 
-                    if (!this._events) {
+                    if (!this[events]) {
                         return this;
                     }
 
-                    if (!this._events.removeListener) {
+                    if (!this[events].removeListener) {
                         if (arguments.length === 0) {
-                            this._events = {};
-                        } else if (this._events[type]) {
-                            delete this._events[type];
+                            this[events] = {};
+                        } else if (this[events][type]) {
+                            delete this[events][type];
                         }
 
                         return this;
                     }
 
                     if (arguments.length === 0) {
-                        for (var key in this._events) {
+                        for (var key in this[events]) {
                             if (key === "removeListener") {
                                 continue;
                             }
@@ -64,22 +72,22 @@
 
                         this.allOff("removeListener");
 
-                        this._events = {};
+                        this[events] = {};
 
                         return this;
                     }
 
-                    handler = this._events[type];
+                    handler = this[events][type];
 
                     if (typeof handler === "function") {
                         this.off(type, handler);
                     } else if (Array.isArray(handler)) {
-                        while (handler.length) {
-                            this.off(type, handler[handler.length - 1]);
-                        }
+                        handler.forEach(function (listener) {
+                            return _this.off(type, listener);
+                        });
                     }
 
-                    delete this._events[type];
+                    delete this[events][type];
 
                     return this;
                 }
@@ -88,11 +96,11 @@
                 value: function emit(type) {
                     var args, handler, length;
 
-                    if (!this._events) {
-                        this._events = {};
+                    if (!this[events]) {
+                        this[events] = {};
                     }
 
-                    if (type === "error" && !this._events.error) {
+                    if (type === "error" && !this[events].error) {
                         var error = arguments[1];
 
                         if (error instanceof Error) {
@@ -104,7 +112,7 @@
                         return false;
                     }
 
-                    handler = this._events[type];
+                    handler = this[events][type];
 
                     if (typeof handler === "undefined") {
                         return false;
@@ -129,7 +137,7 @@
                                 }
                                 handler.apply(this, args);
                         }
-                    } else if (typeof handler === "object") {
+                    } else if (Array.isArray(handler)) {
                         var listeners = undefined;
 
                         length = arguments.length;
@@ -170,12 +178,12 @@
                 })(function (type) {
                     var listeners;
 
-                    if (!this._events || !this._events[type]) {
+                    if (!this[events] || !this[events][type]) {
                         listeners = [];
-                    } else if (typeof this._events[type] === "function") {
-                        listeners = [this._events[type]];
+                    } else if (typeof this[events][type] === "function") {
+                        listeners = [this[events][type]];
                     } else {
-                        listeners = this._events[type].slice();
+                        listeners = this[events][type].slice();
                     }
 
                     return listeners;
@@ -191,22 +199,12 @@
                         throw new TypeError("listener must be a function");
                     }
 
-                    var manyListener = (function (_manyListener) {
-                        var _manyListenerWrapper = function manyListener() {
-                            return _manyListener.apply(this, arguments);
-                        };
-
-                        _manyListenerWrapper.toString = function () {
-                            return _manyListener.toString();
-                        };
-
-                        return _manyListenerWrapper;
-                    })(function () {
+                    function manyListener() {
                         if (--times === 0) {
                             this.off(type, manyListener);
                         }
                         listener.apply(this, arguments);
-                    });
+                    }
 
                     manyListener.listener = listener;
 
@@ -223,19 +221,19 @@
                         throw new TypeError("listener must be a function");
                     }
 
-                    if (!this._events || !this._events[type]) {
+                    if (!this[events] || !this[events][type]) {
                         return this;
                     }
 
-                    handler = this._events[type];
+                    handler = this[events][type];
                     index = -1;
 
                     if (handler === listener || typeof handler.listener === "function" && handler.listener === listener) {
-                        delete this._events[type];
-                        if (this._events.removeListener) {
+                        delete this[events][type];
+                        if (this[events].removeListener) {
                             this.emit("removeListener", type, listener);
                         }
-                    } else if (typeof handler === "object") {
+                    } else if (Array.isArray(handler)) {
                         for (var i = handler.length; i-- > 0;) {
                             if (handler[i] === listener || handler[i].listener && handler[i].listener === listener) {
                                 index = i;
@@ -250,12 +248,12 @@
 
                     if (handler.length === 1) {
                         handler.length = 0;
-                        delete this._events[type];
+                        delete this[events][type];
                     } else {
                         handler.splice(index, 1);
                     }
 
-                    if (this._events.removeListener) {
+                    if (this[events].removeListener) {
                         this.emit("removeListener", type, listener);
                     }
 
@@ -268,39 +266,33 @@
                         throw new TypeError("listener must be a function");
                     }
 
-                    if (!this._events) {
-                        this._events = {};
+                    if (!this[events]) {
+                        this[events] = {};
                     }
 
-                    if (this._events.newListener) {
+                    if (this[events].newListener) {
                         this.emit("newListener", type, typeof listener.listener === "function" ? listener.listener : listener);
                     }
 
                     // Single listener
-                    if (!this._events[type]) {
-                        this._events[type] = listener;
+                    if (!this[events][type]) {
+                        this[events][type] = listener;
 
                         // Multiple listeners
-                    } else if (typeof this._events[type] === "object") {
-                        this._events[type].push(listener);
+                    } else if (Array.isArray(this[events][type])) {
+                        this[events][type].push(listener);
 
                         // Transition from single to multiple listeners
                     } else {
-                        this._events[type] = [this._events[type], listener];
+                        this[events][type] = [this[events][type], listener];
                     }
 
-                    if (typeof this._events[type] === "object" && !this._events[type].warned) {
-                        var maxListeners;
+                    if (Array.isArray(this[events][type]) && !this[events][type].warned) {
+                        var max = typeof this[maxListeners] !== "undefined" ? this[maxListeners] : EventEmitter.defaultMaxListeners;
 
-                        if (typeof this._maxListeners !== "undefined") {
-                            maxListeners = this._maxListeners;
-                        } else {
-                            maxListeners = EventEmitter.defaultMaxListeners;
-                        }
-
-                        if (maxListeners && maxListeners > 0 && this._events[type].length > maxListeners) {
-                            this.emit("warn", type, listener);
-                            this._events[type].warned = true;
+                        if (max && max > 0 && this[events][type].length > max) {
+                            this.emit("maxListeners", type, listener);
+                            this[events][type].warned = true;
                         }
                     }
 
@@ -318,7 +310,7 @@
                         throw TypeError("n must be a positive number");
                     }
 
-                    this._maxListeners = n;
+                    this[maxListeners] = n;
 
                     return this;
                 }
@@ -328,12 +320,17 @@
                 value: function listenerCount(emitter, type) {
                     var count;
 
-                    if (!emitter._events || !emitter._events[type]) {
+                    // Empty
+                    if (!emitter[events] || !emitter[events][type]) {
                         count = 0;
-                    } else if (typeof emitter._events[type] === "function") {
+
+                        // Function
+                    } else if (typeof emitter[events][type] === "function") {
                         count = 1;
+
+                        // Array
                     } else {
-                        count = emitter._events[type].length;
+                        count = emitter[events][type].length;
                     }
 
                     return count;
