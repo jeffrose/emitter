@@ -1,6 +1,6 @@
 {
   "name": "ee-js",
-  "main": "dist/ee.js",
+  "main": [ "dist/ee.js", "dist/ee-es5.js" ],
   "version": "0.1.0",
   "homepage": "https://github.com/jeffrose/ee.js",
   "authors": [
