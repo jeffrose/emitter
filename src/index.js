@@ -28,13 +28,15 @@ export default class EventEmitter {
             this[ events ] = {};
         }
         
-        for( let type in bindings ){
-            let listeners = bindings[ type ];
-            
-            if( Array.isArray( listeners ) ){
-                listeners.forEach( listener => this.on( type, listener ) );
-            } else {
-                this.on( type, listeners );
+        if( typeof bindings === 'object' ){
+            for( let type in bindings ){
+                let listeners = bindings[ type ];
+                
+                if( Array.isArray( listeners ) ){
+                    listeners.forEach( listener => this.on( type, listener ) );
+                } else {
+                    this.on( type, listeners );
+                }
             }
         }
         

@@ -10,12 +10,14 @@ var gulp = require( 'gulp' ),
 gulp.task( 'dist', function(){
     require( 'babel/register' );
     return gulp.src( [ 'src/index.js' ] )
+        .pipe( rename( 'ee.js' ) )
+        .pipe( gulp.dest( 'dist' ) )
         .pipe( babel( {
             modules: 'umd',
             optional: [ 'runtime' ]
         } ) )
-        .pipe( rename( 'ee.js' ) )
-        .pipe( gulp.dest( 'dist' ) );
+        .pipe( rename( 'ee-es5.js' ) )
+        .pipe( gulp.dest( 'dist' ) )
 } );
 
 gulp.task( 'test', function( done ){
