@@ -1,7 +1,7 @@
 {
     "name": "ee.js",
     "description": "A modern event emitter implementation.",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "repository": "https://github.com/jeffrose/ee.js.git",
     "homepage": "https://github.com/jeffrose/ee.js",
     "bugs": "https://github.com/jeffrose/ee.js/issues",
