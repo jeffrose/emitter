@@ -5,7 +5,7 @@ const events = Symbol( '@@events' ),
 
 function EventEmitter( bindings ){
     if( !this[ events ] || this[ events ] === Object.getPrototypeOf( this )[ events ] ){
-        this[ events ] = {};
+        this[ events ] = Object.create( null );
     }
     
     if( typeof bindings === 'object' ){
@@ -34,7 +34,7 @@ EventEmitter.prototype.allOff = function( type ){
     
     if( !this[ events ].removeListener ){
         if( arguments.length === 0 ){
-            this[ events ] = {};
+            this[ events ] = Object.create( null );
         } else if( this[ events ][ type ] ){
             delete this[ events ][ type ];
         }
@@ -53,7 +53,7 @@ EventEmitter.prototype.allOff = function( type ){
         
         this.allOff( 'removeListener' );
         
-        this[ events ] = {};
+        this[ events ] = Object.create( null );
         
         return this;
     }
@@ -81,7 +81,7 @@ EventEmitter.prototype.emit = function( type ){
     var args, handler, length;
     
     if( !this[ events ] ){
-        this[ events ] = {};
+        this[ events ] = Object.create( null );
     }
     
     if( type === 'error' && !this[ events ].error ){
@@ -231,7 +231,7 @@ EventEmitter.prototype.on = function( type, listener ){
     }
     
     if( !this[ events ] ){
-        this[ events ] = {};
+        this[ events ] = Object.create( null );
     }
     
     if( this[ events ].newListener ){

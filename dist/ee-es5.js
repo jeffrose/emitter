@@ -15,7 +15,7 @@
         var _this = this;
 
         if (!this[events] || this[events] === _core.Object.getPrototypeOf(this)[events]) {
-            this[events] = {};
+            this[events] = Object.create(null);
         }
 
         if (typeof bindings === "object") {
@@ -50,7 +50,7 @@
 
         if (!this[events].removeListener) {
             if (arguments.length === 0) {
-                this[events] = {};
+                this[events] = Object.create(null);
             } else if (this[events][type]) {
                 delete this[events][type];
             }
@@ -69,7 +69,7 @@
 
             this.allOff("removeListener");
 
-            this[events] = {};
+            this[events] = Object.create(null);
 
             return this;
         }
@@ -99,7 +99,7 @@
         var args, handler, length;
 
         if (!this[events]) {
-            this[events] = {};
+            this[events] = Object.create(null);
         }
 
         if (type === "error" && !this[events].error) {
@@ -249,7 +249,7 @@
         }
 
         if (!this[events]) {
-            this[events] = {};
+            this[events] = Object.create(null);
         }
 
         if (this[events].newListener) {
