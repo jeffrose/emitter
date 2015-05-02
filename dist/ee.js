@@ -279,7 +279,7 @@ EventEmitter.prototype.setMaxListeners = function( max ){
     return this;
 };
 
-EventEmitter.prototype.trigger = function( type, args ){
+EventEmitter.prototype.trigger = function( type, args = [] ){
     args.unshift( type );
     return this.emit.apply( this, args );  
 };

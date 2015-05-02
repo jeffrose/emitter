@@ -295,7 +295,9 @@
         return this;
     };
 
-    EventEmitter.prototype.trigger = function (type, args) {
+    EventEmitter.prototype.trigger = function (type) {
+        var args = arguments[1] === undefined ? [] : arguments[1];
+
         args.unshift(type);
         return this.emit.apply(this, args);
     };
