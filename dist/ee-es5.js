@@ -298,7 +298,7 @@
     EventEmitter.prototype.trigger = function (type) {
         var args = arguments[1] === undefined ? [] : arguments[1];
 
-        args.unshift(type);
+        Array.prototype.unshift.call(args, type);
         return this.emit.apply(this, args);
     };
 
