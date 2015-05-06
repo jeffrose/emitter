@@ -9,7 +9,53 @@
 
     var _core = _babelRuntimeCoreJs["default"];
     var events = _core.Symbol("@@events"),
+        every = _core.Symbol("@@every"),
         maxListeners = _core.Symbol("@@maxListeners");
+
+    function executeListener(listener) {
+        var list = arguments[1] === undefined ? [] : arguments[1];
+        var scope = arguments[2] === undefined ? this : arguments[2];
+
+        var data;
+
+        if (typeof listener === "function") {
+            switch (list.length) {
+                case 1:
+                    listener.call(scope);
+                    break;
+                case 2:
+                    listener.call(scope, list[1]);
+                    break;
+                case 3:
+                    listener.call(scope, list[1], list[2]);
+                    break;
+                default:
+                    data = listenerData(list);
+                    listener.apply(scope, data);
+            }
+        } else if (Array.isArray(listener)) {
+            var listeners = undefined;
+
+            data = listenerData(list);
+
+            listeners = listener.slice();
+
+            for (var i = 0, _length = listeners.length; i < _length; i++) {
+                listeners[i].apply(scope, data);
+            }
+        }
+    }
+
+    function listenerData(list) {
+        var length = list.length,
+            data = new Array(length - 1);
+
+        for (var i = 1; i < length; i++) {
+            data[i - 1] = list[i];
+        }
+
+        return data;
+    }
 
     function EventEmitter(bindings) {
         var _this = this;
@@ -38,6 +84,8 @@
     }
 
     EventEmitter.prototype = Object.create(null);
+
+    EventEmitter.prototype[_core.Symbol.toStringTag] = "EventEmitter";
 
     EventEmitter.prototype.allOff = function (type) {
         var _this = this;
@@ -96,7 +144,8 @@
     };
 
     EventEmitter.prototype.emit = function (type) {
-        var args, handler, length;
+        var executed = false,
+            listener;
 
         if (!this[events]) {
             this[events] = Object.create(null);
@@ -111,53 +160,24 @@
                 throw Error("Uncaught, unspecified \"error\" event.");
             }
 
-            return false;
+            return executed;
         }
 
-        handler = this[events][type];
-
-        if (typeof handler === "undefined") {
-            return false;
+        // Execute listeners for the given type of event
+        listener = this[events][type];
+        if (typeof listener !== "undefined") {
+            executeListener(listener, arguments, this);
+            executed = true;
         }
 
-        if (typeof handler === "function") {
-            switch (arguments.length) {
-                case 1:
-                    handler.call(this);
-                    break;
-                case 2:
-                    handler.call(this, arguments[1]);
-                    break;
-                case 3:
-                    handler.call(this, arguments[1], arguments[2]);
-                    break;
-                default:
-                    length = arguments.length;
-                    args = new Array(length - 1);
-                    for (var i = 1; i < length; i++) {
-                        args[i - 1] = arguments[i];
-                    }
-                    handler.apply(this, args);
-            }
-        } else if (Array.isArray(handler)) {
-            var listeners = undefined;
-
-            length = arguments.length;
-            args = new Array(length - 1);
-
-            for (var i = 1; i < length; i++) {
-                args[i - 1] = arguments[i];
-            }
-
-            listeners = handler.slice();
-            length = listeners.length;
-
-            for (var i = 0; i < length; i++) {
-                listeners[i].apply(this, args);
-            }
+        // Execute listeners listening for all types of events
+        listener = this[events][every];
+        if (typeof listener !== "undefined") {
+            executeListener(listener, arguments, this);
+            executed = true;
         }
 
-        return true;
+        return executed;
     };
 
     EventEmitter.prototype.listeners = function (type) {
@@ -174,7 +194,16 @@
         return listeners;
     };
 
-    EventEmitter.prototype.many = function (type, times, listener) {
+    EventEmitter.prototype.many = function (_x, times, listener) {
+        var type = arguments[0] === undefined ? every : arguments[0];
+
+        // Shift arguments if type is not provided
+        if (typeof type === "number" && typeof times === "function" && typeof listener === "undefined") {
+            listener = times;
+            times = type;
+            type = every;
+        }
+
         if (typeof times !== "number") {
             throw new TypeError("times must be a number");
         }
@@ -197,8 +226,16 @@
         return this;
     };
 
-    EventEmitter.prototype.off = function (type, listener) {
+    EventEmitter.prototype.off = function (_x, listener) {
+        var type = arguments[0] === undefined ? every : arguments[0];
+
         var handler, index;
+
+        // Shift arguments if type is not provided
+        if (typeof type === "function" && typeof listener === "undefined") {
+            listener = type;
+            type = every;
+        }
 
         if (typeof listener !== "function") {
             throw new TypeError("listener must be a function");
@@ -243,7 +280,15 @@
         return this;
     };
 
-    EventEmitter.prototype.on = function (type, listener) {
+    EventEmitter.prototype.on = function (_x, listener) {
+        var type = arguments[0] === undefined ? every : arguments[0];
+
+        // Shift arguments if type is not provided
+        if (typeof type === "function" && typeof listener === "undefined") {
+            listener = type;
+            type = every;
+        }
+
         if (typeof listener !== "function") {
             throw new TypeError("listener must be a function");
         }
@@ -281,7 +326,15 @@
         return this;
     };
 
-    EventEmitter.prototype.once = function (type, listener) {
+    EventEmitter.prototype.once = function (_x, listener) {
+        var type = arguments[0] === undefined ? every : arguments[0];
+
+        // Shift arguments if type is not provided
+        if (typeof type === "function" && typeof listener === "undefined") {
+            listener = type;
+            type = every;
+        }
+
         return this.many(type, 1, listener);
     };
 
@@ -332,6 +385,8 @@
 
     // Backwards-compat with node 0.10.x
     EventEmitter.EventEmitter = EventEmitter;
+
+    EventEmitter.every = every;
 
     module.exports = EventEmitter;
 });

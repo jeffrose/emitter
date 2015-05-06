@@ -33,6 +33,11 @@ describe( 'EventEmitter', function(){
         beforeEach( function(){
             emitter = new EventEmitter();
         } );
+        
+        afterEach( function(){
+            emitter.allOff();
+            emitter = undefined;
+        } );
 
         it( 'should have functions and properties', function(){
             expect( emitter.allOff ).to.be.a( 'function' );
@@ -89,22 +94,25 @@ describe( 'EventEmitter', function(){
         } );
 
         it( 'should emit events differently based on the number of arguments', function(){
-            var onEmit = sinon.spy();
+            var test = Symbol( '@@test' ),
+                onEmit = sinon.spy();
 
             emitter.on( 'test', onEmit );
+            emitter.on( test, onEmit );
 
             emitter.emit( 'test' );
             emitter.emit( 'test', 0 );
             emitter.emit( 'test', 1, 2 );
             emitter.emit( 'test', 3, 4, 5 );
             emitter.trigger( 'test', [  6, 7, 8, 9 ] );
+            emitter.emit( test );
 
             expect( onEmit ).to.have.been.calledWith();
             expect( onEmit ).to.have.been.calledWith( 0 );
             expect( onEmit ).to.have.been.calledWith( 1, 2 );
             expect( onEmit ).to.have.been.calledWith( 3, 4, 5 );
             expect( onEmit ).to.have.been.calledWith( 6, 7, 8, 9 );
-            expect( onEmit ).to.have.callCount( 5 );
+            expect( onEmit ).to.have.callCount( 6 );
 
             expect( function(){ emitter.emit( 'error' ); } ).to.throw( Error );
             expect( function(){ emitter.emit( 'error', new Error( 'test error' ) ); } ).to.throw( Error );
@@ -157,6 +165,29 @@ describe( 'EventEmitter', function(){
 
             expect( function(){ emitter.many( 'test', 2 ); } ).to.throw( TypeError );
             expect( function(){ emitter.many( 'test' ); } ).to.throw( TypeError );
+        } );
+        
+        it( 'should provide a way to listen to every event', function(){
+            var onEmit = sinon.spy();
+            
+            emitter.on( onEmit );                           // +2
+            emitter.on( EventEmitter.every, onEmit );       // +2
+            emitter.on( undefined, onEmit );                // +2
+            emitter.once( onEmit );                         // +1
+            emitter.once( EventEmitter.every, onEmit );     // +1
+            emitter.once( undefined, onEmit );              // +1
+            emitter.many( 2, onEmit );                      // +2
+            emitter.many( EventEmitter.every, 2, onEmit );  // +2
+            emitter.many( undefined, 2, onEmit );           // +2
+            
+            emitter.emit( 'foo' );
+            emitter.emit( 'bar' );
+            
+            emitter.allOff( EventEmitter.every );
+            
+            emitter.emit( 'qux' );
+            
+            expect( onEmit ).to.have.callCount( 15 );
         } );
 
         it( 'should emit events when listeners are added and removed', function(){
