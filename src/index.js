@@ -357,6 +357,11 @@ EventEmitter.defaultMaxListeners = 10;
 // Backwards-compat with node 0.10.x
 EventEmitter.EventEmitter = EventEmitter;
 
-EventEmitter.every = every;
+Object.defineProperty( EventEmitter, 'every', {
+    value: every,
+    configurable: false,
+    enumerable: true,
+    writable: false
+} );
 
 export default EventEmitter;
