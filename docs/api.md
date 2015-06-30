@@ -1,5 +1,65 @@
 # emitter-js API
 
+### Emitter.defaultMaxListeners
+
+####`Emitter.defaultMaxListeners`
+
+### Emitter.every
+
+####`Emitter.every`
+
+### Emitter.listenerCount
+
+####`Emitter.listenerCount()`
+
+### Emitter.prototype.clear
+
+####`Emitter.prototype.clear()`
+
+####`Emitter.prototype.clear( type )`
+
+### Emitter.prototype.defineEvents
+
+####`Emitter.prototype.defineEvents()`
+
+### Emitter.prototype.destroy
+
+####`Emitter.prototype.destroy()`
+
+### Emitter.prototype.emit
+
+####`Emitter.prototype.emit( type, ...data ) -> Boolean`
+
+### Emitter.prototype.emitEvent
+
+####`Emitter.prototype.emitEvent( type, data ) -> Boolean`
+
+### Emitter.prototype.listeners
+
+####`Emitter.prototype.listeners( type ) -> Array`
+
+### Emitter.prototype.many
+
+####`Emitter.prototype.many( type, times, listener ) -> Emitter`
+
+### Emitter.prototype.maxListeners
+
+####`Emitter.prototype.maxListeners() -> Number`
+
+####`Emitter.prototype.maxListeners( max ) -> Emitter`
+
+### Emitter.prototype.off
+
+####`Emitter.prototype.off( type, listener ) -> Emitter`
+
+### Emitter.prototype.on
+
+####`Emitter.prototype.on( type, listener ) -> Emitter`
+
+### Emitter.prototype.once
+
+####`Emitter.prototype.once( type, listener ) -> Emitter`
+
 ```javascript
 var greeter = new Emitter();
 greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
