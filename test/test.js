@@ -3,7 +3,7 @@
 var chai        = require( 'chai' ),
     sinon       = require( 'sinon' ),
     sinon_chai  = require( 'sinon-chai' ),
-    Emitter     = require( '../src/emitter' ),
+    Emitter     = require( '../src' ),
 
     expect      = chai.expect;
 

@@ -8,7 +8,7 @@ var gulp = require( 'gulp' ),
     rename = require( 'gulp-rename' );
 
 gulp.task( 'dist', function(){
-    return gulp.src( [ 'src/emitter.js' ] )
+    return gulp.src( [ 'src/index.js' ] )
         .pipe( gulp.dest( 'dist' ) )
         .pipe( babel( {
             modules: 'umd',
@@ -19,8 +19,7 @@ gulp.task( 'dist', function(){
 } );
 
 gulp.task( 'test', function( done ){
-    require( 'babel/register' );
-    gulp.src( [ 'src/emitter.js' ] )
+    gulp.src( [ 'src/index.js' ] )
         .pipe( istanbul( {
             instrumenter: isparta.Instrumenter
         } ) )
