@@ -8,30 +8,26 @@ var gulp = require( 'gulp' ),
     rename = require( 'gulp-rename' );
 
 gulp.task( 'dist', function(){
-    require( 'babel/register' );
-    return gulp.src( [ 'src/index.js' ] )
-        .pipe( rename( 'ee.js' ) )
+    return gulp.src( [ 'src/emitter.js' ] )
         .pipe( gulp.dest( 'dist' ) )
         .pipe( babel( {
             modules: 'umd',
             optional: [ 'runtime' ]
         } ) )
-        .pipe( rename( 'ee-es5.js' ) )
-        .pipe( gulp.dest( 'dist' ) )
+        .pipe( rename( 'emitter-umd.js' ) )
+        .pipe( gulp.dest( 'dist' ) );
 } );
 
 gulp.task( 'test', function( done ){
     require( 'babel/register' );
-    gulp.src( [ 'src/index.js' ] )
+    gulp.src( [ 'src/emitter.js' ] )
         .pipe( istanbul( {
             instrumenter: isparta.Instrumenter
         } ) )
         .pipe( istanbul.hookRequire() )
         .on( 'finish', function(){
-            gulp.src( [ 'test/*.js' ] )
-                .pipe( mocha( {
-                    compilers: 'js:babel'
-                } ) )
+            gulp.src( [ 'test/test.js' ] )
+                .pipe( mocha() )
                 .pipe( istanbul.writeReports() )
                 .on( 'end', done );
         } );
