@@ -1,0 +1,49 @@
+# emitter-js API
+
+```javascript
+var greeter = new Emitter();
+greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.emit( 'hello', 'World' );
+// Hello, World!
+```
+
+```javascript
+var greeter = new Emitter();
+greeter.on( 'greeting:hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.on( 'greeting:hi', ( name ) => console.log( `Hi, ${ name }!` ) );
+greeter.on( 'greeting', ( name ) => console.log( `${ name } was greeted.` );
+greeter.emit( 'greeting:hi', 'Mark' );
+greeter.emit( 'greeting:hello', 'Jeff' );
+// Hi, Mark!
+// Mark was greeted.
+// Hello, Jeff!
+// Jeff was greeted.
+```
+
+```javascript
+var greetings = {
+ hello: function( name ){ console.log( `Hello, ${name}!` ),
+ hi: function( name ){ console.log( `Hi, ${name}!` )
+};
+var greeter = new Emitter( greetings );
+greeter.emit( 'hello', 'Aaron' );
+// Hello, Aaron!
+```
+
+```javascript
+var greeter = new Emitter();
+greeter.once( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.emit( 'hello', 'Jeff' );
+greeter.emit( 'hello', 'Terry' );
+// Hello, Jeff!
+```
+
+```javascript
+var greeter = new Emitter();
+greeter.many( 'hello', 2, ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.emit( 'hello', 'Jeff' );     // 1
+greeter.emit( 'hello', 'Terry' );    // 2
+greeter.emit( 'hello', 'Steve' );    // 3
+// Hello, Jeff!
+// Hello, Terry!
+```
