@@ -444,7 +444,7 @@
             var max = typeof this[maxListeners] !== 'undefined' ? this[maxListeners] : Emitter.defaultMaxListeners;
 
             if (max && max > 0 && this[events][type].length > max) {
-                this.emit('maxListeners', type, listener);
+                this.emit(':maxListeners', type, listener);
                 this[events][type].warned = true;
             }
         }

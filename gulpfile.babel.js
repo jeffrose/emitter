@@ -9,6 +9,7 @@ var gulp = require( 'gulp' ),
 
 gulp.task( 'dist', function(){
     return gulp.src( [ 'src/index.js' ] )
+        .pipe( rename( 'emitter.js' ) )
         .pipe( gulp.dest( 'dist' ) )
         .pipe( babel( {
             modules: 'umd',

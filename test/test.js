@@ -224,7 +224,7 @@ describe( 'Emitter', function(){
 
                 onMaxListeners = sinon.spy();
 
-            emitter.on( 'maxListeners', onMaxListeners );
+            emitter.on( ':maxListeners', onMaxListeners );
 
             // The default max listeners is 10
             emitter.on( 'test', noop ); // 1
@@ -250,7 +250,7 @@ describe( 'Emitter', function(){
 
             emitter.maxListeners( 2 );
 
-            emitter.on( 'maxListeners', onMaxListeners );
+            emitter.on( ':maxListeners', onMaxListeners );
 
             emitter.on( 'test', noop ); // 1
             emitter.on( 'test', noop ); // 2
