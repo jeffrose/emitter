@@ -28,17 +28,54 @@
 
 ### Emitter.prototype.emit
 
+Execute the listeners for the given type with the supplied arguments.
+
+Returns `true` if the event had listeners, `false` otherwise.
+
+####`Emitter.prototype.emit( type ) -> Boolean`
+
+```javascript
+var greeter = new Emitter();
+greeter.on( 'hello', () => console.log( 'Hello!' ) );
+greeter.emit( 'hello' ); // true
+// Hello!
+greeter.emit( 'goodbye' ); // false
+```
+
 ####`Emitter.prototype.emit( type, ...data ) -> Boolean`
+
+```javascript
+var greeter = new Emitter();
+greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.emit( 'hello', 'World' ); // true
+// Hello, World!
+```
+
+```javascript
+var greeter = new Emitter();
+greeter.on( 'hello', ( firstName, lastName ) => console.log( `Hello, ${ firstName } ${ lastName }!` ) );
+greeter.emit( 'hello', 'John', 'Smith' ); // true
+// Hello, John Smith!
+```
 
 ### Emitter.prototype.emitEvent
 
 ####`Emitter.prototype.emitEvent( type, data ) -> Boolean`
+
+```javascript
+var greeter = new Emitter();
+greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.emitEvent( 'hello', [ 'World' ] ); // true
+// Hello, World!
+```
 
 ### Emitter.prototype.listeners
 
 ####`Emitter.prototype.listeners( type ) -> Array`
 
 ### Emitter.prototype.many
+
+####`Emitter.prototype.many( times, listener ) -> Emitter`
 
 ####`Emitter.prototype.many( type, times, listener ) -> Emitter`
 
@@ -54,56 +91,12 @@
 
 ### Emitter.prototype.on
 
+####`Emitter.prototype.on( listener ) -> Emitter`
+
 ####`Emitter.prototype.on( type, listener ) -> Emitter`
 
 ### Emitter.prototype.once
 
+####`Emitter.prototype.once( listener ) -> Emitter`
+
 ####`Emitter.prototype.once( type, listener ) -> Emitter`
-
-```javascript
-var greeter = new Emitter();
-greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
-greeter.emit( 'hello', 'World' );
-// Hello, World!
-```
-
-```javascript
-var greeter = new Emitter();
-greeter.on( 'greeting:hello', ( name ) => console.log( `Hello, ${ name }!` ) );
-greeter.on( 'greeting:hi', ( name ) => console.log( `Hi, ${ name }!` ) );
-greeter.on( 'greeting', ( name ) => console.log( `${ name } was greeted.` );
-greeter.emit( 'greeting:hi', 'Mark' );
-greeter.emit( 'greeting:hello', 'Jeff' );
-// Hi, Mark!
-// Mark was greeted.
-// Hello, Jeff!
-// Jeff was greeted.
-```
-
-```javascript
-var greetings = {
- hello: function( name ){ console.log( `Hello, ${name}!` ),
- hi: function( name ){ console.log( `Hi, ${name}!` )
-};
-var greeter = new Emitter( greetings );
-greeter.emit( 'hello', 'Aaron' );
-// Hello, Aaron!
-```
-
-```javascript
-var greeter = new Emitter();
-greeter.once( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
-greeter.emit( 'hello', 'Jeff' );
-greeter.emit( 'hello', 'Terry' );
-// Hello, Jeff!
-```
-
-```javascript
-var greeter = new Emitter();
-greeter.many( 'hello', 2, ( name ) => console.log( `Hello, ${ name }!` ) );
-greeter.emit( 'hello', 'Jeff' );     // 1
-greeter.emit( 'hello', 'Terry' );    // 2
-greeter.emit( 'hello', 'Steve' );    // 3
-// Hello, Jeff!
-// Hello, Terry!
-```
