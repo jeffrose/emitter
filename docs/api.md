@@ -10,6 +10,8 @@
 
 ### Emitter.listenerCount
 
+Return the number of listeners for the given event.
+
 ####`Emitter.listenerCount()`
 
 ### Emitter.prototype.clear
@@ -18,7 +20,34 @@ Remove all listeners or those for the specified event `type`.
 
 ####`Emitter.prototype.clear()`
 
+```javascript
+var greeter = new Emitter();
+greeter.on( 'hello', () => console.log( 'Hello!' ) );
+greeter.on( 'hi', () => console.log( 'Hi!' ) );
+greeter.emit( 'hello' );    // true
+// Hello!
+greeter.emit( 'hi' );       // true
+// Hi!
+greeter.clear();
+greeter.emit( 'hello' );    // false
+greeter.emit( 'hi' );       // false
+```
+
 ####`Emitter.prototype.clear( type )`
+
+```javascript
+var greeter = new Emitter();
+greeter.on( 'hello', () => console.log( 'Hello!' ) );
+greeter.on( 'hi', () => console.log( 'Hi!' ) );
+greeter.emit( 'hello' );    // true
+// Hello!
+greeter.emit( 'hi' );       // true
+// Hi!
+greeter.clear( 'hello' );
+greeter.emit( 'hello' );    // false
+greeter.emit( 'hi' );       // true
+// Hi!
+```
 
 ### Emitter.prototype.destroy
 
@@ -29,7 +58,7 @@ Destroys the emitter.
 ```javascript
 var greeter = new Emitter();
 greeter.on( 'hello', () => console.log( 'Hello!' ) );
-greeter.emit( 'hello' ); // true
+greeter.emit( 'hello' );    // true
 // Hello!
 greeter.destroy();
 greeter.emit( 'hello' );
@@ -46,9 +75,9 @@ Returns `true` if the event had listeners, `false` otherwise.
 ```javascript
 var greeter = new Emitter();
 greeter.on( 'hello', () => console.log( 'Hello!' ) );
-greeter.emit( 'hello' ); // true
+greeter.emit( 'hello' );    // true
 // Hello!
-greeter.emit( 'goodbye' ); // false
+greeter.emit( 'goodbye' );  // false
 ```
 
 ####`Emitter.prototype.emit( type, ...data ) -> Boolean`
@@ -82,7 +111,7 @@ greeter.emit( 'greeting:hello', 'Jeff' );
 
 ### Emitter.prototype.emitEvent
 
-Execute the listeners for the given event `type` with the supplied `data`. This does not support namespaced events.
+Execute the listeners for the given event `type` with the supplied `data`. This a lower-level function and does not support namespaced events.
 
 ####`Emitter.prototype.emitEvent( type, data ) -> Boolean`
 
@@ -138,6 +167,8 @@ greeter.emit( 'hello', 'Steve' );   // 3
 
 ### Emitter.prototype.maxListeners
 
+Returns or sets the maximum number of listeners. Emitter will a warning event if more than 10 listeners are added for a particular event.
+
 ####`Emitter.prototype.maxListeners() -> Number`
 
 ####`Emitter.prototype.maxListeners( max ) -> Emitter`
@@ -155,10 +186,10 @@ function hello( name ){
 
 var greeter = new Emitter();
 greeter.on( 'hello', hello );
-greeter.emit( 'hello', 'Jeff' ); // true
+greeter.emit( 'hello', 'Jeff' );    // true
 // Hello, Jeff!
 greeter.off( 'hello', hello );
-greeter.emit( 'hello', 'Jeff' ); // false
+greeter.emit( 'hello', 'Jeff' );    // false
 ```
 
 ### Emitter.prototype.on
@@ -178,9 +209,9 @@ Adds a *one time* listener for the specified event `type`. If no `type` is given
 ```javascript
 var greeter = new Emitter();
 greeter.once( () => console.log( 'Greeted' ) );
-greeter.emit( 'hello' ); // true
+greeter.emit( 'hello' );    // true
 // Greeted
-greeter.emit( 'goodbye' ); // false
+greeter.emit( 'goodbye' );  // false
 ```
 
 ####`Emitter.prototype.once( type, listener ) -> Emitter`
@@ -188,7 +219,7 @@ greeter.emit( 'goodbye' ); // false
 ```javascript
 var greeter = new Emitter();
 greeter.once( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
-greeter.emit( 'hello', 'World' ); // true
+greeter.emit( 'hello', 'World' );   // true
 // Hello, World!
-greeter.emit( 'hello', 'World' ); // false
+greeter.emit( 'hello', 'World' );   // false
 ```
