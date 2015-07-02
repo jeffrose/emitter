@@ -5,6 +5,12 @@ const
     every = Symbol( '@@every' ),
     maxListeners = Symbol( '@@maxListeners' );
 
+function defineEvents( emitter ){
+    if( !emitter[ events ] || emitter[ events ] === Object.getPrototypeOf( emitter )[ events ] ){
+        emitter[ events ] = Object.create( null );
+    }
+}
+
 function executeListener( listener, data = [], scope = this ){
     if( typeof listener === 'function' ){
         switch( data.length ){
@@ -80,7 +86,7 @@ function executeListener( listener, data = [], scope = this ){
  * // Hello, Terry!
  */
 export default function Emitter( bindings ){
-    this.defineEvents();
+    defineEvents( this );
     
     this[ maxListeners ] = this[ maxListeners ] || undefined;
     
@@ -181,12 +187,6 @@ Emitter.prototype.clear = function( type ){
     return this;
 };
 
-Emitter.prototype.defineEvents = function(){
-    if( !this[ events ] || this[ events ] === Object.getPrototypeOf( this )[ events ] ){
-        this[ events ] = Object.create( null );
-    }
-};
-
 Emitter.prototype.destroy = function(){
     this.emit( ':destroy' );
     this.clear();
@@ -221,7 +221,7 @@ Emitter.prototype.emitEvent = function( type, data = [] ){
     var executed = false,
         listener;
     
-    this.defineEvents();
+    defineEvents( this );
     
     if( type === 'error' && !this[ events ].error ){
         var error = data[ 0 ];
@@ -388,7 +388,7 @@ Emitter.prototype.on = function( type = every, listener ){
         throw new TypeError( 'listener must be a function' );
     }
     
-    this.defineEvents();
+    defineEvents( this );
     
     if( this[ events ][ ':on' ] ){
         this.emit( ':on', type, typeof listener.listener === 'function' ? listener.listener : listener );
