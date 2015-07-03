@@ -1,6 +1,6 @@
 # Emitter API
 
-## Methods and Properties
+## Class
 
 ### Emitter
 
@@ -29,6 +29,8 @@ var greetings = {
 greeter.emit( 'hello' );
 // Hello!
 ```
+
+## Methods and Properties
 
 ### Emitter.defaultMaxListeners
 
@@ -299,6 +301,42 @@ greeter.emit( 'hello', 'World' );
 ## Events
 
 The emitter emits internal events that provide information about its lifecycle. By convention these event types start with a `:`.
+
+```javascript
+var greeter = new Emitter();
+
+greeter.maxListeners = 1;
+
+greeter.on( ':maxListeners', ( greeting ) => console.log( `Greeting "${ greeting }" has one too many!` ) );
+greeter.on( ':on', ( greeting ) => console.log( `Greeting "${ greeting }" has a new listener.` ) );
+greeter.on( ':off', ( greeting ) => console.log( `Greeting "${ greeting }" has one less listener.` ) );
+greeter.on( ':destroy', () => console.log( 'Greeter destroyed' ) );
+
+greeter.on( 'hello', () => console.log( 'Hello!' ) );
+// Greeting "hello" has a new listener.
+greeter.on( 'hi', () => console.log( 'Hi!' ) );
+// Greeting "hi" has a new listener.
+greeter.on( 'yo', () => console.log( 'Yo!' ) );
+// Greeting "yo" has a new listener.
+
+var hello = function(){
+    alert( 'Hello!' );
+};
+
+greeter.on( 'hello', hello );
+// Greeting "hello" has a new listener.
+// Greeting "hello" has one too many!
+greeter.off( 'hello', hello );
+// Greeting "hello" has one less listener.
+
+greeter.clear( 'yo' );
+// Greeting "yo" has one less listener.
+
+greeter.destroy();
+// Greeter destroyed
+// Greeting "hello" has one less listener.
+// Greeting "hi" has one less listener.
+```
 
 ###`:destroy`
 
