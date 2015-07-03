@@ -2,6 +2,8 @@
 
 ### Emitter.defaultMaxListeners
 
+Sets the default maximum number of listeners for all emitters. Use `emitter.maxListeners` to set the maximum on a per-instance basis.
+
 ####`Emitter.defaultMaxListeners`
 
 ### Emitter.every
@@ -12,7 +14,16 @@
 
 Return the number of listeners for the given event.
 
-####`Emitter.listenerCount()`
+####`Emitter.listenerCount( emitter, type ) -> Number`
+
+```javascript
+var greeter = new Emitter();
+greeter.on( 'hello', () => console.log( 'Hello!' ) );
+console.log( Emitter.listenerCount( greeter, 'hello' ) );
+// 1
+console.log( Emitter.listenerCount( greeter, 'goodbye' ) );
+// 0
+```
 
 ### Emitter.prototype.clear
 
@@ -171,8 +182,6 @@ The maximum number of listeners. Emitter will a warning event if more than 10 li
 
 ####`Emitter.prototype.maxListeners`
 
-
-
 ### Emitter.prototype.off
 
 Removes the `listener` for the specified event `type`.
@@ -197,6 +206,15 @@ greeter.emit( 'hello', 'Jeff' );    // false
 Adds a listeners for the specified event `type`. If no `type` is given, the listener will be triggered for events of any `type`.
 
 ####`Emitter.prototype.on( listener ) -> Emitter`
+
+```javascript
+var greeter = new Emitter();
+greeter.on( () => console.log( 'Greeted' ) );
+greeter.emit( 'hello' );    // true
+// Greeted
+greeter.emit( 'goodbye' );  // true
+// Greeted
+```
 
 ####`Emitter.prototype.on( type, listener ) -> Emitter`
 

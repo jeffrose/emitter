@@ -107,11 +107,11 @@ export default function Emitter( bindings ){
         enumerable: false
     } );
     
+    this.emit( ':construct' );
+    
     if( typeof bindings === 'object' ){
         this.on( bindings );
     }
-    
-    this.emit( ':construct' );
 }
 
 Emitter.listenerCount = function( emitter, type ){
@@ -137,13 +137,13 @@ Object.defineProperties( Emitter, {
     defaultMaxListeners: {
         value: 10,
         configurable: true,
-        enumerable: true,
+        enumerable: false,
         writable: true
     },
     every: {
         value: every,
-        configurable: false,
-        enumerable: true,
+        configurable: true,
+        enumerable: false,
         writable: false
     }
 } );
@@ -209,6 +209,8 @@ Emitter.prototype.destroy = function(){
     this.clear();
     delete this[ events ];
     delete this[ maxListeners ];
+    delete this.maxListeners;
+    this.clear = this.destroy = this.emit = this.emitEvent = this.listeners = this.many = this.off = this.on = this.once = function(){};
 };
 
 Emitter.prototype.emit = function( type, ...data ){

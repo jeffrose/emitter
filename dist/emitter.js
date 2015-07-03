@@ -90,11 +90,28 @@ export default function Emitter( bindings ){
     
     this[ maxListeners ] = this[ maxListeners ] || undefined;
     
+    Object.defineProperty( this, 'maxListeners', {
+        get: function(){
+            return typeof this[ maxListeners ] !== 'undefined' ?
+                this[ maxListeners ] :
+                Emitter.defaultMaxListeners;
+        },
+        set: function( max ){
+            if( typeof max !== 'number' || max < 0 || isNaN( max ) ){
+                throw TypeError( 'max must be a positive number' );
+            }
+            
+            this[ maxListeners ] = max;
+        },
+        configurable: true,
+        enumerable: false
+    } );
+    
+    this.emit( ':construct' );
+    
     if( typeof bindings === 'object' ){
         this.on( bindings );
     }
-    
-    this.emit( ':construct' );
 }
 
 Emitter.listenerCount = function( emitter, type ){
@@ -120,13 +137,13 @@ Object.defineProperties( Emitter, {
     defaultMaxListeners: {
         value: 10,
         configurable: true,
-        enumerable: true,
+        enumerable: false,
         writable: true
     },
     every: {
         value: every,
-        configurable: false,
-        enumerable: true,
+        configurable: true,
+        enumerable: false,
         writable: false
     }
 } );
@@ -192,6 +209,8 @@ Emitter.prototype.destroy = function(){
     this.clear();
     delete this[ events ];
     delete this[ maxListeners ];
+    delete this.maxListeners;
+    this.clear = this.destroy = this.emit = this.emitEvent = this.listeners = this.many = this.off = this.on = this.once = function(){};
 };
 
 Emitter.prototype.emit = function( type, ...data ){
@@ -296,23 +315,6 @@ Emitter.prototype.many = function( type = every, times, listener ){
     return this;
 };
 
-Emitter.prototype.maxListeners = function( max ){
-    // Setter
-    if( arguments.length ){
-        if( typeof max !== 'number' || max < 0 || isNaN( max ) ){
-            throw TypeError( 'max must be a positive number' );
-        }
-        
-        this[ maxListeners ] = max;
-        
-        return this;
-    
-    // Getter
-    } else {
-        return this[ maxListeners ];
-    }
-};
-
 Emitter.prototype.off = function( type = every, listener ){
     var handler, index;
     
@@ -408,9 +410,7 @@ Emitter.prototype.on = function( type = every, listener ){
     }
     
     if( Array.isArray( this[ events ][ type ] ) && !this[ events ][ type ].warned ){
-        var max = typeof this[ maxListeners ] !== 'undefined' ?
-                this[ maxListeners ] :
-                Emitter.defaultMaxListeners;
+        var max = this.maxListeners;
         
         if( max && max > 0 && this[ events ][ type ].length > max ){
             this.emit( ':maxListeners', type, listener );

@@ -1,22 +1,28 @@
 (function (global, factory) {
     if (typeof define === 'function' && define.amd) {
-        define(['exports', 'module', 'babel-runtime/core-js/symbol', 'babel-runtime/core-js/object/define-properties', 'babel-runtime/core-js/object/create', 'babel-runtime/core-js/symbol/to-string-tag'], factory);
+        define(['exports', 'module', 'babel-runtime/core-js/symbol', 'babel-runtime/core-js/object/create', 'babel-runtime/core-js/object/define-properties', 'babel-runtime/core-js/symbol/to-string-tag'], factory);
     } else if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
-        factory(exports, module, require('babel-runtime/core-js/symbol'), require('babel-runtime/core-js/object/define-properties'), require('babel-runtime/core-js/object/create'), require('babel-runtime/core-js/symbol/to-string-tag'));
+        factory(exports, module, require('babel-runtime/core-js/symbol'), require('babel-runtime/core-js/object/create'), require('babel-runtime/core-js/object/define-properties'), require('babel-runtime/core-js/symbol/to-string-tag'));
     } else {
         var mod = {
             exports: {}
         };
-        factory(mod.exports, mod, global._Symbol, global._Object$defineProperties, global._Object$create, global._Symbol$toStringTag);
+        factory(mod.exports, mod, global._Symbol, global._Object$create, global._Object$defineProperties, global._Symbol$toStringTag);
         global.emitter = mod.exports;
     }
-})(this, function (exports, module, _babelRuntimeCoreJsSymbol, _babelRuntimeCoreJsObjectDefineProperties, _babelRuntimeCoreJsObjectCreate, _babelRuntimeCoreJsSymbolToStringTag) {
+})(this, function (exports, module, _babelRuntimeCoreJsSymbol, _babelRuntimeCoreJsObjectCreate, _babelRuntimeCoreJsObjectDefineProperties, _babelRuntimeCoreJsSymbolToStringTag) {
     'use strict';
 
     module.exports = Emitter;
     var events = (0, _babelRuntimeCoreJsSymbol['default'])('@@events'),
         every = (0, _babelRuntimeCoreJsSymbol['default'])('@@every'),
         maxListeners = (0, _babelRuntimeCoreJsSymbol['default'])('@@maxListeners');
+
+    function defineEvents(emitter) {
+        if (!emitter[events] || emitter[events] === Object.getPrototypeOf(emitter)[events]) {
+            emitter[events] = (0, _babelRuntimeCoreJsObjectCreate['default'])(null);
+        }
+    }
 
     function executeListener(listener) {
         var data = arguments[1] === undefined ? [] : arguments[1];
@@ -97,15 +103,30 @@
      */
 
     function Emitter(bindings) {
-        this.defineEvents();
+        defineEvents(this);
 
         this[maxListeners] = this[maxListeners] || undefined;
+
+        Object.defineProperty(this, 'maxListeners', {
+            get: function get() {
+                return typeof this[maxListeners] !== 'undefined' ? this[maxListeners] : Emitter.defaultMaxListeners;
+            },
+            set: function set(max) {
+                if (typeof max !== 'number' || max < 0 || isNaN(max)) {
+                    throw TypeError('max must be a positive number');
+                }
+
+                this[maxListeners] = max;
+            },
+            configurable: true,
+            enumerable: false
+        });
+
+        this.emit(':construct');
 
         if (typeof bindings === 'object') {
             this.on(bindings);
         }
-
-        this.emit(':construct');
     }
 
     Emitter.listenerCount = function (emitter, type) {
@@ -131,13 +152,13 @@
         defaultMaxListeners: {
             value: 10,
             configurable: true,
-            enumerable: true,
+            enumerable: false,
             writable: true
         },
         every: {
             value: every,
-            configurable: false,
-            enumerable: true,
+            configurable: true,
+            enumerable: false,
             writable: false
         }
     });
@@ -202,17 +223,13 @@
         return this;
     };
 
-    Emitter.prototype.defineEvents = function () {
-        if (!this[events] || this[events] === Object.getPrototypeOf(this)[events]) {
-            this[events] = (0, _babelRuntimeCoreJsObjectCreate['default'])(null);
-        }
-    };
-
     Emitter.prototype.destroy = function () {
         this.emit(':destroy');
         this.clear();
         delete this[events];
         delete this[maxListeners];
+        delete this.maxListeners;
+        this.clear = this.destroy = this.emit = this.emitEvent = this.listeners = this.many = this.off = this.on = this.once = function () {};
     };
 
     Emitter.prototype.emit = function (type) {
@@ -248,7 +265,7 @@
         var executed = false,
             listener;
 
-        this.defineEvents();
+        defineEvents(this);
 
         if (type === 'error' && !this[events].error) {
             var error = data[0];
@@ -323,23 +340,6 @@
         this.on(type, manyListener);
 
         return this;
-    };
-
-    Emitter.prototype.maxListeners = function (max) {
-        // Setter
-        if (arguments.length) {
-            if (typeof max !== 'number' || max < 0 || isNaN(max)) {
-                throw TypeError('max must be a positive number');
-            }
-
-            this[maxListeners] = max;
-
-            return this;
-
-            // Getter
-        } else {
-            return this[maxListeners];
-        }
     };
 
     Emitter.prototype.off = function (type, listener) {
@@ -421,7 +421,7 @@
             throw new TypeError('listener must be a function');
         }
 
-        this.defineEvents();
+        defineEvents(this);
 
         if (this[events][':on']) {
             this.emit(':on', type, typeof listener.listener === 'function' ? listener.listener : listener);
@@ -441,7 +441,7 @@
         }
 
         if (Array.isArray(this[events][type]) && !this[events][type].warned) {
-            var max = typeof this[maxListeners] !== 'undefined' ? this[maxListeners] : Emitter.defaultMaxListeners;
+            var max = this.maxListeners;
 
             if (max && max > 0 && this[events][type].length > max) {
                 this.emit(':maxListeners', type, listener);
