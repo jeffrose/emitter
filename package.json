@@ -1,5 +1,5 @@
 {
-    "name": "emitter-js",
+    "name": "event-emitter-js",
     "description": "A modern event emitter implementation.",
     "version": "1.0.0",
     "repository": "https://github.com/jeffrose/event-emitter.git",

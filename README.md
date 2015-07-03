@@ -1,4 +1,4 @@
-# emitter-js
+# Event Emitter
 
 > A modern event emitter implementation.
 

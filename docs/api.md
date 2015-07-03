@@ -1,5 +1,7 @@
 # emitter-js API
 
+## Methods and Properties
+
 ### Emitter.defaultMaxListeners
 
 Sets the default maximum number of listeners for all emitters. Use `emitter.maxListeners` to set the maximum on a per-instance basis.
@@ -241,3 +243,31 @@ greeter.emit( 'hello', 'World' );   // true
 // Hello, World!
 greeter.emit( 'hello', 'World' );   // false
 ```
+
+## Events
+
+###`:construct`
+
+This event is emitted _after_ an emitter has been constructed but _before_ any bindings have been added.
+
+###`:destroy`
+
+This event is emitted _before_ an emitter destroys itself.
+
+###`:maxListeners`
+* `type` The event type.
+* `listner` The event listener.
+
+This event is emitted once the maximum number of listeners has been exceeded for an event type.
+
+###`:off`
+* `type` The event type.
+* `listner` The event listener.
+
+This event is emitted _after_ a listener is removed.
+
+###`:on`
+* `type` The event type.
+* `listner` The event listener.
+
+This event is emitted _before_ a listener is added.

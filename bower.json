@@ -1,5 +1,5 @@
 {
-  "name": "emitter-js",
+  "name": "event-emitter-js",
   "main": [ "dist/emitter.js", "dist/emitter-umd.js" ],
   "version": "1.0.0",
   "homepage": "https://github.com/jeffrose/event-emitter",
