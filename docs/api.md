@@ -1,4 +1,4 @@
-# emitter-js API
+# Event Emitter API
 
 ## Methods and Properties
 
@@ -246,9 +246,7 @@ greeter.emit( 'hello', 'World' );   // false
 
 ## Events
 
-###`:construct`
-
-This event is emitted _after_ an emitter has been constructed but _before_ any bindings have been added.
+The emitter emits internal events that provide information about its lifecycle. By convention these event types start with a `:`.
 
 ###`:destroy`
 

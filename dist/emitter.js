@@ -107,8 +107,6 @@ export default function Emitter( bindings ){
         enumerable: false
     } );
     
-    this.emit( ':construct' );
-    
     if( typeof bindings === 'object' ){
         this.on( bindings );
     }
