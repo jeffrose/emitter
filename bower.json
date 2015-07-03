@@ -1,8 +1,8 @@
 {
-  "name": "event-emitter-js",
+  "name": "emitter-js",
   "main": [ "dist/emitter.js", "dist/emitter-umd.js" ],
   "version": "1.0.0",
-  "homepage": "https://github.com/jeffrose/event-emitter",
+  "homepage": "https://github.com/jeffrose/emitter",
   "authors": [
     "Jeff Rose <jeff_rose@outlook.com>"
   ],

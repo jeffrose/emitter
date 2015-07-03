@@ -1,6 +1,8 @@
-# Event Emitter
+# Emitter
 
 > A modern event emitter implementation.
+
+Emitter.js is an event emitter based on the [Node EventEmitter|https://nodejs.org/api/events.html] but utilizing many of the new features in [ECMAScript|http://www.ecmascript.org/] 6.
 
 ## Installation
 
