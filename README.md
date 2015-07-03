@@ -16,9 +16,9 @@
 
 `bower install emitter-js`
 
-## Learn More
+## Documentation
 
-* [API docs](docs/api.md)
+* [API](docs/api.md)
 
 ## Examples
 

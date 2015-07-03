@@ -1,15 +1,17 @@
 {
     "name": "emitter-js",
     "description": "A modern event emitter implementation.",
-    "version": "0.1.1",
+    "version": "1.0.0",
     "repository": "https://github.com/jeffrose/event-emitter.git",
     "homepage": "https://github.com/jeffrose/event-emitter",
     "bugs": "https://github.com/jeffrose/event-emitter/issues",
     "author": "Jeff Rose <jeff_rose@outlook.com> (http://github.com/jeffrose)",
     "license": "Apache-2.0",
     "keywords": [
+        "emitter",
         "eventemitter",
         "event",
+        "events",
         "es6"
     ],
     "main": "dist/emitter.js",

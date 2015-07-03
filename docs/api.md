@@ -167,11 +167,11 @@ greeter.emit( 'hello', 'Steve' );   // 3
 
 ### Emitter.prototype.maxListeners
 
-Returns or sets the maximum number of listeners. Emitter will a warning event if more than 10 listeners are added for a particular event.
+The maximum number of listeners. Emitter will a warning event if more than 10 listeners are added for a particular event.
 
-####`Emitter.prototype.maxListeners() -> Number`
+####`Emitter.prototype.maxListeners`
 
-####`Emitter.prototype.maxListeners( max ) -> Emitter`
+
 
 ### Emitter.prototype.off
 

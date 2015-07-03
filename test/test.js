@@ -46,7 +46,7 @@ describe( 'Emitter', function(){
             expect( emitter.off ).to.be.a( 'function' );
             expect( emitter.on ).to.be.a( 'function' );
             expect( emitter.once ).to.be.a( 'function' );
-            expect( emitter.maxListeners ).to.be.a( 'function' );
+            expect( emitter.maxListeners ).to.be.a( 'number' );
             expect( emitter.emitEvent ).to.be.a( 'function' );
         } );
 
@@ -80,8 +80,6 @@ describe( 'Emitter', function(){
             expect( events ).to.deep.equal( [ 'foo', 'foo', 'bar' ] );
             expect( listeners ).to.deep.equal( [ onFoo, onFooToo, onBar ] );
 
-            // For some reason this fails
-            //expect( emitter.listeners( 'foo ') ).to.deep.equal( [ onFoo, onFooToo ] );
             expect( emitter.listeners( 'foo' )[ 0 ] ).to.equal( onFoo );
             expect( emitter.listeners( 'foo' )[ 1 ] ).to.equal( onFooToo );
 
@@ -248,7 +246,7 @@ describe( 'Emitter', function(){
 
                 onMaxListeners = sinon.spy();
 
-            emitter.maxListeners( 2 );
+            emitter.maxListeners = 2;
 
             emitter.on( ':maxListeners', onMaxListeners );
 
