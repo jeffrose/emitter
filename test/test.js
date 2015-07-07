@@ -85,6 +85,39 @@ describe( 'Emitter', function(){
 
             expect( function(){ emitter.on( 'foo' ); } ).to.throw( TypeError );
         } );
+        
+        it( 'should provide event subscription at construction time', function(){
+            var events = [],
+                listeners = [],
+
+                onFoo = sinon.spy(),
+                onFooToo = sinon.spy(),
+                onBar = sinon.spy();
+            
+            emitter = new Emitter( {
+                ':on': function( event, listener ){
+                    events.push( event );
+                    listeners.push( listener );
+                },
+                'foo': [ onFoo, onFooToo ],
+                'bar': onBar
+            } );
+
+            emitter.emit( 'foo' );
+            emitter.emit( 'bar' );
+
+            expect( onFoo ).to.have.been.calledOnce;
+            expect( onFooToo ).to.have.been.calledOnce;
+            expect( onBar ).to.have.been.calledOnce;
+
+            expect( events ).to.deep.equal( [ 'foo', 'foo', 'bar' ] );
+            expect( listeners ).to.deep.equal( [ onFoo, onFooToo, onBar ] );
+
+            expect( emitter.listeners( 'foo' )[ 0 ] ).to.equal( onFoo );
+            expect( emitter.listeners( 'foo' )[ 1 ] ).to.equal( onFooToo );
+
+            expect( function(){ emitter.on( 'foo' ); } ).to.throw( TypeError );
+        } );
 
         it( 'should emit events differently based on the number of arguments', function(){
             var test = Symbol( '@@test' ),
@@ -112,21 +145,32 @@ describe( 'Emitter', function(){
         } );
 
         it( 'should provide a way to unsubscribe', function(){
-            var events = [],
-                listeners = [],
+            var onEmit      = sinon.spy(),
+                onEmitToo   = sinon.spy(),
+                onOff       = sinon.spy();
 
-                onEmit = sinon.spy();
-
+            emitter.on( ':off', onOff );
+            
             emitter.on( 'test', onEmit );
+            emitter.on( 'test', onEmitToo );
 
             emitter.emit( 'test', 1, 2, 3 );
             emitter.off( 'test', onEmit );
             emitter.emit( 'test', 4, 5, 6 );
+            emitter.off( 'test', onEmitToo );
 
             expect( onEmit ).to.have.been.calledWith( 1, 2, 3 );
             expect( onEmit ).to.have.been.calledOnce;
-
+            
+            expect( onEmitToo ).to.have.been.calledWith( 1, 2, 3 );
+            expect( onEmitToo ).to.have.been.calledWith( 4, 5, 6 );
+            expect( onEmitToo ).to.have.been.calledTwice;
+            
             expect( function(){ emitter.off( 'test' ); } ).to.throw( TypeError );
+            
+            expect( onOff ).to.have.been.calledWith( 'test', onEmit );
+            expect( onOff ).to.have.been.calledWith( 'test', onEmitToo );
+            expect( onOff ).to.have.been.calledTwice;
         } );
 
         it( 'should provide one-time event subscription', function(){

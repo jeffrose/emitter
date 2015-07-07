@@ -15,19 +15,56 @@ greeter.emit( 'hello' );
 // Hello!
 ```
 
+```javascript
+function Greeter(){
+    Emitter.call( this, {
+        greet: function( name ){
+            console.log( `Hello, ${ name }!` );
+        }
+    } );
+}
+
+Greeter.prototype = Object.create( Emitter.prototype );
+
+Greeter.prototype.greet = function( name ){
+    this.emit( 'greet', name );
+};
+
+var greeter = new Greeter();
+greeter.greet( 'Jeff' );
+// Hello, Jeff!
+```
+
 ####`new Emitter( bindings )`
 
 ```javascript
 var greetings = {
-        'hello': function(){
+        'greet': function(){
             console.log( 'Hello!' );
         }
     },
     
     greeter = new Emitter( greetings );
     
-greeter.emit( 'hello' );
+greeter.emit( 'greet' );
 // Hello!
+```
+
+```javascript
+var greetings = {
+        'greet': [
+            function(){ console.log( 'Hello!' ); },
+            function(){ console.log( 'Hi!' ); },
+            function(){ console.log( 'Yo!' ); }
+        ]
+    },
+    
+    greeter = new Emitter( greetings );
+    
+greeter.emit( 'greet' );
+// Hello!
+// Hi!
+// Yo!
 ```
 
 ## Methods and Properties
