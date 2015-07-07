@@ -308,34 +308,34 @@ var greeter = new Emitter();
 greeter.maxListeners = 1;
 
 greeter.on( ':maxListeners', ( greeting ) => console.log( `Greeting "${ greeting }" has one too many!` ) );
-greeter.on( ':on', ( greeting ) => console.log( `Greeting "${ greeting }" has a new listener.` ) );
-greeter.on( ':off', ( greeting ) => console.log( `Greeting "${ greeting }" has one less listener.` ) );
+greeter.on( ':on', ( greeting ) => console.log( `Greeting "${ greeting }" has more listeners.` ) );
+greeter.on( ':off', ( greeting ) => console.log( `Greeting "${ greeting }" has fewer listeners.` ) );
 greeter.on( ':destroy', () => console.log( 'Greeter destroyed' ) );
 
 greeter.on( 'hello', () => console.log( 'Hello!' ) );
-// Greeting "hello" has a new listener.
+// Greeting "hello" has more listeners.
 greeter.on( 'hi', () => console.log( 'Hi!' ) );
-// Greeting "hi" has a new listener.
+// Greeting "hi" has more listeners.
 greeter.on( 'yo', () => console.log( 'Yo!' ) );
-// Greeting "yo" has a new listener.
+// Greeting "yo" has more listeners.
 
 var hello = function(){
     alert( 'Hello!' );
 };
 
 greeter.on( 'hello', hello );
-// Greeting "hello" has a new listener.
+// Greeting "hello" has more listeners.
 // Greeting "hello" has one too many!
 greeter.off( 'hello', hello );
-// Greeting "hello" has one less listener.
+// Greeting "hello" has fewer listeners.
 
 greeter.clear( 'yo' );
-// Greeting "yo" has one less listener.
+// Greeting "yo" has fewer listeners.
 
 greeter.destroy();
 // Greeter destroyed
-// Greeting "hello" has one less listener.
-// Greeting "hi" has one less listener.
+// Greeting "hello" has fewer listeners.
+// Greeting "hi" has fewer listeners.
 ```
 
 ###`:destroy`

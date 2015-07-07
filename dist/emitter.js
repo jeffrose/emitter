@@ -15,25 +15,25 @@ function executeListener( listener, data = [], scope = this ){
     if( typeof listener === 'function' ){
         switch( data.length ){
             case 0:
-                listener.call( scope );
-                break;
+                return listener.call( scope );
             case 1:
-                listener.call( scope, data[ 0 ] );
-                break;
+                return listener.call( scope, data[ 0 ] );
             case 2:
-                listener.call( scope, data[ 0 ], data[ 1 ] );
-                break;
+                return listener.call( scope, data[ 0 ], data[ 1 ] );
             default:
-                listener.apply( scope, data );
+                return listener.apply( scope, data );
         }
     } else if( Array.isArray( listener ) ){
-        let listeners;
+        let results = [],
+            listeners;
         
         listeners = listener.slice();
         
         for( let i = 0, length = listeners.length; i < length; i++ ){
-            listeners[ i ].apply( scope, data );
+            results.push( listeners[ i ].apply( scope, data ) );
         }
+        
+        return results;
     }
 }
 

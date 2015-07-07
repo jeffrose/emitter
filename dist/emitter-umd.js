@@ -31,25 +31,25 @@
         if (typeof listener === 'function') {
             switch (data.length) {
                 case 0:
-                    listener.call(scope);
-                    break;
+                    return listener.call(scope);
                 case 1:
-                    listener.call(scope, data[0]);
-                    break;
+                    return listener.call(scope, data[0]);
                 case 2:
-                    listener.call(scope, data[0], data[1]);
-                    break;
+                    return listener.call(scope, data[0], data[1]);
                 default:
-                    listener.apply(scope, data);
+                    return listener.apply(scope, data);
             }
         } else if (Array.isArray(listener)) {
-            var listeners = undefined;
+            var results = [],
+                listeners = undefined;
 
             listeners = listener.slice();
 
             for (var i = 0, _length = listeners.length; i < _length; i++) {
-                listeners[i].apply(scope, data);
+                results.push(listeners[i].apply(scope, data));
             }
+
+            return results;
         }
     }
 
