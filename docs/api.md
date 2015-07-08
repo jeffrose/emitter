@@ -279,6 +279,23 @@ The maximum number of listeners. Emitter will a warning event if more than 10 li
 
 Removes the `listener` for the specified event `type`.
 
+####`Emitter.prototype.off( listener ) -> Emitter`
+
+```javascript
+function greet( name ){
+    console.log( `Greetings, ${ name }!` );
+}
+
+var greeter = new Emitter();
+greeter.on( greet );
+greeter.emit( 'hello' 'Jeff' );
+// Greetings, Jeff!
+greeter.emit( 'hi' 'Jeff' );
+// Greetings, Jeff!
+greeter.off( greet );
+greeter.emit( 'yo', 'Jeff' );
+```
+
 ####`Emitter.prototype.off( type, listener ) -> Emitter`
 
 ```javascript
