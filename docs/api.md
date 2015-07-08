@@ -110,7 +110,7 @@ console.log( Emitter.listenerCount( greeter, 'goodbye' ) );
 
 ### Emitter.prototype.clear
 
-Remove all listeners or those for the specified event `type`.
+Remove all listeners, or those for the specified event `type`.
 
 ####`Emitter.prototype.clear()`
 
@@ -162,7 +162,9 @@ greeter.emit( 'hello' );
 
 ### Emitter.prototype.emit
 
-Execute the listeners for the given event `type` with the supplied arguments. The `type` can be namespaced using `:`.
+Execute the listeners for the specified event `type` with the supplied arguments.
+
+The `type` can be namespaced using `:`, which will result in multiple events being triggered in succession. Listeners can be associated with the fully namespaced `type` or a subset of the `type`.
 
 Returns `true` if the event had listeners, `false` otherwise.
 
@@ -197,6 +199,10 @@ var greeter = new Emitter();
 greeter.on( 'greeting:hello', ( name ) => console.log( `Hello, ${ name }!` ) );
 greeter.on( 'greeting:hi', ( name ) => console.log( `Hi, ${ name }!` ) );
 greeter.on( 'greeting', ( name ) => console.log( `${ name } was greeted.` );
+
+// This event will not be triggered by emitting "greeting:hello"
+greeter.on( 'hello', ( name ) => console.log( `Hello again, ${ name }` );
+
 greeter.emit( 'greeting:hi', 'Mark' );
 // Hi, Mark!
 // Mark was greeted.
@@ -207,7 +213,7 @@ greeter.emit( 'greeting:hello', 'Jeff' );
 
 ### Emitter.prototype.emitEvent
 
-Execute the listeners for the given event `type` with the supplied `data`. This a lower-level function and *does not support namespaced events*.
+Execute the listeners for the specified event `type` with the supplied `data`. This a lower-level function and *does not support namespaced events* like `emitter.emit()`.
 
 Returns `true` if the event had listeners, `false` otherwise.
 
@@ -254,7 +260,7 @@ console.log( greeter.listeners( 'hello' )[ 0 ] === hello );
 
 ### Emitter.prototype.many
 
-Add a *many time* listener for the supplied `type`. If no `type` is given, the listener will be triggered for events of any `type`.
+Adds a *many time* listener for the specified event `type`. If no `type` is given the listener will be triggered any event `type`. After the listener is invoked the specified number of `times`, it is removed.
 
 ####`Emitter.prototype.many( times, listener ) -> Emitter`
 
@@ -282,13 +288,26 @@ greeter.emit( 'hello', 'Steve' );   // 3
 
 ### Emitter.prototype.maxListeners
 
-The maximum number of listeners. Emitter will a warning event if more than 10 listeners are added for a particular event.
+By default Emitters will emit a `:maxListeners` event if more than *10* listeners are added for a particular event `type`. This property allows that to be changed. Set to *0* for unlimited.
 
 ####`Emitter.prototype.maxListeners`
 
+```javascript
+var greeter = new Emitter();
+
+greeter.maxListeners = 1;
+
+greeter.on( ':maxListeners', ( greeting ) => console.log( `Greeting "${ greeting }" has one too many!` ) );
+greeter.on( 'hello', () => console.log( 'Hello!' ) );
+greeter.on( 'hello', () => alert( 'Hello!' ) );
+// Greeting "hello" has one too many!
+```
+
 ### Emitter.prototype.off
 
-Removes the `listener` for the specified event `type`.
+Removes the `listener` for the specified event `type`. If no `type` is given it is assumed the `listener` is not associated with a specific `type`.
+
+If any single listener has been added multiple times for the specified `type`, then `emitter.off()` must be called multiple times to remove each instance.
 
 ####`Emitter.prototype.off( listener ) -> Emitter`
 
@@ -324,7 +343,7 @@ greeter.emit( 'hello', 'Jeff' );
 
 ### Emitter.prototype.on
 
-Adds a listeners for the specified event `type`. If no `type` is given, the listener will be triggered for events of any `type`.
+Adds a listeners for the specified event `type`. If no `type` is given the listener will be triggered any event `type`. No checks are made to see if the `listener` has already been added. Multiple calls passing the same combination `type` and `listener` will result in the `listener` being added multiple times.
 
 ####`Emitter.prototype.on( listener ) -> Emitter`
 
@@ -339,9 +358,17 @@ greeter.emit( 'goodbye' );
 
 ####`Emitter.prototype.on( type, listener ) -> Emitter`
 
+```javascript
+var greeter = new Emitter();
+greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.emit( 'hello', 'World' );
+// Hello, World!
+greeter.emit( 'hello', 'World' );
+```
+
 ### Emitter.prototype.once
 
-Adds a *one time* listener for the specified event `type`. If no `type` is given, the listener will be triggered for events of any `type`.
+Adds a *one time* listener for the specified event `type`. If no `type` is given the listener will be triggered any event `type`. After the listener is invoked, it is removed.
 
 ####`Emitter.prototype.once( listener ) -> Emitter`
 
@@ -365,7 +392,9 @@ greeter.emit( 'hello', 'World' );
 
 ## Events
 
-The emitter emits internal events that provide information about its lifecycle. By convention these event types start with a `:`.
+When an `Emitter` experiences an error, it typically emits an `error` event. If there is no listener for it, then an `Error` is thrown.
+
+Emitters emit certain events that provide information about its lifecycle. By convention these event types start with a `:`.
 
 ```javascript
 var greeter = new Emitter();
