@@ -76,6 +76,21 @@ Sets the default maximum number of listeners for all emitters. Use `emitter.maxL
 ```javascript
 console.log( Emitter.defaultMaxListeners );
 // 10
+
+var greeter1 = new Emitter(),
+    greeter2 = new Emitter();
+
+Emitter.defaultMaxListeners = 1;
+
+greeter1.on( ':maxListeners', ( greeting ) => console.log( `Greeting "${ greeting }" has one too many!` ) );
+greeter1.on( 'hello', () => console.log( 'Hello!' ) );
+greeter1.on( 'hello', () => alert( 'Hello!' ) );
+// Greeting "hello" has one too many!
+
+greeter2.on( ':maxListeners', ( greeting ) => console.log( `Greeting "${ greeting }" has one too many!` ) );
+greeter2.on( 'hi', () => console.log( 'Hi!' ) );
+greeter2.on( 'hi', () => alert( 'Hi!' ) );
+// Greeting "hi" has one too many!
 ```
 
 ### Emitter.every

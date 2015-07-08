@@ -22,7 +22,9 @@ Emitter.js is an event emitter based on the Node [EventEmitter](https://nodejs.o
 
 * [API](docs/api.md)
 
-## Examples
+## Simple Example
+
+Additional examples can be found in the [API](docs/api.md) docs and unit tests.
 
 ```javascript
 import Emitter from '../node_modules/emitter-js/dist/emitter';
