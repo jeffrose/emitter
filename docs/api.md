@@ -17,11 +17,9 @@ greeter.emit( 'hello' );
 
 ```javascript
 function Greeter(){
-    Emitter.call( this, {
-        greet: function( name ){
-            console.log( `Hello, ${ name }!` );
-        }
-    } );
+    Emitter.call( this );
+    
+    this.on( 'greet', ( name ) => console.log( `Hello, ${ name }!` ) );
 }
 
 Greeter.prototype = Object.create( Emitter.prototype );
@@ -53,9 +51,9 @@ greeter.emit( 'greet' );
 ```javascript
 var greetings = {
         'greet': [
-            function(){ console.log( 'Hello!' ); },
-            function(){ console.log( 'Hi!' ); },
-            function(){ console.log( 'Yo!' ); }
+            function(){ console.log( 'Hello!'   ); },
+            function(){ console.log( 'Hi!'      ); },
+            function(){ console.log( 'Yo!'      ); }
         ]
     },
     
@@ -82,7 +80,18 @@ console.log( Emitter.defaultMaxListeners );
 
 ### Emitter.every
 
+The symbol used to listen for events of any `type`. For _most_ methods, when no `type` is given this is the default.
+
 ####`Emitter.every`
+
+```javascript
+var greeter = new Emitter();
+greeter.on( Emitter.every, () => console.log( 'Greeted' ) );
+greeter.emit( 'hello' );
+// Greeted
+greeter.emit( 'goodbye' );
+// Greeted
+```
 
 ### Emitter.listenerCount
 
@@ -122,8 +131,10 @@ greeter.emit( 'hi' );
 
 ```javascript
 var greeter = new Emitter();
-greeter.on( 'hello', () => console.log( 'Hello!' ) );
-greeter.on( 'hi', () => console.log( 'Hi!' ) );
+greeter.on( {
+    'hello' : function(){ console.log( 'Hello!' ); },
+    'hi'    : function(){ console.log( 'Hi!' ); }
+} );
 greeter.emit( 'hello' );
 // Hello!
 greeter.emit( 'hi' );
@@ -398,18 +409,18 @@ This event is emitted _before_ an emitter destroys itself.
 
 ###`:maxListeners`
 * `type` The event type.
-* `listner` The event listener.
+* `listener` The event listener.
 
 This event is emitted once the maximum number of listeners has been exceeded for an event type.
 
 ###`:off`
 * `type` The event type.
-* `listner` The event listener.
+* `listener` The event listener.
 
 This event is emitted _after_ a listener is removed.
 
 ###`:on`
 * `type` The event type.
-* `listner` The event listener.
+* `listener` The event listener.
 
 This event is emitted _before_ a listener is added.
