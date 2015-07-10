@@ -42,7 +42,7 @@ greeter.emit( 'hello', 'World' );
 
 ### ECMAScript 5
 
-> :red circle: The ES5 version of Emitter.js requires a `Symbol` polyfill to run.
+:red_circle: The ES5 version of Emitter.js requires a `Symbol` polyfill to run.
 
 ```javascript
 var Emitter = require( 'emitter-js' ),
