@@ -376,8 +376,18 @@ Emitter.prototype.on = function( type = every, listener ){
         
         // Plain object of event bindings
         if( typeof type === 'object' && ( type.constructor === Object || typeof type.constructor === 'undefined' ) ){
+            let listeners;
+            
             for( let eventType in type ){
-                this.on( eventType, type[ eventType ] );
+                listeners = type[ eventType ];
+                
+                if( Array.isArray( listeners ) ){
+                    for( let i = 0, length = listeners.length; i < length; i++ ){
+                        this.on( eventType, listeners[ i ] );
+                    }   
+                } else {
+                    this.on( eventType, listeners );
+                }
             }
             
             return this;

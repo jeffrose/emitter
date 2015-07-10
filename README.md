@@ -22,9 +22,13 @@ Emitter.js is an event emitter based on the Node [EventEmitter](https://nodejs.o
 
 * [API](docs/api.md)
 
-## Simple Example
+## Usage
+
+Emitter.js provides both an ES5 and ES6 version as part of the distribution.
 
 Additional examples can be found in the [API](docs/api.md) docs and unit tests.
+
+### ECMAScript 6
 
 ```javascript
 import Emitter from '../node_modules/emitter-js/dist/emitter';
@@ -32,6 +36,22 @@ import Emitter from '../node_modules/emitter-js/dist/emitter';
 let greeter = new Emitter();
 
 greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.emit( 'hello', 'World' );
+// Hello, World!
+```
+
+### ECMAScript 5
+
+> :red circle: The ES5 version of Emitter.js requires a `Symbol` polyfill to run.
+
+```javascript
+var Emitter = require( 'emitter-js' ),
+
+    greeter = new Emitter();
+
+greeter.on( 'hello', function( name ){
+    console.log( 'Hello, ' + name + '!' ) );
+} );
 greeter.emit( 'hello', 'World' );
 // Hello, World!
 ```

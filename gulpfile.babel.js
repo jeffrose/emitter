@@ -12,8 +12,7 @@ gulp.task( 'dist', function(){
         .pipe( rename( 'emitter.js' ) )
         .pipe( gulp.dest( 'dist' ) )
         .pipe( babel( {
-            modules: 'umd',
-            optional: [ 'runtime' ]
+            modules: 'umd'
         } ) )
         .pipe( rename( 'emitter-umd.js' ) )
         .pipe( gulp.dest( 'dist' ) );

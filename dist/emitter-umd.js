@@ -1,26 +1,26 @@
 (function (global, factory) {
     if (typeof define === 'function' && define.amd) {
-        define(['exports', 'module', 'babel-runtime/core-js/symbol', 'babel-runtime/core-js/object/create', 'babel-runtime/core-js/object/define-properties', 'babel-runtime/core-js/symbol/to-string-tag'], factory);
+        define(['exports', 'module'], factory);
     } else if (typeof exports !== 'undefined' && typeof module !== 'undefined') {
-        factory(exports, module, require('babel-runtime/core-js/symbol'), require('babel-runtime/core-js/object/create'), require('babel-runtime/core-js/object/define-properties'), require('babel-runtime/core-js/symbol/to-string-tag'));
+        factory(exports, module);
     } else {
         var mod = {
             exports: {}
         };
-        factory(mod.exports, mod, global._Symbol, global._Object$create, global._Object$defineProperties, global._Symbol$toStringTag);
+        factory(mod.exports, mod);
         global.emitter = mod.exports;
     }
-})(this, function (exports, module, _babelRuntimeCoreJsSymbol, _babelRuntimeCoreJsObjectCreate, _babelRuntimeCoreJsObjectDefineProperties, _babelRuntimeCoreJsSymbolToStringTag) {
+})(this, function (exports, module) {
     'use strict';
 
     module.exports = Emitter;
-    var events = (0, _babelRuntimeCoreJsSymbol['default'])('@@events'),
-        every = (0, _babelRuntimeCoreJsSymbol['default'])('@@every'),
-        maxListeners = (0, _babelRuntimeCoreJsSymbol['default'])('@@maxListeners');
+    var events = Symbol('@@events'),
+        every = Symbol('@@every'),
+        maxListeners = Symbol('@@maxListeners');
 
     function defineEvents(emitter) {
         if (!emitter[events] || emitter[events] === Object.getPrototypeOf(emitter)[events]) {
-            emitter[events] = (0, _babelRuntimeCoreJsObjectCreate['default'])(null);
+            emitter[events] = Object.create(null);
         }
     }
 
@@ -146,7 +146,7 @@
         return count;
     };
 
-    (0, _babelRuntimeCoreJsObjectDefineProperties['default'])(Emitter, {
+    Object.defineProperties(Emitter, {
         defaultMaxListeners: {
             value: 10,
             configurable: true,
@@ -161,9 +161,9 @@
         }
     });
 
-    Emitter.prototype = (0, _babelRuntimeCoreJsObjectCreate['default'])(null);
+    Emitter.prototype = Object.create(null);
 
-    Emitter.prototype[_babelRuntimeCoreJsSymbolToStringTag['default']] = 'Emitter';
+    Emitter.prototype[Symbol.toStringTag] = 'Emitter';
 
     Emitter.prototype.constructor = Emitter;
 
@@ -180,7 +180,7 @@
         // With no "off" lifecycle listeners, clearing can be simplified
         if (!this[events][':off']) {
             if (arguments.length === 0) {
-                this[events] = (0, _babelRuntimeCoreJsObjectCreate['default'])(null);
+                this[events] = Object.create(null);
             } else if (this[events][type]) {
                 delete this[events][type];
             }
@@ -201,7 +201,7 @@
             // Manually clear "off" and lifecycle listeners
             this.clear(':off');
 
-            this[events] = (0, _babelRuntimeCoreJsObjectCreate['default'])(null);
+            this[events] = Object.create(null);
 
             return this;
         }
@@ -407,8 +407,18 @@
 
             // Plain object of event bindings
             if (typeof type === 'object' && (type.constructor === Object || typeof type.constructor === 'undefined')) {
+                var listeners = undefined;
+
                 for (var eventType in type) {
-                    this.on(eventType, type[eventType]);
+                    listeners = type[eventType];
+
+                    if (Array.isArray(listeners)) {
+                        for (var i = 0, _length2 = listeners.length; i < _length2; i++) {
+                            this.on(eventType, listeners[i]);
+                        }
+                    } else {
+                        this.on(eventType, listeners);
+                    }
                 }
 
                 return this;

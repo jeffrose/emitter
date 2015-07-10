@@ -14,7 +14,11 @@
         "events",
         "es6"
     ],
-    "main": "dist/emitter.js",
+    "main": "dist/emitter-umd.js",
+    "files": [
+        "docs",
+        "dist"
+    ],
     "dependencies": {},
     "devDependencies": {
         "babel-core": "5.6.15",
