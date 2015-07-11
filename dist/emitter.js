@@ -1,5 +1,9 @@
 'use strict';
 
+if( typeof Symbol !== 'function' ){
+    throw new Error( 'Emitter requires Symbol to run.' );
+}
+
 const
     events = Symbol( '@@events' ),
     every = Symbol( '@@every' ),

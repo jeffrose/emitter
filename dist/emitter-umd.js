@@ -14,6 +14,10 @@
     'use strict';
 
     module.exports = Emitter;
+    if (typeof Symbol !== 'function') {
+        throw new Error('Emitter requires Symbol to run.');
+    }
+
     var events = Symbol('@@events'),
         every = Symbol('@@every'),
         maxListeners = Symbol('@@maxListeners');
