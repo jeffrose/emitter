@@ -119,6 +119,32 @@ describe( 'Emitter', function(){
             expect( function(){ emitter.on( 'foo' ); } ).to.throw( TypeError );
         } );
 
+        it( 'should support namespaced event types', function(){
+             var onFoo = sinon.spy(),
+                onBar = sinon.spy(),
+                onQux = sinon.spy();
+
+            emitter.on( 'foo', onFoo );
+            emitter.on( 'foo:bar', onBar );
+            emitter.on( 'foo:bar:qux', onQux );
+            
+            emitter.emit( 'foo:bar:qux', 1, 2, 3 );
+            
+            expect( onFoo ).to.have.been.calledWith( 1, 2, 3 );
+            expect( onBar ).to.have.been.calledWith( 1, 2, 3 );
+            expect( onQux ).to.have.been.calledWith( 1, 2, 3 );
+            
+            emitter.emitEvent( 'foo:bar:qux', [ 4, 5, 6 ] );
+            
+            expect( onFoo ).to.have.been.calledWith( 4, 5, 6 );
+            expect( onBar ).to.have.been.calledWith( 4, 5, 6 );
+            expect( onQux ).to.have.been.calledWith( 4, 5, 6 );
+            
+            expect( onFoo ).to.have.been.calledTwice;
+            expect( onBar ).to.have.been.calledTwice;
+            expect( onQux ).to.have.been.calledTwice;
+        } );
+
         it( 'should emit events differently based on the number of arguments', function(){
             var test = Symbol( '@@test' ),
                 onEmit = sinon.spy();
@@ -224,7 +250,7 @@ describe( 'Emitter', function(){
             
             emitter.emit( 'qux' );
             
-            expect( onEmit ).to.have.callCount( 15 );
+            expect( onEmit ).to.have.callCount( 15 );   // = 15
         } );
 
         it( 'should emit events when listeners are added and removed', function(){

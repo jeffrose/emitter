@@ -221,6 +221,7 @@ greeter.on( 'hello', ( name ) => console.log( `Hello again, ${ name }` );
 greeter.emit( 'greeting:hi', 'Mark' );
 // Hi, Mark!
 // Mark was greeted.
+
 greeter.emit( 'greeting:hello', 'Jeff' );
 // Hello, Jeff!
 // Jeff was greeted.
@@ -228,7 +229,7 @@ greeter.emit( 'greeting:hello', 'Jeff' );
 
 ### Emitter.prototype.emitEvent
 
-Execute the listeners for the specified event `type` with the supplied `data`. This a lower-level function and *does not support namespaced events* like `emitter.emit()`.
+Execute the listeners for the specified event `type` with the supplied `data`.
 
 Returns `true` if the event had listeners, `false` otherwise.
 
@@ -246,10 +247,14 @@ var greeter = new Emitter();
 greeter.on( 'greeting:hello', ( name ) => console.log( `Hello, ${ name }!` ) );
 greeter.on( 'greeting:hi', ( name ) => console.log( `Hi, ${ name }!` ) );
 greeter.on( 'greeting', ( name ) => console.log( `${ name } was greeted.` );
+
 greeter.emitEvent( 'greeting:hi', [ 'Mark' ] );
 // Hi, Mark!
+// Mark was greeted.
+
 greeter.emitEvent( 'greeting:hello', [ 'Jeff' ] );
 // Hello, Jeff!
+// Jeff was greeted.
 ```
 
 ### Emitter.prototype.listeners

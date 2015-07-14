@@ -2,7 +2,7 @@
 
 > A modern event emitter implementation.
 
-Emitter.js is an event emitter based on the Node [EventEmitter](https://nodejs.org/api/events.html) but utilizing many of the new [features](https://github.com/lukehoban/es6features) in [ECMAScript](http://www.ecmascript.org/) 6.
+Emitter.js is an event emitter based on the nodejs [EventEmitter](https://nodejs.org/api/events.html) but utilizing many of the new [features](https://github.com/lukehoban/es6features) in [ECMAScript](http://www.ecmascript.org/) 6.
 
 ## Installation
 
@@ -20,13 +20,13 @@ Emitter.js is an event emitter based on the Node [EventEmitter](https://nodejs.o
 
 ## Documentation
 
-* [API](docs/api.md)
+* [API](docs/API.md)
 
 ## Usage
 
 Emitter.js provides both an ES5 and ES6 version as part of the distribution.
 
-Additional examples can be found in the [API](docs/api.md) docs and unit tests.
+Additional examples can be found in the [API](docs/API.md) docs and unit tests.
 
 ### ECMAScript 6
 

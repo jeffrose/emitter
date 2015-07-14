@@ -9,42 +9,187 @@ const
     every = Symbol( '@@every' ),
     maxListeners = Symbol( '@@maxListeners' );
 
-function defineEvents( emitter ){
-    if( !emitter[ events ] || emitter[ events ] === Object.getPrototypeOf( emitter )[ events ] ){
+function onEvent( emitter, type, listener ){
+    if( typeof listener !== 'function' ){
+        throw new TypeError( 'listener must be a function' );
+    }
+    
+    if( !emitter[ events ] ){
         emitter[ events ] = Object.create( null );
+    } else if( emitter[ events ][ ':on' ] ){
+        fireEvent( emitter, ':on', [ type, typeof listener.listener === 'function' ? listener.listener : listener ] );
+    }
+    
+    // Single listener
+    if( !emitter[ events ][ type ] ){
+        emitter[ events ][ type ] = listener;
+    
+    // Multiple listeners
+    } else if( Array.isArray( emitter[ events ][ type ] ) ){
+        emitter[ events ][ type ].push( listener );
+    
+    // Transition from single to multiple listeners
+    } else {
+        emitter[ events ][ type ] = [ emitter[ events ][ type ], listener ];
+    }
+    
+    if( !emitter[ events ][ type ].warned ){
+        var max = emitter.maxListeners;
+        
+        if( max && max > 0 && emitter[ events ][ type ].length > max ){
+            fireEvent( emitter, ':maxListeners', [ type, listener ] );
+            emitter[ events ][ type ].warned = true;
+        }
+    }
+}
+
+function cloneList( list, index ){
+    var copy = new Array( index );
+    
+    while( index-- ){
+        copy[ index ] = list[ index ];
+    }
+    
+    return copy;
+}
+
+function executeEmpty( handler, isFunction, emitter ){
+    if( isFunction ){
+        handler.call( emitter );
+    } else {
+        let length = handler.length,
+            listeners = cloneList( handler, length );
+        
+        for( let i = 0; i < length; i += 1 ){
+            listeners[ i ].call( emitter );
+        }
+    }
+}
+
+function executeOne( handler, isFunction, emitter, arg1 ){
+    if( isFunction ){
+        handler.call( emitter, arg1 );
+    } else {
+        let length = handler.length,
+            listeners = cloneList( handler, length );
+        
+        for( let i = 0; i < length; i += 1 ){
+            listeners[ i ].call( emitter, arg1 );
+        }
+    }
+}
+
+function executeTwo( handler, isFunction, emitter, arg1, arg2 ){
+    if( isFunction ){
+        handler.call( emitter, arg1, arg2 );
+    } else {
+        let length = handler.length,
+            listeners = cloneList( handler, length );
+        
+        for( let i = 0; i < length; i += 1 ){
+            listeners[ i ].call( emitter, arg1, arg2 );
+        }
+    }
+}
+
+function executeThree( handler, isFunction, emitter, arg1, arg2, arg3 ){
+    if( isFunction ){
+        handler.call( emitter, arg1, arg2, arg3 );
+    } else {
+        let length = handler.length,
+            listeners = cloneList( handler, length );
+        
+        for( let i = 0; i < length; i += 1 ){
+            listeners[ i ].call( emitter, arg1, arg2, arg3 );
+        }
+    }
+}
+
+function executeMany( handler, isFunction, emitter, args ){
+    if( isFunction ){
+        handler.apply( emitter, args );
+    } else {
+        let length = handler.length,
+            listeners = cloneList( handler, length );
+        
+        for( let i = 0; i < length; i += 1 ){
+            listeners[ i ].apply( emitter, args );
+        }
     }
 }
 
 function executeListener( listener, data = [], scope = this ){
-    if( typeof listener === 'function' ){
-        switch( data.length ){
-            case 0:
-                return listener.call( scope );
-            case 1:
-                return listener.call( scope, data[ 0 ] );
-            case 2:
-                return listener.call( scope, data[ 0 ], data[ 1 ] );
-            default:
-                return listener.apply( scope, data );
-        }
-    } else if( Array.isArray( listener ) ){
-        let results = [],
-            listeners;
-        
-        listeners = listener.slice();
-        
-        for( let i = 0, length = listeners.length; i < length; i++ ){
-            results.push( listeners[ i ].apply( scope, data ) );
-        }
-        
-        return results;
+    var isFunction = typeof listener === 'function';
+    
+    switch( data.length ){
+        case 0:
+            executeEmpty( listener, isFunction, scope );
+            break;
+        case 1:
+            executeOne( listener, isFunction, scope, data[ 0 ] );
+            break;
+        case 2:
+            executeTwo( listener, isFunction, scope, data[ 0 ], data[ 1 ] );
+            break;
+        case 3:
+            executeThree( listener, isFunction, scope, data[ 0 ], data[ 1 ], data[ 2 ] );
+            break;
+        default:
+            executeMany( listener, isFunction, scope, data );
+            break;
     }
+}
+
+function spliceList( list, index ){
+    for( var i = index, j = i + 1, length = list.length; j < length; i += 1, j += 1 ){
+        list[ i ] = list[ j ];
+    }
+    list.pop();
+}
+
+function fireEvent( emitter, type, data ){
+    var executed = false,
+        listener;
+    
+    if( !emitter[ events ] ){
+        emitter[ events ] = Object.create( null );
+    }
+    
+    if( type === 'error' && !emitter[ events ].error ){
+        var error = data[ 0 ];
+        
+        if( error instanceof Error ){
+            throw error;
+        } else {
+            throw Error( 'Uncaught, unspecified "error" event.' );
+        }
+        
+        return executed;
+    }
+    
+    // Execute listeners for the given type of event
+    listener = emitter[ events ][ type ];
+    if( typeof listener !== 'undefined' ){
+        executeListener( listener, data, emitter );
+        executed = true;
+    }
+    
+    // Execute listeners listening for all types of events
+    listener = emitter[ events ][ every ];
+    if( typeof listener !== 'undefined' ){
+        executeListener( listener, data, emitter );
+        executed = true;
+    }
+    
+    return executed;
 }
 
 /**
  * @class Emitter
  * @extends null
  * @param {Object} [bindings]
+ * @see {@link https://github.com/joyent/node/blob/master/lib/events.js}
+ * @see {@link https://github.com/nodejs/io.js/blob/master/lib/events.js}
  * @example
  * // Simple events
  * var greeter = new Emitter();
@@ -90,7 +235,9 @@ function executeListener( listener, data = [], scope = this ){
  * // Hello, Terry!
  */
 export default function Emitter( bindings ){
-    defineEvents( this );
+    if( !this[ events ] || this[ events ] === Object.getPrototypeOf( this )[ events ] ){
+        this[ events ] = Object.create( null );
+    }
     
     this[ maxListeners ] = this[ maxListeners ] || undefined;
     
@@ -164,7 +311,7 @@ Emitter.prototype.clear = function( type ){
         return this;
     }
     
-    // With no "off" lifecycle listeners, clearing can be simplified
+    // With no "off" listeners, clearing can be simplified
     if( !this[ events ][ ':off' ] ){
         if( arguments.length === 0 ){
             this[ events ] = Object.create( null );
@@ -176,7 +323,7 @@ Emitter.prototype.clear = function( type ){
     }
     
     if( arguments.length === 0 ){
-        // Clear all listeners except "off" and lifecycle
+        // Clear all listeners except "off"
         for( let eventType in this[ events ] ){
             if( eventType === ':off' ){
                 continue;
@@ -185,7 +332,7 @@ Emitter.prototype.clear = function( type ){
             this.clear( eventType );
         }
         
-        // Manually clear "off" and lifecycle listeners
+        // Manually clear "off"
         this.clear( ':off' );
         
         this[ events ] = Object.create( null );
@@ -207,7 +354,7 @@ Emitter.prototype.clear = function( type ){
 };
 
 Emitter.prototype.destroy = function(){
-    this.emit( ':destroy' );
+    fireEvent( this, ':destroy' );
     this.clear();
     delete this[ events ];
     delete this[ maxListeners ];
@@ -216,58 +363,36 @@ Emitter.prototype.destroy = function(){
 };
 
 Emitter.prototype.emit = function( type, ...data ){
-    var executed = false;
-    
-    // Namespaced event
-    if( typeof type === 'string' && type.indexOf( ':' ) !== -1 ){
-        let eventType = type;
-        
-        // e.g. Emit "foo:bar:qux", then "foo:bar", then "foo"
-        while( eventType.indexOf( ':' ) !== -1 ){
-            executed = this.emitEvent( eventType, data ) || executed;
-            eventType = eventType.substring( 0, eventType.lastIndexOf( ':' ) );
-        }
-        
-        executed = ( eventType && this.emitEvent( eventType, data ) ) || executed;
-        
-    // Single event
-    } else {
-        executed = this.emitEvent( type, data );
-    }
-    
-    return executed;
+    return this.emitEvent( type, data );
 };
 
 Emitter.prototype.emitEvent = function( type, data = [] ){
     var executed = false,
-        listener;
+        // If type is not a string, index will be false
+        index = typeof type === 'string' && type.lastIndexOf( ':' );
     
-    defineEvents( this );
-    
-    if( type === 'error' && !this[ events ].error ){
-        var error = data[ 0 ];
+    // Single event, e.g. "foo", ":bar", Symbol( "@@qux" )
+    if( typeof index !== 'number' || index === 0 || index === -1 ){
+        executed = fireEvent( this, type, data );
         
-        if( error instanceof Error ){
-            throw error;
-        } else {
-            throw Error( 'Uncaught, unspecified "error" event.' );
+    // Namespaced event, e.g. Emit "foo:bar:qux", then "foo:bar", then "foo"
+    } else {
+        let namespacedType = type;
+        
+        // Optimize under the assumption that most namespaces will only be one level deep, e.g. "foo:bar"
+        executed = fireEvent( this, namespacedType, data ) || executed;
+        namespacedType = namespacedType.substring( 0, index );
+        index = namespacedType.lastIndexOf( ':' );
+        
+        // Longer namespaces will fall into the loop, e.g. "foo:bar:qux"
+        while( index !== -1 ){
+            executed = ( namespacedType && fireEvent( this, namespacedType, data ) ) || executed;
+            namespacedType = namespacedType.substring( 0, index );
+            index = namespacedType.lastIndexOf( ':' );
         }
         
-        return executed;
-    }
-    
-    // Execute listeners for the given type of event
-    listener = this[ events ][ type ];
-    if( typeof listener !== 'undefined' ){
-        executeListener( listener, data, this );
-        executed = true;
-    }
-    
-    // Execute listeners listening for all types of events
-    listener = this[ events ][ every ];
-    if( typeof listener !== 'undefined' ){
-        executeListener( listener, data, this );
-        executed = true;
+        // Emit namespace root, e.g. "foo"
+        executed = ( namespacedType && fireEvent( this, namespacedType, data ) ) || executed;
     }
     
     return executed;
@@ -278,10 +403,16 @@ Emitter.prototype.listeners = function( type ){
     
     if( !this[ events ] || !this[ events ][ type ] ){
         listeners = [];
-    } else if( typeof this[ events ][ type ] === 'function' ){
-        listeners = [ this[ events ][ type ] ];
     } else {
-        listeners = this[ events ][ type ].slice();
+        let handler = this[ events ][ type ];
+        
+        if( typeof handler === 'undefined' ){
+            listeners = [];
+        } else if( typeof handler === 'function' ){
+            listeners = [ handler ];
+        } else {
+            listeners = cloneList( handler, handler.length );
+        }
     }
     
     return listeners;
@@ -312,13 +443,13 @@ Emitter.prototype.many = function( type = every, times, listener ){
     
     manyListener.listener = listener;
     
-    this.on( type, manyListener );
+    onEvent( this, type, manyListener );
     
     return this;
 };
 
 Emitter.prototype.off = function( type = every, listener ){
-    var handler, index;
+    var handler;
     
     // Shift arguments if type is not provided
     if( typeof type === 'function' && typeof listener === 'undefined' ){
@@ -335,35 +466,36 @@ Emitter.prototype.off = function( type = every, listener ){
     }
     
     handler = this[ events ][ type ];
-    index = -1;
     
     if( handler === listener || ( typeof handler.listener === 'function' && handler.listener === listener ) ){
         delete this[ events ][ type ];
         if( this[ events ][ ':off' ] ){
-            this.emit( ':off', type, listener );
+            fireEvent( this, ':off', [ type, listener ] );
         }
     } else if( Array.isArray( handler ) ){
+        let index = -1;
+        
         for( let i = handler.length; i-- > 0; ){
             if( handler[ i ] === listener || ( handler[ i ].listener && handler[ i ].listener === listener ) ){
                 index = i;
                 break;
             }
         }
-    }
     
-    if( index < 0 ){
-        return this;
-    }
-    
-    if( handler.length === 1 ){
-        handler.length = 0;
-        delete this[ events ][ type ];
-    } else {
-        handler.splice( index, 1 );
-    }
-    
-    if( this[ events ][ ':off' ] ){
-        this.emit( ':off', type, listener );
+        if( index < 0 ){
+            return this;
+        }
+        
+        if( handler.length === 1 ){
+            handler.length = 0;
+            delete this[ events ][ type ];
+        } else {
+            spliceList( handler, index );
+        }
+        
+        if( this[ events ][ ':off' ] ){
+            fireEvent( this, ':off', [ type, listener ] );
+        }
     }
     
     return this;
@@ -376,21 +508,20 @@ Emitter.prototype.on = function( type = every, listener ){
         if( typeof type === 'function' ){
             listener = type;
             type = every;
-        }
         
         // Plain object of event bindings
-        if( typeof type === 'object' && ( type.constructor === Object || typeof type.constructor === 'undefined' ) ){
+        } else if( typeof type === 'object' ){
             let listeners;
             
             for( let eventType in type ){
                 listeners = type[ eventType ];
                 
                 if( Array.isArray( listeners ) ){
-                    for( let i = 0, length = listeners.length; i < length; i++ ){
-                        this.on( eventType, listeners[ i ] );
+                    for( let i = 0, length = listeners.length; i < length; i += 1 ){
+                        onEvent( this, eventType, listeners[ i ] );
                     }   
                 } else {
-                    this.on( eventType, listeners );
+                    onEvent( this, eventType, listeners );
                 }
             }
             
@@ -398,37 +529,7 @@ Emitter.prototype.on = function( type = every, listener ){
         }
     }
     
-    if( typeof listener !== 'function' ){
-        throw new TypeError( 'listener must be a function' );
-    }
-    
-    defineEvents( this );
-    
-    if( this[ events ][ ':on' ] ){
-        this.emit( ':on', type, typeof listener.listener === 'function' ? listener.listener : listener );
-    }
-    
-    // Single listener
-    if( !this[ events ][ type ] ){
-        this[ events ][ type ] = listener;
-    
-    // Multiple listeners
-    } else if( Array.isArray( this[ events ][ type ] ) ){
-        this[ events ][ type ].push( listener );
-    
-    // Transition from single to multiple listeners
-    } else {
-        this[ events ][ type ] = [ this[ events ][ type ], listener ];
-    }
-    
-    if( Array.isArray( this[ events ][ type ] ) && !this[ events ][ type ].warned ){
-        var max = this.maxListeners;
-        
-        if( max && max > 0 && this[ events ][ type ].length > max ){
-            this.emit( ':maxListeners', type, listener );
-            this[ events ][ type ].warned = true;
-        }
-    }
+    onEvent( this, type, listener );
     
     return this;
 };
