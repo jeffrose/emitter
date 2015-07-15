@@ -17,7 +17,7 @@ function onEvent( emitter, type, listener ){
     if( !emitter[ events ] ){
         emitter[ events ] = Object.create( null );
     } else if( emitter[ events ][ ':on' ] ){
-        fireEvent( emitter, ':on', [ type, typeof listener.listener === 'function' ? listener.listener : listener ] );
+        emitEvent( emitter, ':on', [ type, typeof listener.listener === 'function' ? listener.listener : listener ] );
     }
     
     // Single listener
@@ -37,7 +37,7 @@ function onEvent( emitter, type, listener ){
         var max = emitter.maxListeners;
         
         if( max && max > 0 && emitter[ events ][ type ].length > max ){
-            fireEvent( emitter, ':maxListeners', [ type, listener ] );
+            emitEvent( emitter, ':maxListeners', [ type, listener ] );
             emitter[ events ][ type ].warned = true;
         }
     }
@@ -147,7 +147,7 @@ function spliceList( list, index ){
     list.pop();
 }
 
-function fireEvent( emitter, type, data ){
+function emitEvent( emitter, type, data ){
     var executed = false,
         listener;
     
@@ -354,7 +354,7 @@ Emitter.prototype.clear = function( type ){
 };
 
 Emitter.prototype.destroy = function(){
-    fireEvent( this, ':destroy' );
+    emitEvent( this, ':destroy' );
     this.clear();
     delete this[ events ];
     delete this[ maxListeners ];
@@ -373,26 +373,26 @@ Emitter.prototype.emitEvent = function( type, data = [] ){
     
     // Single event, e.g. "foo", ":bar", Symbol( "@@qux" )
     if( typeof index !== 'number' || index === 0 || index === -1 ){
-        executed = fireEvent( this, type, data );
+        executed = emitEvent( this, type, data );
         
     // Namespaced event, e.g. Emit "foo:bar:qux", then "foo:bar", then "foo"
     } else {
         let namespacedType = type;
         
         // Optimize under the assumption that most namespaces will only be one level deep, e.g. "foo:bar"
-        executed = fireEvent( this, namespacedType, data ) || executed;
+        executed = emitEvent( this, namespacedType, data ) || executed;
         namespacedType = namespacedType.substring( 0, index );
         index = namespacedType.lastIndexOf( ':' );
         
         // Longer namespaces will fall into the loop, e.g. "foo:bar:qux"
         while( index !== -1 ){
-            executed = ( namespacedType && fireEvent( this, namespacedType, data ) ) || executed;
+            executed = ( namespacedType && emitEvent( this, namespacedType, data ) ) || executed;
             namespacedType = namespacedType.substring( 0, index );
             index = namespacedType.lastIndexOf( ':' );
         }
         
         // Emit namespace root, e.g. "foo"
-        executed = ( namespacedType && fireEvent( this, namespacedType, data ) ) || executed;
+        executed = ( namespacedType && emitEvent( this, namespacedType, data ) ) || executed;
     }
     
     return executed;
@@ -470,7 +470,7 @@ Emitter.prototype.off = function( type = every, listener ){
     if( handler === listener || ( typeof handler.listener === 'function' && handler.listener === listener ) ){
         delete this[ events ][ type ];
         if( this[ events ][ ':off' ] ){
-            fireEvent( this, ':off', [ type, listener ] );
+            emitEvent( this, ':off', [ type, listener ] );
         }
     } else if( Array.isArray( handler ) ){
         let index = -1;
@@ -494,7 +494,7 @@ Emitter.prototype.off = function( type = every, listener ){
         }
         
         if( this[ events ][ ':off' ] ){
-            fireEvent( this, ':off', [ type, listener ] );
+            emitEvent( this, ':off', [ type, listener ] );
         }
     }
     
@@ -511,17 +511,21 @@ Emitter.prototype.on = function( type = every, listener ){
         
         // Plain object of event bindings
         } else if( typeof type === 'object' ){
-            let listeners;
+            let bindings = type,
+                types = Object.keys( bindings ),
             
-            for( let eventType in type ){
-                listeners = type[ eventType ];
+                handler;
+            
+            for( let i = 0, j = types.length; i < j; i += 1 ){
+                type = types[ i ];
+                handler = bindings[ type ];
                 
-                if( Array.isArray( listeners ) ){
-                    for( let i = 0, length = listeners.length; i < length; i += 1 ){
-                        onEvent( this, eventType, listeners[ i ] );
+                if( Array.isArray( handler ) ){
+                    for( let k = 0, l = handler.length; k < l; k += 1 ){
+                        onEvent( this, type, handler[ k ] );
                     }   
                 } else {
-                    onEvent( this, eventType, listeners );
+                    onEvent( this, type, handler );
                 }
             }
             
