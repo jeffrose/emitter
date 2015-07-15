@@ -227,18 +227,18 @@ greeter.emit( 'greeting:hello', 'Jeff' );
 // Jeff was greeted.
 ```
 
-### Emitter.prototype.emitEvent
+### Emitter.prototype.trigger
 
 Execute the listeners for the specified event `type` with the supplied `data`.
 
 Returns `true` if the event had listeners, `false` otherwise.
 
-####`Emitter.prototype.emitEvent( type, data ) -> Boolean`
+####`Emitter.prototype.trigger( type, data ) -> Boolean`
 
 ```javascript
 var greeter = new Emitter();
 greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
-greeter.emitEvent( 'hello', [ 'World' ] );
+greeter.trigger( 'hello', [ 'World' ] );
 // Hello, World!
 ```
 
@@ -248,11 +248,11 @@ greeter.on( 'greeting:hello', ( name ) => console.log( `Hello, ${ name }!` ) );
 greeter.on( 'greeting:hi', ( name ) => console.log( `Hi, ${ name }!` ) );
 greeter.on( 'greeting', ( name ) => console.log( `${ name } was greeted.` );
 
-greeter.emitEvent( 'greeting:hi', [ 'Mark' ] );
+greeter.trigger( 'greeting:hi', [ 'Mark' ] );
 // Hi, Mark!
 // Mark was greeted.
 
-greeter.emitEvent( 'greeting:hello', [ 'Jeff' ] );
+greeter.trigger( 'greeting:hello', [ 'Jeff' ] );
 // Hello, Jeff!
 // Jeff was greeted.
 ```

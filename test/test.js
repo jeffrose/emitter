@@ -47,7 +47,7 @@ describe( 'Emitter', function(){
             expect( emitter.on ).to.be.a( 'function' );
             expect( emitter.once ).to.be.a( 'function' );
             expect( emitter.maxListeners ).to.be.a( 'number' );
-            expect( emitter.emitEvent ).to.be.a( 'function' );
+            expect( emitter.trigger ).to.be.a( 'function' );
         } );
 
         it( 'should provide event subscription', function(){
@@ -134,7 +134,7 @@ describe( 'Emitter', function(){
             expect( onBar ).to.have.been.calledWith( 1, 2, 3 );
             expect( onQux ).to.have.been.calledWith( 1, 2, 3 );
             
-            emitter.emitEvent( 'foo:bar:qux', [ 4, 5, 6 ] );
+            emitter.trigger( 'foo:bar:qux', [ 4, 5, 6 ] );
             
             expect( onFoo ).to.have.been.calledWith( 4, 5, 6 );
             expect( onBar ).to.have.been.calledWith( 4, 5, 6 );
@@ -156,7 +156,7 @@ describe( 'Emitter', function(){
             emitter.emit( 'test', 0 );
             emitter.emit( 'test', 1, 2 );
             emitter.emit( 'test', 3, 4, 5 );
-            emitter.emitEvent( 'test', [  6, 7, 8, 9 ] );
+            emitter.trigger( 'test', [  6, 7, 8, 9 ] );
             emitter.emit( test );
 
             expect( onEmit ).to.have.been.calledWith();

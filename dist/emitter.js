@@ -9,6 +9,10 @@ const
     every = Symbol( '@@every' ),
     maxListeners = Symbol( '@@maxListeners' );
 
+// Many of these functions are broken out from the prototype for the sake of optimization. The functions on the protoytype
+// take a variable number of arguments and can be deoptimized as a result. These functions have a fixed number of arguments
+// and therefore do not get deoptimized.
+
 function onEvent( emitter, type, listener ){
     if( typeof listener !== 'function' ){
         throw new TypeError( 'listener must be a function' );
@@ -140,10 +144,12 @@ function executeListener( listener, data = [], scope = this ){
     }
 }
 
+// Faster than Array.prototype.splice
 function spliceList( list, index ){
     for( var i = index, j = i + 1, length = list.length; j < length; i += 1, j += 1 ){
         list[ i ] = list[ j ];
     }
+    
     list.pop();
 }
 
@@ -283,12 +289,15 @@ Emitter.listenerCount = function( emitter, type ){
 };
 
 Object.defineProperties( Emitter, {
+    // By default Emitter will emit a ":maxListeners" event if more than 10
+    // listeners are added to it.
     defaultMaxListeners: {
         value: 10,
         configurable: true,
         enumerable: false,
         writable: true
     },
+    // The event type used to listen to all types of events.
     every: {
         value: every,
         configurable: true,
@@ -322,14 +331,17 @@ Emitter.prototype.clear = function( type ){
         return this;
     }
     
+    // Clear all listeners
     if( arguments.length === 0 ){
-        // Clear all listeners except "off"
-        for( let eventType in this[ events ] ){
-            if( eventType === ':off' ){
+        let types = Object.keys( this[ events ] );
+        
+        // Avoid removing "off" listeners until all other types have been removed
+        for( let i = 0, length = types.length; i < length; i += 1 ){
+            if( types[ i ] === ':off' ){
                 continue;
             }
             
-            this.clear( eventType );
+            this.clear( types[ i ] );
         }
         
         // Manually clear "off"
@@ -345,7 +357,11 @@ Emitter.prototype.clear = function( type ){
     if( typeof handler === 'function' ){
         this.off( type, handler );
     } else if( Array.isArray( handler ) ){
-        handler.forEach( listener => this.off( type, listener ) );
+        let index = handler.length;
+        
+        while( index-- ){
+            this.off( type, handler[ index ] );
+        }
     }
     
     delete this[ events ][ type ];
@@ -359,14 +375,14 @@ Emitter.prototype.destroy = function(){
     delete this[ events ];
     delete this[ maxListeners ];
     delete this.maxListeners;
-    this.clear = this.destroy = this.emit = this.emitEvent = this.listeners = this.many = this.off = this.on = this.once = function(){};
+    this.clear = this.destroy = this.emit = this.trigger = this.listeners = this.many = this.off = this.on = this.once = function(){};
 };
 
 Emitter.prototype.emit = function( type, ...data ){
-    return this.emitEvent( type, data );
+    return this.trigger( type, data );
 };
 
-Emitter.prototype.emitEvent = function( type, data = [] ){
+Emitter.prototype.trigger = function( type, data = [] ){
     var executed = false,
         // If type is not a string, index will be false
         index = typeof type === 'string' && type.lastIndexOf( ':' );
