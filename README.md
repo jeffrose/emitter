@@ -55,3 +55,12 @@ greeter.on( 'hello', function( name ){
 greeter.emit( 'hello', 'World' );
 // Hello, World!
 ```
+
+## Differences from `EventEmitter`
+
+Emitter.js...
+
+* Lacks [domain](https://nodejs.org/api/domain.html) support.
+* Has a modern API with no backward compatibility aliases, e.g. `clear()` instead of `removeAllListeners()`.
+* Has modern lifecycle event types, e.g. `:off` instead of `removeListener`.
+* Does not use `console.log()`.
