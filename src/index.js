@@ -18,6 +18,7 @@ function onEvent( emitter, type, listener ){
         throw new TypeError( 'listener must be a function' );
     }
     
+    
     if( !emitter[ events ] ){
         emitter[ events ] = Object.create( null );
     } else if( emitter[ events ][ ':on' ] ){
@@ -167,7 +168,7 @@ function emitEvent( emitter, type, data ){
         if( error instanceof Error ){
             throw error;
         } else {
-            throw Error( 'Uncaught, unspecified "error" event.' );
+            throw new Error( 'Uncaught, unspecified "error" event.' );
         }
         
         return executed;
@@ -255,7 +256,7 @@ export default function Emitter( bindings ){
         },
         set: function( max ){
             if( typeof max !== 'number' || max < 0 || isNaN( max ) ){
-                throw TypeError( 'max must be a positive number' );
+                throw new TypeError( 'max must be a positive number' );
             }
             
             this[ maxListeners ] = max;
