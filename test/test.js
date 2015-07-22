@@ -34,7 +34,7 @@ describe( 'Emitter', function(){
         } );
         
         afterEach( function(){
-            emitter.clear();
+            emitter.destroy();
             emitter = undefined;
         } );
 
@@ -171,7 +171,8 @@ describe( 'Emitter', function(){
         } );
 
         it( 'should provide a way to unsubscribe', function(){
-            var onEmit      = sinon.spy(),
+            var onAll       = sinon.spy(),
+                onEmit      = sinon.spy(),
                 onEmitToo   = sinon.spy(),
                 onOff       = sinon.spy();
 
@@ -179,11 +180,17 @@ describe( 'Emitter', function(){
             
             emitter.on( 'test', onEmit );
             emitter.on( 'test', onEmitToo );
+            
+            emitter.on( onAll );
 
             emitter.emit( 'test', 1, 2, 3 );
             emitter.off( 'test', onEmit );
             emitter.emit( 'test', 4, 5, 6 );
             emitter.off( 'test', onEmitToo );
+            
+            emitter.off( onAll );
+            
+            emitter.off( 'undefined', onEmit );
 
             expect( onEmit ).to.have.been.calledWith( 1, 2, 3 );
             expect( onEmit ).to.have.been.calledOnce;
@@ -196,7 +203,7 @@ describe( 'Emitter', function(){
             
             expect( onOff ).to.have.been.calledWith( 'test', onEmit );
             expect( onOff ).to.have.been.calledWith( 'test', onEmitToo );
-            expect( onOff ).to.have.been.calledTwice;
+            expect( onOff ).to.have.been.calledThrice;
         } );
 
         it( 'should provide one-time event subscription', function(){

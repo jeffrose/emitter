@@ -4,7 +4,7 @@
 
 ### Emitter
 
-Creates an instance of emitter.
+Creates an instance of emitter. If `bindings` are provided they will automatically be passed into `on()` once construction is complete.
 
 ####`new Emitter()`
 
@@ -66,6 +66,52 @@ greeter.emit( 'greet' );
 ```
 
 ## Methods and Properties
+
+### Emitter.asEmitter
+
+A functional mixin that provides the Emitter.js API to its target. The `constructor()`, `destroy()` and static properties on `Emitter` are not provided. This mixin is used to populate the `prototype` of `Emitter`.
+
+Like all functional mixins, this should be executed with [call()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call) or [apply()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply).
+
+####`Emitter.asEmitter()`
+
+```javascript
+// Create a base object
+var greeter = Object.create( null );
+
+// Initialize the mixin
+Emitter.asEmitter.call( greeter );
+greeter.defineEvents();
+greeter.defineMaxListeners( 10 );
+
+greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.emit( 'hello', 'World' );
+// Hello, World!
+```
+
+```javascript
+var // Predefined events
+    greetings = {
+        hello: function( name ){ console.log( `Hello, ${name}!` ),
+        hi: function( name ){ console.log( `Hi, ${name}!` )
+    },
+
+    // Create a base object
+    greeter = Object.create( null );
+
+// Initialize the mixin
+Emitter.asEmitter.call( greeter );
+greeter.defineEvents( greetings );
+greeter.defineMaxListeners( 10 );
+
+greeter.emit( 'hello', 'Aaron' );
+// Hello, Aaron!
+```
+
+```javascript
+// NO!!!
+Emitter.asEmitter(); // Madness ensues
+```
 
 ### Emitter.defaultMaxListeners
 
@@ -160,6 +206,69 @@ greeter.emit( 'hi' );
 // Hi!
 ```
 
+### Emitter.prototype.defineEvents
+
+Defines the internal event registry if it does not exist. This is called within the `constructor()` and does not need to be called if using `Emitter` directly.
+
+When using `Emitter.asEmitter()`, this should be used to initialize the registry of the target object. If `bindings` are provided they will automatically be passed into `on()` once construction is complete.
+
+####`Emitter.prototype.defineEvents()`
+
+```javascript
+// Create a base object
+var greeter = Object.create( null );
+
+// Initialize the mixin
+Emitter.asEmitter.call( greeter );
+greeter.defineEvents();
+greeter.defineMaxListeners( 10 );
+
+greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.emit( 'hello', 'World' );
+// Hello, World!
+```
+
+```javascript
+var // Predefined events
+    greetings = {
+        hello: function( name ){ console.log( `Hello, ${name}!` ),
+        hi: function( name ){ console.log( `Hi, ${name}!` )
+    },
+
+    // Create a base object
+    greeter = Object.create( null );
+
+// Initialize the mixin
+Emitter.asEmitter.call( greeter );
+greeter.defineEvents( greetings );
+greeter.defineMaxListeners( 10 );
+
+greeter.emit( 'hello', 'Aaron' );
+// Hello, Aaron!
+```
+
+### Emitter.prototype.defineMaxListeners
+
+Defines the maximum listener managment API including the `maxListeners` property. This is called within the `constructor()` and does not need to be called if using `Emitter` directly.
+
+When using `Emitter.asEmitter()`, this should be used to initialize maximum listener management on the target object. If it is not called the number of listeners will not be tracked.
+
+####`Emitter.prototype.defineMaxListeners( defaultMaxListeners )`
+
+```javascript
+// Create a base object
+var greeter = Object.create( null );
+
+// Initialize the mixin
+Emitter.asEmitter.call( greeter );
+greeter.defineEvents();
+greeter.defineMaxListeners( 10 );
+
+greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.emit( 'hello', 'World' );
+// Hello, World!
+```
+
 ### Emitter.prototype.destroy
 
 Destroys the emitter.
@@ -173,6 +282,64 @@ greeter.emit( 'hello' );
 // Hello!
 greeter.destroy();
 greeter.emit( 'hello' );
+```
+
+### Emitter.prototype.destroyEvents
+
+Destroys the internal event registry if it exists. This is called within `destroy()` and does not need to be called if using `Emitter` directly.
+
+When using `Emitter.asEmitter()`, this should be used to clean up the registry of the target object.
+
+####`Emitter.prototype.destroyEvents()`
+
+```javascript
+// Create a base object
+var greeter = Object.create( null );
+
+// Initialize the mixin
+Emitter.asEmitter.call( greeter );
+greeter.defineEvents();
+greeter.defineMaxListeners( 10 );
+greeter.destroy = function(){
+    this.destroyEvents();
+    this.destroyMaxListeners();
+};
+
+greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.emit( 'hello', 'World' );
+// Hello, World!
+
+greeter.destroy();
+greeter.emit( 'hello', 'Jason' );
+```
+
+### Emitter.prototype.destroyMaxListeners
+
+Destroys the maximum listener managment API if it exists. This is called within `destroy()` and does not need to be called if using `Emitter` directly.
+
+When using `Emitter.asEmitter()`, this should be used to clean up the maximum listener managment of the target object.
+
+####`Emitter.prototype.destroyMaxListeners()`
+
+```javascript
+// Create a base object
+var greeter = Object.create( null );
+
+// Initialize the mixin
+Emitter.asEmitter.call( greeter );
+greeter.defineEvents();
+greeter.defineMaxListeners( 10 );
+greeter.destroy = function(){
+    this.destroyEvents();
+    this.destroyMaxListeners();
+};
+
+greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.emit( 'hello', 'World' );
+// Hello, World!
+
+greeter.destroy();
+greeter.emit( 'hello', 'Jason' );
 ```
 
 ### Emitter.prototype.emit

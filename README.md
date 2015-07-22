@@ -24,7 +24,7 @@ Emitter.js is an event emitter based on the nodejs [EventEmitter](https://nodejs
 
 ## Usage
 
-Emitter.js provides both an ES5 and ES6 version as part of the distribution.
+Emitter.js provides both an ES5 and ES6 version as part of the distribution. If `Symbol` is not available, either natively or through a polyfill, strings prefixed with `@@` will be used to store internal references.
 
 Additional examples can be found in the [API](docs/API.md) docs and unit tests.
 
@@ -41,8 +41,6 @@ greeter.emit( 'hello', 'World' );
 ```
 
 ### ECMAScript 5
-
-The ES5 version of Emitter.js requires a `Symbol` polyfill to run.
 
 ```javascript
 var Emitter = require( 'emitter-js' ),
