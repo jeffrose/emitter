@@ -208,7 +208,7 @@ greeter.emit( 'hi' );
 
 ### Emitter.prototype.defineEvents
 
-Defines the internal event registry if it does not exist. This is called within the `constructor()` and does not need to be called if using `Emitter` directly.
+Defines the internal event registry if it does not exist and creates `destroyEvents()`. This is called within the `constructor()` and does not need to be called if using `Emitter` directly.
 
 When using `Emitter.asEmitter()`, this should be used to initialize the registry of the target object. If `bindings` are provided they will automatically be passed into `on()` once construction is complete.
 
@@ -249,7 +249,7 @@ greeter.emit( 'hello', 'Aaron' );
 
 ### Emitter.prototype.defineMaxListeners
 
-Defines the maximum listener managment API including the `maxListeners` property. This is called within the `constructor()` and does not need to be called if using `Emitter` directly.
+Defines the maximum listener managment API including `destroyMaxListeners()` and the `maxListeners` property. This is called within the `constructor()` and does not need to be called if using `Emitter` directly.
 
 When using `Emitter.asEmitter()`, this should be used to initialize maximum listener management on the target object. If it is not called the number of listeners will not be tracked.
 
@@ -288,7 +288,7 @@ greeter.emit( 'hello' );
 
 Destroys the internal event registry if it exists. This is called within `destroy()` and does not need to be called if using `Emitter` directly.
 
-When using `Emitter.asEmitter()`, this should be used to clean up the registry of the target object.
+When using `Emitter.asEmitter()`, this should be used to clean up the registry of the target object. This function does not exist of `defineEvents()` was not called.
 
 ####`Emitter.prototype.destroyEvents()`
 
@@ -317,7 +317,7 @@ greeter.emit( 'hello', 'Jason' );
 
 Destroys the maximum listener managment API if it exists. This is called within `destroy()` and does not need to be called if using `Emitter` directly.
 
-When using `Emitter.asEmitter()`, this should be used to clean up the maximum listener managment of the target object.
+When using `Emitter.asEmitter()`, this should be used to clean up the maximum listener managment of the target object. This function does not exist if `defineMaxListeners()` was not called.
 
 ####`Emitter.prototype.destroyMaxListeners()`
 

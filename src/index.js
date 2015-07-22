@@ -15,6 +15,8 @@ const
             return description;
         },
     
+    noop = function(){},
+    
     events = Symbol( '@@events' ),
     every = Symbol( '@@every' ),
     maxListeners = Symbol( '@@maxListeners' );
@@ -331,6 +333,14 @@ function asEmitter(){
     this.defineEvents = function( bindings ){
         defineEvents( this );
         
+        this.destroyEvents = function(){
+            if( events in this ){
+                this.clear();
+                delete this[ events ];
+            }
+            this.defineEvents = this.destroyEvents = noop;
+        };
+        
         if( typeof bindings === 'object' ){
             this.on( bindings );
         }
@@ -359,20 +369,14 @@ function asEmitter(){
             configurable: true,
             enumerable: false
         } );
-    };
-    
-    this.destroyEvents = function(){
-        if( events in this ){
-            this.clear();
-            delete this[ events ];
-        }
-    };
-    
-    this.destroyMaxListeners = function(){
-        if( maxListeners in this ){
-            delete this.maxListeners;
-            delete this[ maxListeners ];
-        }
+        
+        this.destroyMaxListeners = function(){
+            if( maxListeners in this ){
+                delete this.maxListeners;
+                delete this[ maxListeners ];
+            }
+            this.defineMaxListeners = this.destroyMaxListeners = noop;
+        };
     };
     
     this.emit = function( type, ...data ){
@@ -676,5 +680,5 @@ Emitter.prototype.destroy = function(){
     emitEvent( this, ':destroy' );
     this.destroyEvents();
     this.destroyMaxListeners();
-    this.clear = this.defineEvents = this.defineMaxListeners = this.destroy = this.destroyEvents = this.destroyMaxListeners = this.emit = this.listeners = this.many = this.off = this.on = this.once = this.trigger = function(){};
+    this.clear = this.destroy = this.emit = this.listeners = this.many = this.off = this.on = this.once = this.trigger = noop;
 };

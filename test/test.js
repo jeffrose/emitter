@@ -16,6 +16,7 @@ describe( 'Emitter', function(){
     } );
 
     it( 'should have static functions and properties', function(){
+        expect( Emitter.asEmitter ).to.be.a( 'function' );
         expect( Emitter.listenerCount ).to.be.a( 'function' );
         expect( Emitter.defaultMaxListeners ).to.be.a( 'number' );
     } );
@@ -24,6 +25,34 @@ describe( 'Emitter', function(){
         var emitter = new Emitter();
         expect( typeof emitter ).to.equal( 'object' );
         expect( emitter ).to.be.an.instanceof( Emitter );
+    } );
+    
+    it( 'should mixin functionality', function(){
+        var emitter = Object.create( null );
+        
+        Emitter.asEmitter.call( emitter );
+        
+        expect( emitter.clear ).to.be.a( 'function' );
+        expect( emitter.defineEvents ).to.be.a( 'function' );
+        expect( emitter.defineMaxListeners ).to.be.a( 'function' );
+        expect( emitter.emit ).to.be.a( 'function' );
+        expect( emitter.listeners ).to.be.a( 'function' );
+        expect( emitter.many ).to.be.a( 'function' );
+        expect( emitter.off ).to.be.a( 'function' );
+        expect( emitter.on ).to.be.a( 'function' );
+        expect( emitter.once ).to.be.a( 'function' );
+        expect( emitter.trigger ).to.be.a( 'function' );
+    
+        emitter.defineEvents();
+        emitter.defineMaxListeners( 10 );
+        
+        expect( emitter.destroyEvents ).to.be.a( 'function' );
+        expect( emitter.destroyMaxListeners ).to.be.a( 'function' );
+        expect( emitter.maxListeners ).to.be.a( 'number' );
+        
+        emitter.destroyEvents();
+        emitter.destroyMaxListeners();
+        emitter = undefined;
     } );
 
     describe( 'Emitter', function(){
@@ -40,6 +69,11 @@ describe( 'Emitter', function(){
 
         it( 'should have functions and properties', function(){
             expect( emitter.clear ).to.be.a( 'function' );
+            expect( emitter.defineEvents ).to.be.a( 'function' );
+            expect( emitter.defineMaxListeners ).to.be.a( 'function' );
+            expect( emitter.destroy ).to.be.a( 'function' );
+            expect( emitter.destroyEvents ).to.be.a( 'function' );
+            expect( emitter.destroyMaxListeners ).to.be.a( 'function' );
             expect( emitter.emit ).to.be.a( 'function' );
             expect( emitter.listeners ).to.be.a( 'function' );
             expect( emitter.many ).to.be.a( 'function' );
