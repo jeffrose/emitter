@@ -228,6 +228,8 @@ greeter.emit( 'hello', 'World' );
 // Hello, World!
 ```
 
+####`Emitter.prototype.defineEvents( bindings )`
+
 ```javascript
 var // Predefined events
     greetings = {
