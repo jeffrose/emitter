@@ -290,7 +290,7 @@ greeter.emit( 'hello' );
 
 Destroys the internal event registry if it exists. This is called within `destroy()` and does not need to be called if using `Emitter` directly.
 
-When using `Emitter.asEmitter()`, this should be used to clean up the registry of the target object. This function does not exist of `defineEvents()` was not called.
+When using `Emitter.asEmitter()`, this should be used to clean up the registry of the target object. This function does not exist if `defineEvents()` was not called.
 
 ####`Emitter.prototype.destroyEvents()`
 
