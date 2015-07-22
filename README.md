@@ -21,6 +21,7 @@ Emitter.js is an event emitter based on the nodejs [EventEmitter](https://nodejs
 ## Documentation
 
 * [API](docs/API.md)
+* [CHANGES](docs/CHANGES.md)
 
 ## Usage
 
