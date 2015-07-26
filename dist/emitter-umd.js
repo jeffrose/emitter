@@ -17,15 +17,19 @@
     var
     // Reference to the global scope
     root = Function('return this')(),
-        Symbol = 'Symbol' in root ? root.Symbol :
-    // Shim the Symbol API
-    function (description) {
-        if (typeof description !== 'string') {
-            throw new TypeError('description must be a string');
+        Symbol = 'Symbol' in root ? root.Symbol : (function () {
+        function Symbol(description) {
+            if (typeof description !== 'string') {
+                throw new TypeError('description must be a string');
+            }
+
+            return description;
         }
 
-        return description;
-    },
+        Symbol.toStringTag = Symbol('@@toStringTag');
+
+        return Symbol;
+    })(),
         noop = function noop() {},
         events = Symbol('@@events'),
         every = Symbol('@@every'),
@@ -709,3 +713,5 @@
         this.clear = this.destroy = this.emit = this.listeners = this.many = this.off = this.on = this.once = this.trigger = noop;
     };
 });
+
+// Shim the Symbol API

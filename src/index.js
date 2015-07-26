@@ -7,13 +7,19 @@ const
     Symbol = 'Symbol' in root ?
         root.Symbol :
         // Shim the Symbol API
-        function( description ){
-            if( typeof description !== 'string' ){
-                throw new TypeError( 'description must be a string' );    
+        ( function(){
+            function Symbol( description ){
+                if( typeof description !== 'string' ){
+                    throw new TypeError( 'description must be a string' );    
+                }
+                
+                return description;
             }
             
-            return description;
-        },
+            Symbol.toStringTag = Symbol( '@@toStringTag' );
+            
+            return Symbol;
+        }() ),
     
     noop = function(){},
     
