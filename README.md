@@ -57,7 +57,7 @@ greeter.emit( 'hello', 'World' );
 
 ## Differences from `EventEmitter`
 
-Emitter.js...
+### Emitter.js...
 
 * Lacks [domain](https://nodejs.org/api/domain.html) support.
 * Has a modern API with no backward compatibility aliases, e.g. `clear()` instead of `removeAllListeners()`.
