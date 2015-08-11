@@ -368,7 +368,7 @@ describe( 'Emitter', function(){
             expect( onMaxListeners ).to.have.been.calledWith( 'test' );
             expect( onMaxListeners ).to.have.been.calledOnce;
 
-            expect( function(){ emitter.maxListeners( 'a' ); } ).to.throw( TypeError );
+            expect( function(){ emitter.maxListeners = 'a'; } ).to.throw( TypeError );
         } );
 
     } );
