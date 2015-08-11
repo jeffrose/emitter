@@ -1,0 +1,18 @@
+[
+  {
+    "name": "Emitter#emit",
+    "timestamp": "Tue Aug 11 2015 18:59:05 GMT+0000 (UTC)",
+    "count": 494,
+    "cycles": 6,
+    "hz": 8449.345087543057,
+    "suite": "emit"
+  },
+  {
+    "name": "EventEmitter#emit",
+    "timestamp": "Tue Aug 11 2015 18:59:10 GMT+0000 (UTC)",
+    "count": 293,
+    "cycles": 3,
+    "hz": 4634.710067392007,
+    "suite": "emit"
+  }
+]

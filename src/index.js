@@ -36,10 +36,8 @@ function onEvent( emitter, type, listener ){
         throw new TypeError( 'listener must be a function' );
     }
     
-    if( !emitter[ events ] ){
-        defineEvents( emitter );
-    } else if( emitter[ events ][ ':on' ] ){
-        emitEvent( emitter, ':on', [ type, typeof listener.listener === 'function' ? listener.listener : listener ] );
+    if( emitter[ events ][ ':on' ] ){
+        emitEvent( emitter, ':on', [ type, typeof listener.listener === 'function' ? listener.listener : listener ], true );
     }
     
     // Single listener
@@ -60,20 +58,10 @@ function onEvent( emitter, type, listener ){
         var max = emitter.maxListeners;
         
         if( max && max > 0 && emitter[ events ][ type ].length > max ){
-            emitEvent( emitter, ':maxListeners', [ type, listener ] );
+            emitEvent( emitter, ':maxListeners', [ type, listener ], true );
             emitter[ events ][ type ].warned = true;
         }
     }
-}
-
-function cloneList( list, index ){
-    var copy = new Array( index );
-    
-    while( index-- ){
-        copy[ index ] = list[ index ];
-    }
-    
-    return copy;
 }
 
 function defineEvents( emitter ){
@@ -87,7 +75,7 @@ function executeEmpty( handler, isFunction, emitter ){
         handler.call( emitter );
     } else {
         let length = handler.length,
-            listeners = cloneList( handler, length );
+            listeners = handler.slice();
         
         for( let i = 0; i < length; i += 1 ){
             listeners[ i ].call( emitter );
@@ -100,7 +88,7 @@ function executeOne( handler, isFunction, emitter, arg1 ){
         handler.call( emitter, arg1 );
     } else {
         let length = handler.length,
-            listeners = cloneList( handler, length );
+            listeners = handler.slice();
         
         for( let i = 0; i < length; i += 1 ){
             listeners[ i ].call( emitter, arg1 );
@@ -113,7 +101,7 @@ function executeTwo( handler, isFunction, emitter, arg1, arg2 ){
         handler.call( emitter, arg1, arg2 );
     } else {
         let length = handler.length,
-            listeners = cloneList( handler, length );
+            listeners = handler.slice();
         
         for( let i = 0; i < length; i += 1 ){
             listeners[ i ].call( emitter, arg1, arg2 );
@@ -126,7 +114,7 @@ function executeThree( handler, isFunction, emitter, arg1, arg2, arg3 ){
         handler.call( emitter, arg1, arg2, arg3 );
     } else {
         let length = handler.length,
-            listeners = cloneList( handler, length );
+            listeners = handler.slice();
         
         for( let i = 0; i < length; i += 1 ){
             listeners[ i ].call( emitter, arg1, arg2, arg3 );
@@ -139,7 +127,7 @@ function executeMany( handler, isFunction, emitter, args ){
         handler.apply( emitter, args );
     } else {
         let length = handler.length,
-            listeners = cloneList( handler, length );
+            listeners = handler.slice();
         
         for( let i = 0; i < length; i += 1 ){
             listeners[ i ].apply( emitter, args );
@@ -178,11 +166,9 @@ function spliceList( list, index ){
     list.pop();
 }
 
-function emitEvent( emitter, type, data ){
+function emitEvent( emitter, type, data, emitEvery ){
     var executed = false,
         listener;
-    
-    defineEvents( emitter );
     
     if( type === 'error' && !emitter[ events ].error ){
         var error = data[ 0 ];
@@ -192,8 +178,6 @@ function emitEvent( emitter, type, data ){
         } else {
             throw new Error( 'Uncaught, unspecified "error" event.' );
         }
-        
-        return executed;
     }
     
     // Execute listeners for the given type of event
@@ -204,10 +188,12 @@ function emitEvent( emitter, type, data ){
     }
     
     // Execute listeners listening for all types of events
-    listener = emitter[ events ][ every ];
-    if( typeof listener !== 'undefined' ){
-        executeListener( listener, data, emitter );
-        executed = true;
+    if( emitEvery ){
+        listener = emitter[ events ][ every ];
+        if( typeof listener !== 'undefined' ){
+            executeListener( listener, data, emitter );
+            executed = true;
+        }
     }
     
     return executed;
@@ -402,7 +388,7 @@ function asEmitter(){
             } else if( typeof handler === 'function' ){
                 listeners = [ handler ];
             } else {
-                listeners = cloneList( handler, handler.length );
+                listeners = handler.slice();
             }
         }
         
@@ -461,7 +447,7 @@ function asEmitter(){
         if( handler === listener || ( typeof handler.listener === 'function' && handler.listener === listener ) ){
             delete this[ events ][ type ];
             if( this[ events ][ ':off' ] ){
-                emitEvent( this, ':off', [ type, listener ] );
+                emitEvent( this, ':off', [ type, listener ], true );
             }
         } else if( Array.isArray( handler ) ){
             let index = -1;
@@ -485,7 +471,7 @@ function asEmitter(){
             }
             
             if( this[ events ][ ':off' ] ){
-                emitEvent( this, ':off', [ type, listener ] );
+                emitEvent( this, ':off', [ type, listener ], true );
             }
         }
         
@@ -548,29 +534,15 @@ function asEmitter(){
             // If type is not a string, index will be false
             index = typeof type === 'string' && type.lastIndexOf( ':' );
         
-        // Single event, e.g. "foo", ":bar", Symbol( "@@qux" )
-        if( typeof index !== 'number' || index === 0 || index === -1 ){
-            executed = emitEvent( this, type, data );
-            
-        // Namespaced event, e.g. Emit "foo:bar:qux", then "foo:bar", then "foo"
-        } else {
-            let namespacedType = type;
-            
-            // Optimize under the assumption that most namespaces will only be one level deep, e.g. "foo:bar"
-            executed = emitEvent( this, namespacedType, data ) || executed;
-            namespacedType = namespacedType.substring( 0, index );
-            index = namespacedType.lastIndexOf( ':' );
-            
-            // Longer namespaces will fall into the loop, e.g. "foo:bar:qux"
-            while( index !== -1 ){
-                executed = ( namespacedType && emitEvent( this, namespacedType, data ) ) || executed;
-                namespacedType = namespacedType.substring( 0, index );
-                index = namespacedType.lastIndexOf( ':' );
-            }
-            
-            // Emit namespace root, e.g. "foo"
-            executed = ( namespacedType && emitEvent( this, namespacedType, data ) ) || executed;
+        // Namespaced event, e.g. Emit "foo:bar:qux", then "foo:bar"
+        while( index > 0 ){
+            executed = ( type && emitEvent( this, type, data, false ) ) || executed;
+            type = type.substring( 0, index );
+            index = type.lastIndexOf( ':' );
         }
+        
+        // Emit single event or the namespaced event root, e.g. "foo", ":bar", Symbol( "@@qux" )
+        executed = ( type && emitEvent( this, type, data, true ) ) || executed;
         
         return executed;
     };
@@ -671,6 +643,12 @@ Object.defineProperties( Emitter, {
         configurable: true,
         enumerable: false,
         writable: false
+    },
+    version: {
+        value: '1.1.2',
+        configurable: false,
+        enumerable: false,
+        writable: false
     }
 } );
 
@@ -683,7 +661,7 @@ Emitter.prototype.constructor = Emitter;
 asEmitter.call( Emitter.prototype );
 
 Emitter.prototype.destroy = function(){
-    emitEvent( this, ':destroy' );
+    emitEvent( this, ':destroy', [], true );
     this.destroyEvents();
     this.destroyMaxListeners();
     this.clear = this.destroy = this.emit = this.listeners = this.many = this.off = this.on = this.once = this.trigger = noop;

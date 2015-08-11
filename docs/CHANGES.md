@@ -13,3 +13,15 @@
 ## 1.1.1
 
 * Added `Symbol.toStringTag` to shim.
+
+## 1.1.2
+
+* Added `Emitter.version`.
+* Added benchmark tests.
+* Removed unnecessary return.
+* Removed extra event registry safety checks.
+* Fixed defect where the `every` listeners executed for multiple times for a namespaced event.
+* Traded in while-loop array cloning for `Array.prototype.slice()` which seems to perform better overall.
+  * http://jsperf.com/new-array-vs-splice-vs-slice/97
+* Improved performance of `trigger()` and therefore `emit()`.
+* Normalized the usage of internal `emitEvent()` method.

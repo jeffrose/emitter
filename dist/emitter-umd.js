@@ -17,7 +17,9 @@
     var
     // Reference to the global scope
     root = Function('return this')(),
-        Symbol = 'Symbol' in root ? root.Symbol : (function () {
+        Symbol = 'Symbol' in root ? root.Symbol :
+    // Shim the Symbol API
+    (function () {
         function Symbol(description) {
             if (typeof description !== 'string') {
                 throw new TypeError('description must be a string');
@@ -44,10 +46,8 @@
             throw new TypeError('listener must be a function');
         }
 
-        if (!emitter[events]) {
-            defineEvents(emitter);
-        } else if (emitter[events][':on']) {
-            emitEvent(emitter, ':on', [type, typeof listener.listener === 'function' ? listener.listener : listener]);
+        if (emitter[events][':on']) {
+            emitEvent(emitter, ':on', [type, typeof listener.listener === 'function' ? listener.listener : listener], true);
         }
 
         // Single listener
@@ -56,32 +56,22 @@
 
             // Multiple listeners
         } else if (Array.isArray(emitter[events][type])) {
-            emitter[events][type].push(listener);
+                emitter[events][type].push(listener);
 
-            // Transition from single to multiple listeners
-        } else {
-            emitter[events][type] = [emitter[events][type], listener];
-        }
+                // Transition from single to multiple listeners
+            } else {
+                    emitter[events][type] = [emitter[events][type], listener];
+                }
 
         // Track warnings if max listeners is available
         if ('maxListeners' in emitter && !emitter[events][type].warned) {
             var max = emitter.maxListeners;
 
             if (max && max > 0 && emitter[events][type].length > max) {
-                emitEvent(emitter, ':maxListeners', [type, listener]);
+                emitEvent(emitter, ':maxListeners', [type, listener], true);
                 emitter[events][type].warned = true;
             }
         }
-    }
-
-    function cloneList(list, index) {
-        var copy = new Array(index);
-
-        while (index--) {
-            copy[index] = list[index];
-        }
-
-        return copy;
     }
 
     function defineEvents(emitter) {
@@ -95,7 +85,7 @@
             handler.call(emitter);
         } else {
             var _length = handler.length,
-                listeners = cloneList(handler, _length);
+                listeners = handler.slice();
 
             for (var i = 0; i < _length; i += 1) {
                 listeners[i].call(emitter);
@@ -108,7 +98,7 @@
             handler.call(emitter, arg1);
         } else {
             var _length2 = handler.length,
-                listeners = cloneList(handler, _length2);
+                listeners = handler.slice();
 
             for (var i = 0; i < _length2; i += 1) {
                 listeners[i].call(emitter, arg1);
@@ -121,7 +111,7 @@
             handler.call(emitter, arg1, arg2);
         } else {
             var _length3 = handler.length,
-                listeners = cloneList(handler, _length3);
+                listeners = handler.slice();
 
             for (var i = 0; i < _length3; i += 1) {
                 listeners[i].call(emitter, arg1, arg2);
@@ -134,7 +124,7 @@
             handler.call(emitter, arg1, arg2, arg3);
         } else {
             var _length4 = handler.length,
-                listeners = cloneList(handler, _length4);
+                listeners = handler.slice();
 
             for (var i = 0; i < _length4; i += 1) {
                 listeners[i].call(emitter, arg1, arg2, arg3);
@@ -147,7 +137,7 @@
             handler.apply(emitter, args);
         } else {
             var _length5 = handler.length,
-                listeners = cloneList(handler, _length5);
+                listeners = handler.slice();
 
             for (var i = 0; i < _length5; i += 1) {
                 listeners[i].apply(emitter, args);
@@ -156,8 +146,8 @@
     }
 
     function executeListener(listener) {
-        var data = arguments[1] === undefined ? [] : arguments[1];
-        var scope = arguments[2] === undefined ? this : arguments[2];
+        var data = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
+        var scope = arguments.length <= 2 || arguments[2] === undefined ? this : arguments[2];
 
         var isFunction = typeof listener === 'function';
 
@@ -189,11 +179,9 @@
         list.pop();
     }
 
-    function emitEvent(emitter, type, data) {
+    function emitEvent(emitter, type, data, emitEvery) {
         var executed = false,
             listener;
-
-        defineEvents(emitter);
 
         if (type === 'error' && !emitter[events].error) {
             var error = data[0];
@@ -203,8 +191,6 @@
             } else {
                 throw new Error('Uncaught, unspecified "error" event.');
             }
-
-            return executed;
         }
 
         // Execute listeners for the given type of event
@@ -215,10 +201,12 @@
         }
 
         // Execute listeners listening for all types of events
-        listener = emitter[events][every];
-        if (typeof listener !== 'undefined') {
-            executeListener(listener, data, emitter);
-            executed = true;
+        if (emitEvery) {
+            listener = emitter[events][every];
+            if (typeof listener !== 'undefined') {
+                executeListener(listener, data, emitter);
+                executed = true;
+            }
         }
 
         return executed;
@@ -415,7 +403,7 @@
                 } else if (typeof handler === 'function') {
                     listeners = [handler];
                 } else {
-                    listeners = cloneList(handler, handler.length);
+                    listeners = handler.slice();
                 }
             }
 
@@ -478,7 +466,7 @@
             if (handler === listener || typeof handler.listener === 'function' && handler.listener === listener) {
                 delete this[events][type];
                 if (this[events][':off']) {
-                    emitEvent(this, ':off', [type, listener]);
+                    emitEvent(this, ':off', [type, listener], true);
                 }
             } else if (Array.isArray(handler)) {
                 var index = -1;
@@ -502,7 +490,7 @@
                 }
 
                 if (this[events][':off']) {
-                    emitEvent(this, ':off', [type, listener]);
+                    emitEvent(this, ':off', [type, listener], true);
                 }
             }
 
@@ -521,25 +509,25 @@
 
                     // Plain object of event bindings
                 } else if (typeof type === 'object') {
-                    var bindings = type,
-                        types = Object.keys(bindings),
-                        handler = undefined;
+                        var bindings = type,
+                            types = Object.keys(bindings),
+                            handler = undefined;
 
-                    for (var i = 0, j = types.length; i < j; i += 1) {
-                        type = types[i];
-                        handler = bindings[type];
+                        for (var i = 0, j = types.length; i < j; i += 1) {
+                            type = types[i];
+                            handler = bindings[type];
 
-                        if (Array.isArray(handler)) {
-                            for (var k = 0, l = handler.length; k < l; k += 1) {
-                                onEvent(this, type, handler[k]);
+                            if (Array.isArray(handler)) {
+                                for (var k = 0, l = handler.length; k < l; k += 1) {
+                                    onEvent(this, type, handler[k]);
+                                }
+                            } else {
+                                onEvent(this, type, handler);
                             }
-                        } else {
-                            onEvent(this, type, handler);
                         }
-                    }
 
-                    return this;
-                }
+                        return this;
+                    }
             }
 
             onEvent(this, type, listener);
@@ -564,36 +552,22 @@
         };
 
         this.trigger = function (type) {
-            var data = arguments[1] === undefined ? [] : arguments[1];
+            var data = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
 
             var executed = false,
 
             // If type is not a string, index will be false
             index = typeof type === 'string' && type.lastIndexOf(':');
 
-            // Single event, e.g. "foo", ":bar", Symbol( "@@qux" )
-            if (typeof index !== 'number' || index === 0 || index === -1) {
-                executed = emitEvent(this, type, data);
-
-                // Namespaced event, e.g. Emit "foo:bar:qux", then "foo:bar", then "foo"
-            } else {
-                var namespacedType = type;
-
-                // Optimize under the assumption that most namespaces will only be one level deep, e.g. "foo:bar"
-                executed = emitEvent(this, namespacedType, data) || executed;
-                namespacedType = namespacedType.substring(0, index);
-                index = namespacedType.lastIndexOf(':');
-
-                // Longer namespaces will fall into the loop, e.g. "foo:bar:qux"
-                while (index !== -1) {
-                    executed = namespacedType && emitEvent(this, namespacedType, data) || executed;
-                    namespacedType = namespacedType.substring(0, index);
-                    index = namespacedType.lastIndexOf(':');
-                }
-
-                // Emit namespace root, e.g. "foo"
-                executed = namespacedType && emitEvent(this, namespacedType, data) || executed;
+            // Namespaced event, e.g. Emit "foo:bar:qux", then "foo:bar"
+            while (index > 0) {
+                executed = type && emitEvent(this, type, data, false) || executed;
+                type = type.substring(0, index);
+                index = type.lastIndexOf(':');
             }
+
+            // Emit single event or the namespaced event root, e.g. "foo", ":bar", Symbol( "@@qux" )
+            executed = type && emitEvent(this, type, data, true) || executed;
 
             return executed;
         };
@@ -664,12 +638,12 @@
 
             // Function
         } else if (typeof emitter[events][type] === 'function') {
-            count = 1;
+                count = 1;
 
-            // Array
-        } else {
-            count = emitter[events][type].length;
-        }
+                // Array
+            } else {
+                    count = emitter[events][type].length;
+                }
 
         return count;
     };
@@ -695,6 +669,12 @@
             configurable: true,
             enumerable: false,
             writable: false
+        },
+        version: {
+            value: '1.1.2',
+            configurable: false,
+            enumerable: false,
+            writable: false
         }
     });
 
@@ -707,11 +687,9 @@
     asEmitter.call(Emitter.prototype);
 
     Emitter.prototype.destroy = function () {
-        emitEvent(this, ':destroy');
+        emitEvent(this, ':destroy', [], true);
         this.destroyEvents();
         this.destroyMaxListeners();
         this.clear = this.destroy = this.emit = this.listeners = this.many = this.off = this.on = this.once = this.trigger = noop;
     };
 });
-
-// Shim the Symbol API

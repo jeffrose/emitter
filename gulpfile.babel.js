@@ -2,6 +2,7 @@
 
 var gulp = require( 'gulp' ),
     babel = require( 'gulp-babel' ),
+    benchmark = require( 'gulp-bench' ),
     isparta = require( 'isparta' ),
     istanbul = require( 'gulp-istanbul' ),
     mocha = require( 'gulp-mocha' ),
@@ -30,6 +31,12 @@ gulp.task( 'test', function( done ){
                 .pipe( istanbul.writeReports() )
                 .on( 'end', done );
         } );
+} );
+
+gulp.task( 'perf', function(){
+    return gulp.src( [ 'test/perf.js' ] )
+        .pipe( benchmark() )
+        .pipe( gulp.dest( './benchmark' ) );
 } );
 
 gulp.task( 'default', [ 'test' ] );

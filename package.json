@@ -1,7 +1,7 @@
 {
   "name": "emitter-js",
   "description": "A modern event emitter implementation.",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "repository": "https://github.com/jeffrose/emitter.git",
   "homepage": "https://github.com/jeffrose/emitter",
   "bugs": "https://github.com/jeffrose/emitter/issues",
@@ -21,10 +21,11 @@
   ],
   "dependencies": {},
   "devDependencies": {
-    "babel-core": "5.7.2",
-    "chai": "3.0.0",
+    "babel-core": "5.8.22",
+    "chai": "3.2.0",
     "gulp": "3.9.0",
-    "gulp-babel": "5.1.0",
+    "gulp-babel": "5.2.0",
+    "gulp-bench": "1.1.0",
     "gulp-debug": "2.0.1",
     "gulp-istanbul": "0.10.0",
     "gulp-mocha": "2.1.3",
