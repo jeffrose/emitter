@@ -169,6 +169,17 @@ console.log( Emitter.listenerCount( greeter, 'goodbye' ) );
 // 0
 ```
 
+### Emitter.version
+
+The current version of *Emitter.js*.
+
+####`Emitter.version`
+
+```javascript
+console.log( Emitter.version );
+// 1.1.2
+```
+
 ### Emitter.prototype.clear
 
 Remove all listeners, or those for the specified event `type`.
