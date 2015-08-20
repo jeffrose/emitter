@@ -407,36 +407,6 @@ greeter.emit( 'greeting:hello', 'Jeff' );
 // Jeff was greeted.
 ```
 
-### Emitter.prototype.trigger
-
-Execute the listeners for the specified event `type` with the supplied `data`.
-
-Returns `true` if the event had listeners, `false` otherwise.
-
-####`Emitter.prototype.trigger( type, data ) -> Boolean`
-
-```javascript
-var greeter = new Emitter();
-greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
-greeter.trigger( 'hello', [ 'World' ] );
-// Hello, World!
-```
-
-```javascript
-var greeter = new Emitter();
-greeter.on( 'greeting:hello', ( name ) => console.log( `Hello, ${ name }!` ) );
-greeter.on( 'greeting:hi', ( name ) => console.log( `Hi, ${ name }!` ) );
-greeter.on( 'greeting', ( name ) => console.log( `${ name } was greeted.` );
-
-greeter.trigger( 'greeting:hi', [ 'Mark' ] );
-// Hi, Mark!
-// Mark was greeted.
-
-greeter.trigger( 'greeting:hello', [ 'Jeff' ] );
-// Hello, Jeff!
-// Jeff was greeted.
-```
-
 ### Emitter.prototype.listeners
 
 Returns an array of listeners for the specified event.
@@ -588,6 +558,70 @@ greeter.once( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
 greeter.emit( 'hello', 'World' );
 // Hello, World!
 greeter.emit( 'hello', 'World' );
+```
+
+### Emitter.prototype.trigger
+
+Execute the listeners for the specified event `type` with the supplied `data`.
+
+Returns `true` if the event had listeners, `false` otherwise.
+
+####`Emitter.prototype.trigger( type, data ) -> Boolean`
+
+```javascript
+var greeter = new Emitter();
+greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.trigger( 'hello', [ 'World' ] );
+// Hello, World!
+```
+
+```javascript
+var greeter = new Emitter();
+greeter.on( 'greeting:hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.on( 'greeting:hi', ( name ) => console.log( `Hi, ${ name }!` ) );
+greeter.on( 'greeting', ( name ) => console.log( `${ name } was greeted.` );
+
+greeter.trigger( 'greeting:hi', [ 'Mark' ] );
+// Hi, Mark!
+// Mark was greeted.
+
+greeter.trigger( 'greeting:hello', [ 'Jeff' ] );
+// Hello, Jeff!
+// Jeff was greeted.
+```
+
+### Emitter.prototype.until
+
+Adds a listeners for the specified event `type` until the `listener` returns `true`. If no `type` is given the listener will be triggered any event `type`. No checks are made to see if the `listener` has already been added. Multiple calls passing the same combination `type` and `listener` will result in the `listener` being added multiple times.
+
+####`Emitter.prototype.until( listener ) -> Emitter`
+
+```javascript
+var greeter = new Emitter();
+greeter.until( function( name ){
+    console.log( `Greeted ${ name }` );
+    return name === 'Terry';
+} );
+greeter.emit( 'hello', 'Jeff' );
+// Greeted Jeff
+greeter.emit( 'goodbye', 'Terry' );
+// Greeted Terry
+greeter.emit( 'hi', 'Aaron' );
+```
+
+####`Emitter.prototype.until( type, listener ) -> Emitter`
+
+```javascript
+var greeter = new Emitter();
+greeter.until( 'hello', function( name ){
+    console.log( `Hello, ${ name }!` );
+    return name === 'World';
+} );
+greeter.emit( 'hello', 'Jeff' );
+// Hello, Jeff!
+greeter.emit( 'hello', 'World' );
+// Hello, World!
+greeter.emit( 'hello', 'Mark' );
 ```
 
 ## Events

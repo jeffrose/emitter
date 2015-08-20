@@ -34,7 +34,7 @@ gulp.task( 'test', function( done ){
 } );
 
 gulp.task( 'perf', function(){
-    return gulp.src( [ 'test/perf.js' ] )
+    return gulp.src( [ 'perf/emit.js' ] )
         .pipe( benchmark() )
         .pipe( gulp.dest( './benchmark' ) );
 } );

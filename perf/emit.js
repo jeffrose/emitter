@@ -1,21 +1,18 @@
 'use strict';
 
-var Emitter = require( '../src' ),
+var Emitter = require( '../dist/emitter-umd' ),
     EventEmitter = require( 'events' ).EventEmitter,
     emitter = new Emitter(),
     ee = new EventEmitter(),
-    index = 10000;
+    index = 10000,
+    noop = function(){};
 
 emitter.maxListeners = index;
 ee.setMaxListeners( index );
     
 while( index-- ){
-    ee.on( 'foo', function( one, two, three ){
-        
-    } );
-    emitter.on( 'foo', function( one, two, three ){
-        
-    } );
+    ee.on( 'foo', noop );
+    emitter.on( 'foo', noop );
 }
 
 module.exports = {

@@ -41,43 +41,38 @@
     // take a variable number of arguments and can be deoptimized as a result. These functions have a fixed number of arguments
     // and therefore do not get deoptimized.
 
-    function onEvent(emitter, type, listener) {
-        if (typeof listener !== 'function') {
-            throw new TypeError('listener must be a function');
-        }
+    function emitEvent(emitter, type, data, emitEvery) {
+        var _events = emitter[events],
+            executed = false,
+            listener;
 
-        if (emitter[events][':on']) {
-            emitEvent(emitter, ':on', [type, typeof listener.listener === 'function' ? listener.listener : listener], true);
-        }
+        if (type === 'error' && !_events.error) {
+            var error = data[0];
 
-        // Single listener
-        if (!emitter[events][type]) {
-            emitter[events][type] = listener;
-
-            // Multiple listeners
-        } else if (Array.isArray(emitter[events][type])) {
-                emitter[events][type].push(listener);
-
-                // Transition from single to multiple listeners
+            if (error instanceof Error) {
+                throw error;
             } else {
-                    emitter[events][type] = [emitter[events][type], listener];
-                }
-
-        // Track warnings if max listeners is available
-        if ('maxListeners' in emitter && !emitter[events][type].warned) {
-            var max = emitter.maxListeners;
-
-            if (max && max > 0 && emitter[events][type].length > max) {
-                emitEvent(emitter, ':maxListeners', [type, listener], true);
-                emitter[events][type].warned = true;
+                throw new Error('Uncaught, unspecified "error" event.');
             }
         }
-    }
 
-    function defineEvents(emitter) {
-        if (!emitter[events] || emitter[events] === Object.getPrototypeOf(emitter)[events]) {
-            emitter[events] = Object.create(null);
+        // Execute listeners for the given type of event
+        listener = _events[type];
+        if (typeof listener !== 'undefined') {
+            executeListener(listener, data, emitter);
+            executed = true;
         }
+
+        // Execute listeners listening for all types of events
+        if (emitEvery) {
+            listener = _events[every];
+            if (typeof listener !== 'undefined') {
+                executeListener(listener, data, emitter);
+                executed = true;
+            }
+        }
+
+        return executed;
     }
 
     function executeEmpty(handler, isFunction, emitter) {
@@ -145,10 +140,7 @@
         }
     }
 
-    function executeListener(listener) {
-        var data = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
-        var scope = arguments.length <= 2 || arguments[2] === undefined ? this : arguments[2];
-
+    function executeListener(listener, data, scope) {
         var isFunction = typeof listener === 'function';
 
         switch (data.length) {
@@ -170,6 +162,54 @@
         }
     }
 
+    function isPositiveNumber(number) {
+        return typeof number === 'number' && number >= 0 && !isNaN(number);
+    }
+
+    function onEvent(emitter, type, listener) {
+        if (typeof listener !== 'function') {
+            throw new TypeError('listener must be a function');
+        }
+
+        var _events = emitter[events];
+
+        if (_events[':on']) {
+            emitEvent(emitter, ':on', [type, typeof listener.listener === 'function' ? listener.listener : listener], true);
+
+            // Emitting "on" may have changed the registry.
+            _events[':on'] = emitter[events][':on'];
+        }
+
+        // Single listener
+        if (!_events[type]) {
+            _events[type] = listener;
+
+            // Multiple listeners
+        } else if (Array.isArray(_events[type])) {
+                _events[type].push(listener);
+
+                // Transition from single to multiple listeners
+            } else {
+                    _events[type] = [_events[type], listener];
+                }
+
+        // Track warnings if max listeners is available
+        if ('maxListeners' in emitter && !_events[type].warned) {
+            var max = emitter.maxListeners;
+
+            if (max && max > 0 && _events[type].length > max) {
+                emitEvent(emitter, ':maxListeners', [type, listener], true);
+
+                // Emitting "maxListeners" may have changed the registry.
+                _events[':maxListeners'] = emitter[events][':maxListeners'];
+
+                _events[type].warned = true;
+            }
+        }
+
+        emitter[events] = _events;
+    }
+
     // Faster than Array.prototype.splice
     function spliceList(list, index) {
         for (var i = index, j = i + 1, length = list.length; j < length; i += 1, j += 1) {
@@ -177,43 +217,6 @@
         }
 
         list.pop();
-    }
-
-    function emitEvent(emitter, type, data, emitEvery) {
-        var executed = false,
-            listener;
-
-        if (type === 'error' && !emitter[events].error) {
-            var error = data[0];
-
-            if (error instanceof Error) {
-                throw error;
-            } else {
-                throw new Error('Uncaught, unspecified "error" event.');
-            }
-        }
-
-        // Execute listeners for the given type of event
-        listener = emitter[events][type];
-        if (typeof listener !== 'undefined') {
-            executeListener(listener, data, emitter);
-            executed = true;
-        }
-
-        // Execute listeners listening for all types of events
-        if (emitEvery) {
-            listener = emitter[events][every];
-            if (typeof listener !== 'undefined') {
-                executeListener(listener, data, emitter);
-                executed = true;
-            }
-        }
-
-        return executed;
-    }
-
-    function isPositiveNumber(number) {
-        return typeof number === 'number' && number >= 0 && !isNaN(number);
     }
 
     /**
@@ -336,7 +339,9 @@
         };
 
         this.defineEvents = function (bindings) {
-            defineEvents(this);
+            if (!this[events] || this[events] === Object.getPrototypeOf(this)[events]) {
+                this[events] = Object.create(null);
+            }
 
             this.destroyEvents = function () {
                 if (events in this) {
@@ -497,8 +502,9 @@
             return this;
         };
 
-        this.on = function (type, listener) {
-            if (type === undefined) type = every;
+        this.on = function () {
+            var type = arguments[0] || every,
+                listener = arguments[1];
 
             if (typeof listener === 'undefined') {
 
@@ -511,19 +517,27 @@
                 } else if (typeof type === 'object') {
                         var bindings = type,
                             types = Object.keys(bindings),
+                            typeIndex = 0,
+                            typeLength = types.length,
                             handler = undefined;
 
-                        for (var i = 0, j = types.length; i < j; i += 1) {
-                            type = types[i];
+                        for (; typeIndex < typeLength; typeIndex += 1) {
+                            type = types[typeIndex];
                             handler = bindings[type];
 
+                            // List of listeners
                             if (Array.isArray(handler)) {
-                                for (var k = 0, l = handler.length; k < l; k += 1) {
-                                    onEvent(this, type, handler[k]);
+                                var handlerIndex = 0,
+                                    handlerLength = handler.length;
+
+                                for (; handlerIndex < handlerLength; handlerIndex += 1) {
+                                    onEvent(this, type, handler[handlerIndex]);
                                 }
+
+                                // Single listener
                             } else {
-                                onEvent(this, type, handler);
-                            }
+                                    onEvent(this, type, handler);
+                                }
                         }
 
                         return this;
@@ -570,6 +584,33 @@
             executed = type && emitEvent(this, type, data, true) || executed;
 
             return executed;
+        };
+
+        this.until = function (type, listener) {
+            if (type === undefined) type = every;
+
+            // Shift arguments if type is not provided
+            if (typeof type === 'function' && typeof listener === 'undefined') {
+                listener = type;
+                type = every;
+            }
+
+            if (typeof listener !== 'function') {
+                throw new TypeError('listener must be a function');
+            }
+
+            function untilListener() {
+                var done = listener.apply(this, arguments);
+                if (done === true) {
+                    this.off(type, untilListener);
+                }
+            }
+
+            untilListener.listener = listener;
+
+            onEvent(this, type, untilListener);
+
+            return this;
         };
     }
 
@@ -671,7 +712,7 @@
             writable: false
         },
         version: {
-            value: '1.1.2',
+            value: '1.2.0',
             configurable: false,
             enumerable: false,
             writable: false
@@ -690,6 +731,6 @@
         emitEvent(this, ':destroy', [], true);
         this.destroyEvents();
         this.destroyMaxListeners();
-        this.clear = this.destroy = this.emit = this.listeners = this.many = this.off = this.on = this.once = this.trigger = noop;
+        this.clear = this.destroy = this.emit = this.listeners = this.many = this.off = this.on = this.once = this.trigger = this.until = noop;
     };
 });

@@ -271,6 +271,25 @@ describe( 'Emitter', function(){
             expect( function(){ emitter.many( 'test' ); } ).to.throw( TypeError );
         } );
         
+        it( 'should provide for conditional event subscription', function(){
+            var onEmit = sinon.spy();
+
+            emitter.until( 'test', function( first, second, third ){
+                onEmit( first, second, third );
+                return third === 6;
+            } );
+
+            emitter.emit( 'test', 1, 2, 3 );
+            emitter.emit( 'test', 4, 5, 6 );
+            emitter.emit( 'test', 7, 8, 9 );
+
+            expect( onEmit ).to.have.been.calledWith( 1, 2, 3 );
+            expect( onEmit ).to.have.been.calledWith( 4, 5, 6 );
+            expect( onEmit ).to.have.been.calledTwice;
+
+            expect( function(){ emitter.until( 'test' ); } ).to.throw( TypeError );
+        } );
+        
         it( 'should provide a way to listen to every event', function(){
             var onEmit = sinon.spy();
             

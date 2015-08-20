@@ -1,18 +1,18 @@
 [
   {
     "name": "Emitter#emit",
-    "timestamp": "Tue Aug 11 2015 19:54:27 GMT+0000 (UTC)",
-    "count": 536,
-    "cycles": 7,
-    "hz": 8633.844897841282,
+    "timestamp": "Thu Aug 20 2015 14:38:49 GMT+0000 (UTC)",
+    "count": 34,
+    "cycles": 3,
+    "hz": 454.10476612148165,
     "suite": "emit"
   },
   {
     "name": "EventEmitter#emit",
-    "timestamp": "Tue Aug 11 2015 19:54:33 GMT+0000 (UTC)",
-    "count": 284,
-    "cycles": 3,
-    "hz": 4158.875188947128,
+    "timestamp": "Thu Aug 20 2015 14:38:55 GMT+0000 (UTC)",
+    "count": 30,
+    "cycles": 2,
+    "hz": 463.48357710186895,
     "suite": "emit"
   }
 ]

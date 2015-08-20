@@ -25,3 +25,9 @@
   * http://jsperf.com/new-array-vs-splice-vs-slice/97
 * Improved performance of `trigger()` and therefore `emit()`.
 * Normalized the usage of internal `emitEvent()` method.
+
+## 1.2.0
+
+* Added `until()`.
+  * Re-implemented `many()` using `until()`.
+* Performance tweaks.
