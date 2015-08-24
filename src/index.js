@@ -31,6 +31,14 @@ const
 // take a variable number of arguments and can be deoptimized as a result. These functions have a fixed number of arguments
 // and therefore do not get deoptimized.
 
+/**
+ * @function emitEvent
+ * @param {Emitter} emitter
+ * @param {*} type
+ * @param {Array} data
+ * @param {Boolean} emitEvery
+ * @returns {Boolean} Whether or not a listener for the given event type was executed.
+ */
 function emitEvent( emitter, type, data, emitEvery ){
     var _events = emitter[ events ],
         executed = false,
@@ -152,10 +160,21 @@ function executeListener( listener, data, scope ){
     }
 }
 
+/**
+ * @function isPositiveNumber
+ * @param {*} number
+ * @returns {Boolean} Whether or not the value is a positive number.
+ */
 function isPositiveNumber( number ){
     return typeof number === 'number' && number >= 0 && !isNaN( number );
 }
 
+/**
+ * @function onEvent
+ * @param {Emitter} emitter
+ * @param {*} type type
+ * @param {Function} listener
+ */
 function onEvent( emitter, type, listener ){
     if( typeof listener !== 'function' ){
         throw new TypeError( 'listener must be a function' );
@@ -200,7 +219,12 @@ function onEvent( emitter, type, listener ){
     emitter[ events ] = _events;
 }
 
-// Faster than Array.prototype.splice
+/**
+ * Faster than Array.prototype.splice
+ * @function spliceList
+ * @param {Array} list
+ * @param {Number} index
+ */ 
 function spliceList( list, index ){
     for( var i = index, j = i + 1, length = list.length; j < length; i += 1, j += 1 ){
         list[ i ] = list[ j ];
