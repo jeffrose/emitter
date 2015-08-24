@@ -432,6 +432,8 @@ console.log( greeter.listeners( 'hello' )[ 0 ] === hello );
 
 Adds a *many time* listener for the specified event `type`. If no `type` is given the listener will be triggered any event `type`. After the listener is invoked the specified number of `times`, it is removed.
 
+No checks are made to see if the `listener` has already been added. Multiple calls passing the same combination `type` and `listener` will result in the `listener` being added multiple times.
+
 ####`Emitter.prototype.many( times, listener ) -> Emitter`
 
 ```javascript
@@ -513,7 +515,9 @@ greeter.emit( 'hello', 'Jeff' );
 
 ### Emitter.prototype.on
 
-Adds a listeners for the specified event `type`. If no `type` is given the listener will be triggered any event `type`. No checks are made to see if the `listener` has already been added. Multiple calls passing the same combination `type` and `listener` will result in the `listener` being added multiple times.
+Adds a listeners for the specified event `type`. If no `type` is given the listener will be triggered any event `type`.
+
+No checks are made to see if the `listener` has already been added. Multiple calls passing the same combination `type` and `listener` will result in the `listener` being added multiple times.
 
 ####`Emitter.prototype.on( listener ) -> Emitter`
 
@@ -539,6 +543,8 @@ greeter.emit( 'hello', 'World' );
 ### Emitter.prototype.once
 
 Adds a *one time* listener for the specified event `type`. If no `type` is given the listener will be triggered any event `type`. After the listener is invoked, it is removed.
+
+No checks are made to see if the `listener` has already been added. Multiple calls passing the same combination `type` and `listener` will result in the `listener` being added multiple times.
 
 ####`Emitter.prototype.once( listener ) -> Emitter`
 
@@ -592,7 +598,9 @@ greeter.trigger( 'greeting:hello', [ 'Jeff' ] );
 
 ### Emitter.prototype.until
 
-Adds a listeners for the specified event `type` until the `listener` returns `true`. If no `type` is given the listener will be triggered any event `type`. No checks are made to see if the `listener` has already been added. Multiple calls passing the same combination `type` and `listener` will result in the `listener` being added multiple times.
+Adds a listeners for the specified event `type` that will be triggered *until* the `listener` returns `true`. If no `type` is given the listener will be triggered any event `type`.
+
+No checks are made to see if the `listener` has already been added. Multiple calls passing the same combination `type` and `listener` will result in the `listener` being added multiple times.
 
 ####`Emitter.prototype.until( listener ) -> Emitter`
 
