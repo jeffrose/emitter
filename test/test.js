@@ -345,6 +345,9 @@ describe( 'Emitter', function(){
             expect( Emitter.listenerCount( emitter, 'test' ) ).to.equal( 2 );
             expect( Emitter.listenerCount( emitter, 'empty' ) ).to.equal( 0 );
             expect( Emitter.listenerCount( emitter, 'undefined' ) ).to.equal( 0 );
+            expect( emitter.listenerCount( 'test' ) ).to.equal( 2 );
+            expect( emitter.listenerCount( 'empty' ) ).to.equal( 0 );
+            expect( emitter.listenerCount( 'undefined' ) ).to.equal( 0 );
         } );
 
         it( 'should limit the number of subscriptions', function(){

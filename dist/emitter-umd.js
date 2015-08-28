@@ -148,6 +148,12 @@
         }
     }
 
+    /**
+     * @function executeListener
+     * @param {Array|Function} listener
+     * @param {Array} data
+     * @param {*} scope
+     */
     function executeListener(listener, data, scope) {
         var isFunction = typeof listener === 'function';
 
@@ -177,6 +183,31 @@
      */
     function isPositiveNumber(number) {
         return typeof number === 'number' && number >= 0 && !isNaN(number);
+    }
+
+    /**
+     * @function listenerCount
+     * @param {Emitter} emitter
+     * @param {*} type
+     * @returns {Number} The number of listeners for that event type within the given emitter.
+     */
+    function listenerCount(emitter, type) {
+        var count;
+
+        // Empty
+        if (!emitter[events] || !emitter[events][type]) {
+            count = 0;
+
+            // Function
+        } else if (typeof emitter[events][type] === 'function') {
+                count = 1;
+
+                // Array
+            } else {
+                    count = emitter[events][type].length;
+                }
+
+        return count;
     }
 
     /**
@@ -417,6 +448,10 @@
             }
 
             return this.trigger(type, data);
+        };
+
+        this.listenerCount = function (type) {
+            return listenerCount(this, type);
         };
 
         this.listeners = function (type) {
@@ -694,25 +729,6 @@
         this.defineEvents(bindings);
     }
 
-    Emitter.listenerCount = function (emitter, type) {
-        var count;
-
-        // Empty
-        if (!emitter[events] || !emitter[events][type]) {
-            count = 0;
-
-            // Function
-        } else if (typeof emitter[events][type] === 'function') {
-                count = 1;
-
-                // Array
-            } else {
-                    count = emitter[events][type].length;
-                }
-
-        return count;
-    };
-
     Object.defineProperties(Emitter, {
         asEmitter: {
             value: asEmitter,
@@ -731,6 +747,12 @@
         // The event type used to listen to all types of events.
         every: {
             value: every,
+            configurable: true,
+            enumerable: false,
+            writable: false
+        },
+        listenerCount: {
+            value: listenerCount,
             configurable: true,
             enumerable: false,
             writable: false
@@ -755,6 +777,6 @@
         emitEvent(this, ':destroy', [], true);
         this.destroyEvents();
         this.destroyMaxListeners();
-        this.clear = this.destroy = this.emit = this.listeners = this.many = this.off = this.on = this.once = this.trigger = this.until = noop;
+        this.clear = this.destroy = this.emit = this.listenerCount = this.listeners = this.many = this.off = this.on = this.once = this.trigger = this.until = noop;
     };
 });

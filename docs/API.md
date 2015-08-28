@@ -156,7 +156,7 @@ greeter.emit( 'goodbye' );
 
 ### Emitter.listenerCount
 
-Return the number of listeners for the given event.
+Return the number of listeners for the event type on the given emitter.
 
 ####`Emitter.listenerCount( emitter, type ) -> Number`
 
@@ -405,6 +405,21 @@ greeter.emit( 'greeting:hi', 'Mark' );
 greeter.emit( 'greeting:hello', 'Jeff' );
 // Hello, Jeff!
 // Jeff was greeted.
+```
+
+### Emitter.prototype.listenerCount
+
+Return the number of listeners for the given event type.
+
+####`Emitter.prototype.listenerCount( type ) -> Number`
+
+```javascript
+var greeter = new Emitter();
+greeter.on( 'hello', () => console.log( 'Hello!' ) );
+console.log( greeter.listenerCount( 'hello' ) );
+// 1
+console.log( greeter.listenerCount( 'goodbye' ) );
+// 0
 ```
 
 ### Emitter.prototype.listeners

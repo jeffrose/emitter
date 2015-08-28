@@ -138,6 +138,12 @@ function executeMany( handler, isFunction, emitter, args ){
     }
 }
 
+/**
+ * @function executeListener
+ * @param {Array|Function} listener
+ * @param {Array} data
+ * @param {*} scope
+ */ 
 function executeListener( listener, data, scope ){
     var isFunction = typeof listener === 'function';
     
@@ -167,6 +173,31 @@ function executeListener( listener, data, scope ){
  */
 function isPositiveNumber( number ){
     return typeof number === 'number' && number >= 0 && !isNaN( number );
+}
+
+/**
+ * @function listenerCount
+ * @param {Emitter} emitter
+ * @param {*} type
+ * @returns {Number} The number of listeners for that event type within the given emitter.
+ */ 
+function listenerCount( emitter, type ){
+    var count;
+
+    // Empty
+    if( !emitter[ events ] || !emitter[ events ][ type ] ){
+        count = 0;
+    
+    // Function
+    } else if( typeof emitter[ events ][ type ] === 'function' ){
+        count = 1;
+    
+    // Array
+    } else {
+        count = emitter[ events ][ type ].length;
+    }
+    
+    return count;
 }
 
 /**
@@ -405,6 +436,10 @@ function asEmitter(){
     
     this.emit = function( type, ...data ){
         return this.trigger( type, data );
+    };
+    
+    this.listenerCount = function( type ){
+        return listenerCount( this, type );
     };
     
     this.listeners = function( type ){
@@ -672,25 +707,6 @@ export default function Emitter( bindings ){
    this.defineEvents( bindings );
 }
 
-Emitter.listenerCount = function( emitter, type ){
-    var count;
-
-    // Empty
-    if( !emitter[ events ] || !emitter[ events ][ type ] ){
-        count = 0;
-    
-    // Function
-    } else if( typeof emitter[ events ][ type ] === 'function' ){
-        count = 1;
-    
-    // Array
-    } else {
-        count = emitter[ events ][ type ].length;
-    }
-    
-    return count;
-};
-
 Object.defineProperties( Emitter, {
     asEmitter: {
         value: asEmitter,
@@ -709,6 +725,12 @@ Object.defineProperties( Emitter, {
     // The event type used to listen to all types of events.
     every: {
         value: every,
+        configurable: true,
+        enumerable: false,
+        writable: false
+    },
+    listenerCount: {
+        value: listenerCount,
         configurable: true,
         enumerable: false,
         writable: false
@@ -733,5 +755,5 @@ Emitter.prototype.destroy = function(){
     emitEvent( this, ':destroy', [], true );
     this.destroyEvents();
     this.destroyMaxListeners();
-    this.clear = this.destroy = this.emit = this.listeners = this.many = this.off = this.on = this.once = this.trigger = this.until = noop;
+    this.clear = this.destroy = this.emit = this.listenerCount = this.listeners = this.many = this.off = this.on = this.once = this.trigger = this.until = noop;
 };
