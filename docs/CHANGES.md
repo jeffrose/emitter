@@ -31,3 +31,8 @@
 * Added `until()`.
   * Re-implemented `many()` using `until()`.
 * Performance tweaks.
+
+## 1.2.1
+
+* Better error handling which resolves #1.
+* Additional testing around `error` events.
