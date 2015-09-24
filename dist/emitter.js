@@ -823,7 +823,7 @@ Object.defineProperties( Emitter, {
         writable: false
     },
     version: {
-        value: '1.2.0',
+        value: '1.2.1',
         configurable: false,
         enumerable: false,
         writable: false
