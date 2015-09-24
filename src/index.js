@@ -32,12 +32,24 @@ const
 // and therefore do not get deoptimized.
 
 /**
+ * @function emitErrors
+ * @param {Emitter} emitter
+ * @param {Array<Error>} errors
+ */
+function emitErrors( emitter, errors ){
+    for( var i = 0, length = errors.length; i < length; i += 1 ){
+        emitEvent( emitter, 'error', [ errors[ i ] ] );
+    }
+}
+
+/**
  * @function emitEvent
  * @param {Emitter} emitter
  * @param {*} type
  * @param {Array} data
  * @param {Boolean} emitEvery
  * @returns {Boolean} Whether or not a listener for the given event type was executed.
+ * @throws {Error} If `type` is `error` and no listeners are subscribed.
  */
 function emitEvent( emitter, type, data, emitEvery ){
     var _events = emitter[ events ],
@@ -74,67 +86,142 @@ function emitEvent( emitter, type, data, emitEvery ){
 }
 
 function executeEmpty( handler, isFunction, emitter ){
+    var errors = [];
+    
     if( isFunction ){
-        handler.call( emitter );
+        try {
+            handler.call( emitter );
+        } catch( error ){
+            errors.push( error );
+        }
     } else {
         let length = handler.length,
-            listeners = handler.slice();
+            listeners = handler.slice(),
+            i = 0;
         
-        for( let i = 0; i < length; i += 1 ){
-            listeners[ i ].call( emitter );
+        for( ; i < length; i += 1 ){
+            try {
+                listeners[ i ].call( emitter );
+            } catch( error ){
+                errors.push( error );
+            }
         }
+    }
+    
+    if( errors.length ){
+        emitErrors( emitter, errors );
     }
 }
 
 function executeOne( handler, isFunction, emitter, arg1 ){
+    var errors = [];
+    
     if( isFunction ){
-        handler.call( emitter, arg1 );
+        try {
+            handler.call( emitter, arg1 );
+        } catch( error ){
+            errors.push( error );
+        }
     } else {
         let length = handler.length,
-            listeners = handler.slice();
+            listeners = handler.slice(),
+            i = 0;
         
-        for( let i = 0; i < length; i += 1 ){
-            listeners[ i ].call( emitter, arg1 );
+        for( ; i < length; i += 1 ){
+            try {
+                listeners[ i ].call( emitter, arg1 );
+            } catch( error ){
+                errors.push( error );
+            }
         }
+    }
+    
+    if( errors.length ){
+        emitErrors( emitter, errors );
     }
 }
 
 function executeTwo( handler, isFunction, emitter, arg1, arg2 ){
+    var errors = [];
+    
     if( isFunction ){
-        handler.call( emitter, arg1, arg2 );
+        try {
+            handler.call( emitter, arg1, arg2 );
+        } catch( error ){
+            errors.push( error );
+        }
     } else {
         let length = handler.length,
-            listeners = handler.slice();
+            listeners = handler.slice(),
+            i = 0;
         
-        for( let i = 0; i < length; i += 1 ){
-            listeners[ i ].call( emitter, arg1, arg2 );
+        for( ; i < length; i += 1 ){
+            try {
+                listeners[ i ].call( emitter, arg1, arg2 );
+            } catch( error ){
+                errors.push( error );
+            }
         }
+    }
+    
+    if( errors.length ){
+        emitErrors( emitter, errors );
     }
 }
 
 function executeThree( handler, isFunction, emitter, arg1, arg2, arg3 ){
+    var errors = [];
+    
     if( isFunction ){
-        handler.call( emitter, arg1, arg2, arg3 );
+        try {
+            handler.call( emitter, arg1, arg2, arg3 );
+        } catch( error ){
+            errors.push( error );
+        }
     } else {
         let length = handler.length,
-            listeners = handler.slice();
+            listeners = handler.slice(),
+            i = 0;
         
-        for( let i = 0; i < length; i += 1 ){
-            listeners[ i ].call( emitter, arg1, arg2, arg3 );
+        for( ; i < length; i += 1 ){
+            try {
+                listeners[ i ].call( emitter, arg1, arg2, arg3 );
+            } catch( error ){
+                errors.push( error );
+            }
         }
+    }
+    
+    if( errors.length ){
+        emitErrors( emitter, errors );
     }
 }
 
 function executeMany( handler, isFunction, emitter, args ){
+    var errors = [];
+    
     if( isFunction ){
-        handler.apply( emitter, args );
+        try {
+            handler.apply( emitter, args );
+        } catch( error ){
+            errors.push( error );
+        }
     } else {
         let length = handler.length,
-            listeners = handler.slice();
+            listeners = handler.slice(),
+            i = 0;
         
-        for( let i = 0; i < length; i += 1 ){
-            listeners[ i ].apply( emitter, args );
+        for( ; i < length; i += 1 ){
+            try {
+                listeners[ i ].apply( emitter, args );
+            } catch( error ){
+                errors.push( error );
+            }
         }
+    }
+    
+    if( errors.length ){
+        emitErrors( emitter, errors );
     }
 }
 

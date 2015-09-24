@@ -203,6 +203,30 @@ describe( 'Emitter', function(){
             expect( function(){ emitter.emit( 'error' ); } ).to.throw( Error );
             expect( function(){ emitter.emit( 'error', new Error( 'test error' ) ); } ).to.throw( Error );
         } );
+        
+        it( 'should catch errors in bad listeners', function(){
+            var onEmit = sinon.spy(),
+                onError = sinon.spy(),
+                badListenerError = new Error( 'Bad listener' );
+                
+            emitter.on( 'test', function(){
+                throw badListenerError;
+            } );
+            emitter.on( 'test', onEmit );
+            
+            emitter.on( 'error', onError );
+            
+            emitter.emit( 'test' );
+            
+            expect( onError ).to.have.been.calledOnce;
+            expect( onError ).to.have.been.calledWith( badListenerError );
+            expect( onEmit ).to.have.been.calledOnce;
+            
+            emitter.off( 'error', onError );
+            
+            expect( function(){ emitter.emit( 'test' ); } ).to.throw( badListenerError );
+            expect( onEmit ).to.have.been.calledTwice;
+        } );
 
         it( 'should provide a way to unsubscribe', function(){
             var onAll       = sinon.spy(),
