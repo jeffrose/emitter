@@ -493,7 +493,11 @@ function asEmitter(){
             throw new TypeError( 'defaultMaxListeners must be a positive number' );
         }
         
-        this[ maxListeners ] = this[ maxListeners ] || undefined;
+        Object.defineProperty( this, maxListeners, {
+            value: this[ maxListeners ] || undefined,
+            configurable: true,
+            enumerable: false
+        } );
         
         Object.defineProperty( this, 'maxListeners', {
             get: function(){
