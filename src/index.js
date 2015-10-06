@@ -472,7 +472,11 @@ function asEmitter(){
     
     this.defineEvents = function( bindings ){
         if( !this[ events ] || this[ events ] === Object.getPrototypeOf( this )[ events ] ){
-            this[ events ] = Object.create( null );
+            Object.defineProperty( this, events, {
+                value: Object.create( null ),
+                configurable: true,
+                enumerable: false
+            } );
         }
         
         this.destroyEvents = function(){
