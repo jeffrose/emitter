@@ -36,3 +36,9 @@
 
 * Better error handling which resolves #1.
 * Additional testing around `error` events.
+
+## 1.3.0
+
+* Made internal properties non-enumerable.
+* Added `toJSON()` and `toString()` methods.
+* Additional testing.
