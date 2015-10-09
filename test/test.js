@@ -327,6 +327,20 @@ describe( 'Emitter', function(){
             expect( onEmit ).to.have.been.calledWith( 1, 2, 3 );
             expect( onEmit ).to.have.been.calledWith( 4, 5, 6 );
             expect( onEmit ).to.have.been.calledTwice;
+            
+            var count = 0;
+            onEmit = sinon.spy();
+            
+            emitter.until( function(){
+                onEmit();
+                return ++count === 2;
+            } );
+            
+            emitter.emit( 'foo' );
+            emitter.emit( 'bar' );
+            emitter.emit( 'baz' );
+            
+            expect( onEmit ).to.have.been.calledTwice;
 
             expect( function(){ emitter.until( 'test' ); } ).to.throw( TypeError );
         } );
@@ -468,5 +482,22 @@ describe( 'Emitter', function(){
             expect( string ).to.match( /^Emitter "destroyed"$/ );
         } );
 
+        it( 'should provide listener count', function(){
+            var noop = function(){};
+             
+            expect( emitter.listeners( 'test' ).length ).to.equal( 0 );
+
+            emitter.on( 'test', noop );
+            
+            expect( emitter.listeners( 'test' ).length ).to.equal( 1 );
+            
+            emitter.on( 'test', noop );
+            
+            expect( emitter.listeners( 'test' ).length ).to.equal( 2 );
+            
+            emitter.clear( 'test' );
+            
+            expect( emitter.listeners( 'test' ).length ).to.equal( 0 );
+        } );
     } );
 } );
