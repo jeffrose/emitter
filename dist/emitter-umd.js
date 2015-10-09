@@ -790,6 +790,7 @@
                 }
             }
 
+            // TODO Check beyond just one level of listener references
             untilListener.listener = listener.listener || listener;
 
             onEvent(this, type, untilListener);
@@ -883,7 +884,7 @@
             writable: false
         },
         version: {
-            value: '1.2.1',
+            value: '1.3.0',
             configurable: false,
             enumerable: false,
             writable: false

@@ -770,6 +770,7 @@ function asEmitter(){
             }
         }
         
+        // TODO Check beyond just one level of listener references
         untilListener.listener = listener.listener || listener;
         
         onEvent( this, type, untilListener );
@@ -862,7 +863,7 @@ Object.defineProperties( Emitter, {
         writable: false
     },
     version: {
-        value: '1.2.1',
+        value: '1.3.0',
         configurable: false,
         enumerable: false,
         writable: false
