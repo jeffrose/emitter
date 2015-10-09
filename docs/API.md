@@ -581,6 +581,44 @@ greeter.emit( 'hello', 'World' );
 greeter.emit( 'hello', 'World' );
 ```
 
+### Emitter.prototype.toJSON
+
+####`Emitter.prototype.toJSON() -> Object`
+
+```javascript
+var greeter = new Emitter();
+greeter.maxListeners = 5;
+greeter.on( 'greet', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.on( 'greet', ( name ) => console.log( `Hi, ${ name }!` ) );
+
+console.log( greeter.toJSON() );
+// { "maxListeners": 5, "listenerCount": { "greet": 2 } }
+
+greeter.destroy();
+
+console.log( greeter.toJSON() );
+// "destroyed"
+```
+
+### Emitter.prototype.toString
+
+####`Emitter.prototype.toString() -> Object`
+
+```javascript
+var greeter = new Emitter();
+greeter.maxListeners = 5;
+greeter.on( 'greet', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.on( 'greet', ( name ) => console.log( `Hi, ${ name }!` ) );
+
+console.log( greeter.toString() );
+// 'Emitter { "maxListeners": 5, "listenerCount": { "greet": 2 } }'
+
+greeter.destroy();
+
+console.log( greeter.toString() );
+// 'Emitter "destroyed"'
+```
+
 ### Emitter.prototype.trigger
 
 Execute the listeners for the specified event `type` with the supplied `data`.
