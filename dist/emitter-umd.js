@@ -344,7 +344,9 @@
             }
         }
 
-        emitter[events] = _events;
+        Object.defineProperty(emitter, events, {
+            value: _events
+        });
     }
 
     /**
@@ -434,7 +436,9 @@
             // With no "off" listeners, clearing can be simplified
             if (!this[events][':off']) {
                 if (arguments.length === 0) {
-                    this[events] = Object.create(null);
+                    Object.defineProperty(this, events, {
+                        value: Object.create(null)
+                    });
                 } else if (this[events][type]) {
                     delete this[events][type];
                 }
@@ -458,7 +462,9 @@
                 // Manually clear "off"
                 this.clear(':off');
 
-                this[events] = Object.create(null);
+                Object.defineProperty(this, events, {
+                    value: Object.create(null)
+                });
 
                 return this;
             }
@@ -482,7 +488,12 @@
 
         this.defineEvents = function (bindings) {
             if (!this[events] || this[events] === Object.getPrototypeOf(this)[events]) {
-                this[events] = Object.create(null);
+                Object.defineProperty(this, events, {
+                    value: Object.create(null),
+                    configurable: true,
+                    enumerable: false,
+                    writable: true
+                });
             }
 
             this.destroyEvents = function () {
@@ -503,8 +514,15 @@
                 throw new TypeError('defaultMaxListeners must be a positive number');
             }
 
-            this[maxListeners] = this[maxListeners] || undefined;
+            // Private max listeners property
+            Object.defineProperty(this, maxListeners, {
+                value: this[maxListeners] || undefined,
+                configurable: true,
+                enumerable: false,
+                writable: true
+            });
 
+            // Public max listeners property
             Object.defineProperty(this, 'maxListeners', {
                 get: function get() {
                     return typeof this[maxListeners] !== 'undefined' ? this[maxListeners] : defaultMaxListeners;
@@ -514,7 +532,9 @@
                         throw new TypeError('max must be a positive number');
                     }
 
-                    this[maxListeners] = max;
+                    Object.defineProperty(this, maxListeners, {
+                        value: max
+                    });
                 },
                 configurable: true,
                 enumerable: false
@@ -580,17 +600,13 @@
             }
 
             function manyListener() {
-                if (--times === 0) {
-                    this.off(type, manyListener);
-                }
                 listener.apply(this, arguments);
+                return --times === 0;
             }
 
             manyListener.listener = listener;
 
-            onEvent(this, type, manyListener);
-
-            return this;
+            return this.until(type, manyListener);
         };
 
         this.off = function (type, listener) {
@@ -711,6 +727,28 @@
             return this.many(type, 1, listener);
         };
 
+        this.toJSON = function () {
+            var json = Object.create(null),
+                types = Object.keys(this[events]),
+                index = 0,
+                length = types.length,
+                type;
+
+            json.maxListeners = this.maxListeners;
+            json.listenerCount = Object.create(null);
+
+            for (; index < length; index++) {
+                type = types[index];
+                json.listenerCount[type] = listenerCount(this, type);
+            }
+
+            return json;
+        };
+
+        this.toString = function () {
+            return (this.constructor.name + ' ' + JSON.stringify(this.toJSON())).trim();
+        };
+
         this.trigger = function (type) {
             var data = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
 
@@ -752,7 +790,7 @@
                 }
             }
 
-            untilListener.listener = listener;
+            untilListener.listener = listener.listener || listener;
 
             onEvent(this, type, untilListener);
 
@@ -865,5 +903,8 @@
         this.destroyEvents();
         this.destroyMaxListeners();
         this.clear = this.destroy = this.emit = this.listenerCount = this.listeners = this.many = this.off = this.on = this.once = this.trigger = this.until = noop;
+        this.toJSON = function () {
+            return 'destroyed';
+        };
     };
 });

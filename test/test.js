@@ -295,6 +295,23 @@ describe( 'Emitter', function(){
             expect( function(){ emitter.many( 'test' ); } ).to.throw( TypeError );
         } );
         
+        it( 'should allow for unsubscribing early from a many-time event', function(){
+            var onEmit = sinon.spy();
+
+            emitter.many( 'test', 5, onEmit );
+
+            emitter.emit( 'test', 1, 2 );
+            emitter.emit( 'test', 3, 4 );
+            emitter.emit( 'test', 5, 6 );
+            
+            emitter.off( 'test', onEmit );
+            
+            emitter.emit( 'test', 7, 8 );
+            emitter.emit( 'test', 9, 0 );
+
+            expect( onEmit ).to.have.been.calledThrice;
+        } );
+        
         it( 'should provide for conditional event subscription', function(){
             var onEmit = sinon.spy();
 
@@ -415,6 +432,40 @@ describe( 'Emitter', function(){
             expect( onMaxListeners ).to.have.been.calledOnce;
 
             expect( function(){ emitter.maxListeners = 'a'; } ).to.throw( TypeError );
+        } );
+        
+        it( 'should provide a clean JSON and String representation', function(){
+            var noop = function(){},
+                json, string;
+
+            emitter.maxListeners = 5;
+            emitter.on( 'test', noop );
+            emitter.on( 'test', noop );
+            
+            json = emitter.toJSON();
+            string = emitter.toString();
+            
+            // toJSON()
+            expect( json ).to.have.property( 'maxListeners' );
+            expect( json.maxListeners ).to.be.a( 'Number' );
+            expect( json.maxListeners ).to.equal( 5 );
+            expect( json ).to.have.property( 'listenerCount' );
+            expect( json.listenerCount ).to.be.an( 'Object' );
+            expect( json.listenerCount ).to.have.property( 'test' );
+            expect( json.listenerCount.test ).to.be.a( 'Number' );
+            
+            // toString()
+            expect( string ).to.match( /^Emitter {.+}$/ );
+            expect( string ).to.match( /"test":2/ );
+            expect( string ).to.match( /"maxListeners":5/ );
+            
+            emitter.destroy();
+            
+            json = emitter.toJSON();
+            string = emitter.toString();
+            
+            expect( json ).to.equal( 'destroyed' );
+            expect( string ).to.match( /^Emitter "destroyed"$/ );
         } );
 
     } );
