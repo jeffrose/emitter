@@ -1,6 +1,6 @@
 'use strict';
 
-var Emitter = require( '../dist/emitter-umd' ),
+var Emitter = require( '../dist/emitter-umd' ).default,
     EventEmitter = require( 'events' ).EventEmitter,
     emitter = new Emitter(),
     ee = new EventEmitter(),

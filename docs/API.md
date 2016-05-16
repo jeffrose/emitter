@@ -9,7 +9,7 @@ Creates an instance of emitter. If `bindings` are provided they will automatical
 ####`new Emitter()`
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.on( 'hello', () => console.log( 'Hello!' ) );
 greeter.emit( 'hello' );
 // Hello!
@@ -28,7 +28,7 @@ Greeter.prototype.greet = function( name ){
     this.emit( 'greet', name );
 };
 
-var greeter = new Greeter();
+const greeter = new Greeter();
 greeter.greet( 'Jeff' );
 // Hello, Jeff!
 ```
@@ -77,7 +77,7 @@ Like all functional mixins, this should be executed with [call()](https://develo
 
 ```javascript
 // Create a base object
-var greeter = Object.create( null );
+const greeter = Object.create( null );
 
 // Initialize the mixin
 Emitter.asEmitter.call( greeter );
@@ -123,7 +123,7 @@ Sets the default maximum number of listeners for all emitters. Use `emitter.maxL
 console.log( Emitter.defaultMaxListeners );
 // 10
 
-var greeter1 = new Emitter(),
+const greeter1 = new Emitter(),
     greeter2 = new Emitter();
 
 Emitter.defaultMaxListeners = 1;
@@ -146,7 +146,7 @@ The symbol used to listen for events of any `type`. For _most_ methods, when no 
 ####`Emitter.every`
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.on( Emitter.every, () => console.log( 'Greeted' ) );
 greeter.emit( 'hello' );
 // Greeted
@@ -161,7 +161,7 @@ Return the number of listeners for the event type on the given emitter.
 ####`Emitter.listenerCount( emitter, type ) -> Number`
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.on( 'hello', () => console.log( 'Hello!' ) );
 console.log( Emitter.listenerCount( greeter, 'hello' ) );
 // 1
@@ -187,7 +187,7 @@ Remove all listeners, or those for the specified event `type`.
 ####`Emitter.prototype.clear()`
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.on( 'hello', () => console.log( 'Hello!' ) );
 greeter.on( 'hi', () => console.log( 'Hi!' ) );
 greeter.emit( 'hello' );
@@ -202,7 +202,7 @@ greeter.emit( 'hi' );
 ####`Emitter.prototype.clear( type )`
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.on( {
     'hello' : function(){ console.log( 'Hello!' ); },
     'hi'    : function(){ console.log( 'Hi!' ); }
@@ -227,7 +227,7 @@ When using `Emitter.asEmitter()`, this should be used to initialize the registry
 
 ```javascript
 // Create a base object
-var greeter = Object.create( null );
+const greeter = Object.create( null );
 
 // Initialize the mixin
 Emitter.asEmitter.call( greeter );
@@ -242,7 +242,7 @@ greeter.emit( 'hello', 'World' );
 ####`Emitter.prototype.defineEvents( bindings )`
 
 ```javascript
-var // Predefined events
+const // Predefined events
     greetings = {
         hello: function( name ){ console.log( `Hello, ${name}!` ),
         hi: function( name ){ console.log( `Hi, ${name}!` )
@@ -270,7 +270,7 @@ When using `Emitter.asEmitter()`, this should be used to initialize maximum list
 
 ```javascript
 // Create a base object
-var greeter = Object.create( null );
+const greeter = Object.create( null );
 
 // Initialize the mixin
 Emitter.asEmitter.call( greeter );
@@ -289,7 +289,7 @@ Destroys the emitter.
 ####`Emitter.prototype.destroy()`
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.on( 'hello', () => console.log( 'Hello!' ) );
 greeter.emit( 'hello' );
 // Hello!
@@ -307,7 +307,7 @@ When using `Emitter.asEmitter()`, this should be used to clean up the registry o
 
 ```javascript
 // Create a base object
-var greeter = Object.create( null );
+const greeter = Object.create( null );
 
 // Initialize the mixin
 Emitter.asEmitter.call( greeter );
@@ -336,7 +336,7 @@ When using `Emitter.asEmitter()`, this should be used to clean up the maximum li
 
 ```javascript
 // Create a base object
-var greeter = Object.create( null );
+const greeter = Object.create( null );
 
 // Initialize the mixin
 Emitter.asEmitter.call( greeter );
@@ -366,7 +366,7 @@ Returns `true` if the event had listeners, `false` otherwise.
 ####`Emitter.prototype.emit( type ) -> Boolean`
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.on( 'hello', () => console.log( 'Hello!' ) );
 greeter.emit( 'hello' );    // true
 // Hello!
@@ -376,21 +376,21 @@ greeter.emit( 'goodbye' );  // false
 ####`Emitter.prototype.emit( type, ...data ) -> Boolean`
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
 greeter.emit( 'hello', 'World' );
 // Hello, World!
 ```
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.on( 'hello', ( firstName, lastName ) => console.log( `Hello, ${ firstName } ${ lastName }!` ) );
 greeter.emit( 'hello', 'John', 'Smith' );
 // Hello, John Smith!
 ```
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.on( 'greeting:hello', ( name ) => console.log( `Hello, ${ name }!` ) );
 greeter.on( 'greeting:hi', ( name ) => console.log( `Hi, ${ name }!` ) );
 greeter.on( 'greeting', ( name ) => console.log( `${ name } was greeted.` );
@@ -414,7 +414,7 @@ Return the number of listeners for the given event type.
 ####`Emitter.prototype.listenerCount( type ) -> Number`
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.on( 'hello', () => console.log( 'Hello!' ) );
 console.log( greeter.listenerCount( 'hello' ) );
 // 1
@@ -452,7 +452,7 @@ No checks are made to see if the `listener` has already been added. Multiple cal
 ####`Emitter.prototype.many( times, listener ) -> Emitter`
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.many( 2, ( name ) => console.log( `Greeted ${ name }` ) );
 greeter.emit( 'hello', 'Jeff' );    // 1
 // Greeted Jeff
@@ -464,7 +464,7 @@ greeter.emit( 'yo', 'Steve' );      // 3
 ####`Emitter.prototype.many( type, times, listener ) -> Emitter`
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.many( 'hello', 2, ( name ) => console.log( `Hello, ${ name }!` ) );
 greeter.emit( 'hello', 'Jeff' );    // 1
 // Hello, Jeff!
@@ -480,7 +480,7 @@ By default Emitters will emit a `:maxListeners` event if more than *10* listener
 ####`Emitter.prototype.maxListeners`
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 
 greeter.maxListeners = 1;
 
@@ -503,7 +503,7 @@ function greet( name ){
     console.log( `Greetings, ${ name }!` );
 }
 
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.on( greet );
 greeter.emit( 'hello' 'Jeff' );
 // Greetings, Jeff!
@@ -520,7 +520,7 @@ function hello( name ){
     console.log( `Hello, ${ name }!` );
 }
 
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.on( 'hello', hello );
 greeter.emit( 'hello', 'Jeff' );
 // Hello, Jeff!
@@ -530,14 +530,14 @@ greeter.emit( 'hello', 'Jeff' );
 
 ### Emitter.prototype.on
 
-Adds a listeners for the specified event `type`. If no `type` is given the listener will be triggered any event `type`.
+Adds a listener for the specified event `type`. If no `type` is given the listener will be triggered any event `type`.
 
 No checks are made to see if the `listener` has already been added. Multiple calls passing the same combination `type` and `listener` will result in the `listener` being added multiple times.
 
 ####`Emitter.prototype.on( listener ) -> Emitter`
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.on( () => console.log( 'Greeted' ) );
 greeter.emit( 'hello' );
 // Greeted
@@ -548,11 +548,11 @@ greeter.emit( 'goodbye' );
 ####`Emitter.prototype.on( type, listener ) -> Emitter`
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
 greeter.emit( 'hello', 'World' );
 // Hello, World!
-greeter.emit( 'hello', 'World' );
+greeter.emit( 'hi', 'World' );
 ```
 
 ### Emitter.prototype.once
@@ -564,7 +564,7 @@ No checks are made to see if the `listener` has already been added. Multiple cal
 ####`Emitter.prototype.once( listener ) -> Emitter`
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.once( () => console.log( 'Greeted' ) );
 greeter.emit( 'hello' );
 // Greeted
@@ -574,7 +574,7 @@ greeter.emit( 'goodbye' );
 ####`Emitter.prototype.once( type, listener ) -> Emitter`
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.once( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
 greeter.emit( 'hello', 'World' );
 // Hello, World!
@@ -586,7 +586,7 @@ greeter.emit( 'hello', 'World' );
 ####`Emitter.prototype.toJSON() -> Object`
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.maxListeners = 5;
 greeter.on( 'greet', ( name ) => console.log( `Hello, ${ name }!` ) );
 greeter.on( 'greet', ( name ) => console.log( `Hi, ${ name }!` ) );
@@ -605,7 +605,7 @@ console.log( greeter.toJSON() );
 ####`Emitter.prototype.toString() -> Object`
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.maxListeners = 5;
 greeter.on( 'greet', ( name ) => console.log( `Hello, ${ name }!` ) );
 greeter.on( 'greet', ( name ) => console.log( `Hi, ${ name }!` ) );
@@ -628,14 +628,14 @@ Returns `true` if the event had listeners, `false` otherwise.
 ####`Emitter.prototype.trigger( type, data ) -> Boolean`
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
 greeter.trigger( 'hello', [ 'World' ] );
 // Hello, World!
 ```
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.on( 'greeting:hello', ( name ) => console.log( `Hello, ${ name }!` ) );
 greeter.on( 'greeting:hi', ( name ) => console.log( `Hi, ${ name }!` ) );
 greeter.on( 'greeting', ( name ) => console.log( `${ name } was greeted.` );
@@ -658,7 +658,7 @@ No checks are made to see if the `listener` has already been added. Multiple cal
 ####`Emitter.prototype.until( listener ) -> Emitter`
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.until( function( name ){
     console.log( `Greeted ${ name }` );
     return name === 'Terry';
@@ -673,7 +673,7 @@ greeter.emit( 'hi', 'Aaron' );
 ####`Emitter.prototype.until( type, listener ) -> Emitter`
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 greeter.until( 'hello', function( name ){
     console.log( `Hello, ${ name }!` );
     return name === 'World';
@@ -692,7 +692,7 @@ When an `Emitter` experiences an error, it typically emits an `error` event. If 
 Emitters emit certain events that provide information about its lifecycle. By convention these event types start with a `:`.
 
 ```javascript
-var greeter = new Emitter();
+const greeter = new Emitter();
 
 greeter.maxListeners = 1;
 

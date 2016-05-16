@@ -42,3 +42,13 @@
 * Made internal properties non-enumerable.
 * Added `toJSON()` and `toString()` methods.
 * Additional testing.
+
+## 2.0.0
+
+* Updated development environment.
+* Removed `Symbol` and `setImmediate()` shims.
+* `defineEvents()`, `defineMaxListeners()`, `destroyEvents()`, and `destroyMaxListeners()` are no longer considered to be part of the public API.
+* `toJSON()` and `toString()` are no longer provided by `Emitter.asEmitter()` but are part of `Emitter.prototype`.
+* Removed `Emitter.listenerCount()`.
+* Added `first()` and `eventTypes()`.
+* Migrated to jsdocs for API documentation.
