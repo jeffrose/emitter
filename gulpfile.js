@@ -14,7 +14,7 @@ const gulp = require( 'gulp' ),
     colors = gutil.colors,
     log = gutil.log;
 
-gulp.task( 'dist', [ 'docs' ], () => mergeStream( 
+gulp.task( 'dist', /*[ 'docs' ],*/ () => mergeStream(
     
         // Distribution for modern environments
         gulp.src( [ 'src/emitter.js' ] )
@@ -36,8 +36,8 @@ gulp.task( 'dist', [ 'docs' ], () => mergeStream(
     )
 );
 
-gulp.task( 'docs', ( done ) => {
-    gulp.src( [ 'src/emitter.js' ] )
+gulp.task( 'docs', () => {
+    return gulp.src( [ 'src/emitter.js' ] )
         .pipe( jsdoc() )
         .on( 'error', ( error ) => {
             log( colors.red( 'jsdoc failed' ), error.message );
@@ -48,20 +48,20 @@ gulp.task( 'docs', ( done ) => {
         .pipe( gulp.dest( 'api' ) );
 } );
 
-gulp.task( 'test', ( done ) => {
-    gulp.src( [ 'src/emitter.js' ] )
-        .pipe( sourcemaps.init() )
+gulp.task( 'test', [ 'dist' ], ( done ) => {
+    gulp.src( [ 'dist/emitter-umd.js' ] )
+        /*.pipe( sourcemaps.init() )
         .pipe( babel( {
             plugins: [ 'transform-es2015-modules-umd' ],
             presets: [ 'es2015' ]
         } ) )
-        .pipe( sourcemaps.write() )
+        .pipe( sourcemaps.write() )*/
         .pipe( istanbul( {
             //instrumenter: Instrumenter
         } ) )
         .pipe( istanbul.hookRequire() )
         .on( 'finish', () => {
-            gulp.src( [ 'test/test.js' ] )
+            gulp.src( [ 'test/test.js' ], { read: false } )
                 .pipe( mocha() )
                 .pipe( istanbul.writeReports() )
                 .on( 'end', done );

@@ -33,19 +33,20 @@ greeter.greet( 'Jeff' );
 // Hello, Jeff!
 ```
 
-####`new Emitter( bindings )`
+####`new Emitter( mapping )`
 
 ```javascript
 var greetings = {
-        'greet': function(){
-            console.log( 'Hello!' );
-        }
+        'hi': () => console.log( 'Hello!' ),
+        'hello': () => console.log( 'Hi!' )
     },
     
     greeter = new Emitter( greetings );
     
-greeter.emit( 'greet' );
+greeter.emit( 'hello' );
 // Hello!
+greeter.emit( 'hi' );
+// Hi!
 ```
 
 ```javascript
@@ -63,6 +64,83 @@ greeter.emit( 'greet' );
 // Hello!
 // Hi!
 // Yo!
+```
+
+## Mixin
+
+A functional mixin that provides the Emitter.js API to its target. The `constructor()`, `destroy()` and static properties on `Emitter` are not provided. This mixin is used to populate the `prototype` of `Emitter`.
+
+####`Emitter( target )`
+
+```javascript
+// Initialize the target
+const greeter = Object.create( null );
+
+// Mixin the Emitter API
+Emitter( greeter );
+
+greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.emit( 'hello', 'World' );
+// Hello, World!
+```
+
+####`Emitter( API, target )`
+
+```javascript
+// Initialize the target
+const greeter = { name: 'Terry' };
+
+// Mixin a selection of the Emitter API
+Emitter( {
+    greet  : '@@emitter/emit',
+    listen : '@@emitter/on'
+}, greeter );
+
+greeter.listen( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.greet( 'hello', 'World' );
+// Hello, World!
+console.log( greeter.name );
+// Terry
+```
+
+```javascript
+class Person {
+    constructor( name ){
+        this.name = name;
+    }
+}
+
+const
+    // Initialize the target
+    greeter = new Person( 'Terry' ),
+    // Emitter API
+    EPI = Emitter.API;
+
+// Mixin a selection of the Emitter API
+Emitter( {
+    talk   : EPI.emit,
+    listen : EPI.on
+}, greeter );
+
+greeter.listen( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.talk( 'hello', 'World' );
+// Hello, World!
+console.log( greeter.name );
+// Terry
+```
+
+```javascript
+// Initialize the target
+const greeter = { name: 'Terry' };
+
+// Initialize the mixin
+Emitter( '@@emitter/emit @@emitter/on', greeter );
+
+greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.emit( 'hello', 'World' );
+// Hello, World!
+console.log( greeter.name );
+// Terry
 ```
 
 ## Methods and Properties
@@ -242,7 +320,8 @@ greeter.emit( 'hello', 'World' );
 ####`Emitter.prototype.defineEvents( bindings )`
 
 ```javascript
-const // Predefined events
+const 
+    // Predefined events
     greetings = {
         hello: function( name ){ console.log( `Hello, ${name}!` ),
         hi: function( name ){ console.log( `Hi, ${name}!` )
