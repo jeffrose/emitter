@@ -32,5 +32,4 @@ class Emitter implements Emitter {
     toString(): string;
     trigger( type: string, ...args: any[] ): boolean;
     until( type: string, listener: Function ): this;
-    valueOf(): object;
 }
