@@ -332,7 +332,7 @@ function emitAllEvents( emitter, type, data ){
 function emitErrors( emitter, errors ){
     const length = errors.length;
     for( let index = 0; index < length; index += 1 ){
-        emitEvent( emitter, 'error', [ errors[ index ] ] );
+        emitEvent( emitter, 'error', [ errors[ index ] ], false );
     }
 }
 
@@ -722,11 +722,7 @@ function tick( callback ){
 function tickAllEvents( emitter, type, data ){
     return new Promise( function( resolve, reject ){
         tick( function(){
-            try {
-                resolve( emitAllEvents( emitter, type, data ) );
-            } catch( e ){
-                reject( e );
-            }
+            emitAllEvents( emitter, type, data ) ? resolve() : reject();
         } );
     } );
 }
@@ -1573,7 +1569,7 @@ asEmitter.call( Emitter.prototype );
 Emitter.prototype.destroy = function(){
     emitEvent( this, ':destroy', [], true );
     this.clear();
-    this.destroy = this.clear = this.emit = this.first = this.listenerCount = this.listeners = this.many = this.off = this.on = this.once = this.tick = this.trigger = this.until = noop;
+    this.destroy = this.at = this.clear = this.emit = this.eventTypes = this.first = this.getMaxListeners = this.listenerCount = this.listeners = this.many = this.off = this.on = this.once = this.setMaxListeners = this.tick = this.trigger = this.until = noop;
     this.toJSON = () => 'destroyed';
 };
 

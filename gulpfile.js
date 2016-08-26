@@ -69,8 +69,8 @@ gulp.task( 'test', [ 'dist' ], ( done ) => {
         } );
 } );
 
-gulp.task( 'perf', () => {
-    return gulp.src( [ 'perf/emit.js' ] )
+gulp.task( 'performance', [ 'dist' ], () => {
+    return gulp.src( [ 'test/performance.js' ] )
         .pipe( benchmark() )
         .pipe( gulp.dest( './benchmark' ) );
 } );

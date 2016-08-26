@@ -16,14 +16,25 @@ while( index-- ){
 }
 
 module.exports = {
-    name: 'emit',
-    maxTime: 3,
+    name: 'EventEmitter vs. Emitter',
+    maxTime: 5,
     tests: {
         'Emitter#emit': function(){
             emitter.emit( 'foo', 1, 2, 3 );
         },
+        'Emitter#tick': {
+            defer: true,
+            fn: function( deferred ){
+                emitter.tick( 'foo', 1, 2, 3 ).then( function(){
+                    deferred.resolve();
+                } );
+            }
+        },
+        'Emitter#trigger': function(){
+            emitter.trigger( 'foo', [ 1, 2, 3 ] );
+        },
         'EventEmitter#emit': function(){
-            ee.emit( 'foo', [ 1, 2, 3 ] );
+            ee.emit( 'foo', 1, 2, 3 );
         }
     }
 };
