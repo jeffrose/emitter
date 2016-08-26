@@ -1555,10 +1555,3 @@ Emitter.prototype.toJSON = function(){
 Emitter.prototype.toString = function(){
     return `${ this.constructor.name } ${ JSON.stringify( this.toJSON() ) }`.trim();
 };
-
-/**
- * @returns {external:Object} An plain object representation of the emitter.
- */
-Emitter.prototype.valueOf = function(){
-    return this.toJSON();
-};
