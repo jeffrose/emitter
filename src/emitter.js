@@ -66,11 +66,6 @@
  */ 
 
 /**
- * A {@link external:string} that represents a function in the Emitter protocol. In the future this will become a {@link external:symbol}.
- * @typedef {external:string} Definition
- */
-
-/**
  * A {@link external:Function} bound to an emitter {@link EventType}. Any data transmitted with the event will be passed into the listener as arguments.
  * @typedef {external:Function} EventListener
  * @param {...*} data The arguments passed by the `emit`.
@@ -615,46 +610,6 @@ function listenMany( handler, isFunction, emitter, args ){
 }
 
 /**
- * @function Emitter~mixinEmitter
- */
-function mixinEmitter( selection, target ){
-    
-    // Shift arguments
-    if( typeof target === 'undefined' ){
-        target = selection;
-        selection = API;
-    }
-    
-    // Apply the entire Emitter API
-    if( selection === API ){
-        asEmitter.call( target );
-    
-    // Apply only the selected API methods
-    } else {
-        let index, key, mapping, names, value;
-        
-        if( typeof selection === 'string' ){
-            names = selection.split( ' ' );
-            mapping = API;
-        } else {
-            names = Object.keys( selection );
-            mapping = selection;
-        }
-        
-        index = names.length;
-        
-        while( index-- ){
-            key = names[ index ];
-            value = mapping[ key ];
-            
-            target[ key ] = typeof value === 'function' ?
-                value :
-                API[ value ];
-        }
-    }
-}
-
-/**
  * @function Emitter~removeEventListener
  * @param {Emitter} emitter The emitter on which the event would be emitted.
  * @param {EventType} type The event type.
@@ -724,6 +679,46 @@ function spliceList( list, index ){
     }
     
     list.pop();
+}
+
+/**
+ * @function Emitter~toEmitter
+ */
+function toEmitter( selection, target ){
+    
+    // Shift arguments
+    if( typeof target === 'undefined' ){
+        target = selection;
+        selection = API;
+    }
+    
+    // Apply the entire Emitter API
+    if( selection === API ){
+        asEmitter.call( target );
+    
+    // Apply only the selected API methods
+    } else {
+        let index, key, mapping, names, value;
+        
+        if( typeof selection === 'string' ){
+            names = selection.split( ' ' );
+            mapping = API;
+        } else {
+            names = Object.keys( selection );
+            mapping = selection;
+        }
+        
+        index = names.length;
+        
+        while( index-- ){
+            key = names[ index ];
+            value = mapping[ key ];
+            
+            target[ key ] = typeof value === 'function' ?
+                value :
+                API[ value ];
+        }
+    }
 }
 
 /**
@@ -1311,17 +1306,37 @@ function asEmitter(){
 asEmitter.call( API );
 
 /**
- * A functional mixin that provides the Emitter.js API to its target. The `constructor()`, `destroy()`, `toJSON()`, and `toString()` and static properties on `Emitter` are not provided. This mixin is used to populate the `prototype` of `Emitter`.
- * @mixin Emitter
- * 
+ * Applies the Emitter.js API to its target.
+ * @function Emitter
+ * @param {external:string|external:Object} [selection] A selection of the Emitter.js API that will be applied to the `target`.
+ * @param {exteral:Object} target The object to which the Emitter.js API will be applied.
+ * @example <caption>Applying all of the API</caption>
+ * let greeter = Object.create( null );
+ * Emitter( greeter );
+ * greeter.on( 'hello', () => console.log( 'Hello!' ) );
+ * greeter.emit( 'hello' );
+ * // Hello!
+ * @example <caption>Applying a selection of the API</caption>
+ * let greeter = Object.create( null );
+ * Emitter( 'emit on off', greeter );
+ * greeter.on( 'hello', () => console.log( 'Hello!' ) );
+ * greeter.emit( 'hello' );
+ * // Hello!
+ * @example <caption>Remapping a selection of the API</caption>
+ * let greeter = Object.create( null );
+ * Emitter( { fire: 'emit', addListener: 'on' }, greeter );
+ * greeter.addListener( 'hello', () => console.log( 'Hello!' ) );
+ * greeter.fire( 'hello' );
+ * // Hello!
  */
+ 
 /**
- * Creates an instance of emitter. If `bindings` are provided they will automatically be passed into `on()` once construction is complete.
+ * Creates an instance of emitter. If `mapping` are provided they will automatically be passed into `on()` once construction is complete.
  * @class Emitter
  * @classdesc An object that emits named events which cause functions to be executed.
  * @extends Emitter~Null
- * @mixes Emitter
- * @param {external:Object} [bindings] A mapping of event types to event listeners.
+ * @mixes Emitter~asEmitter
+ * @param {external:Object} [mapping] A mapping of event types to event listeners.
  * @see {@link https://github.com/nodejs/node/blob/master/lib/events.js}
  * @example <caption>Using Emitter directly</caption>
  * const greeter = new Emitter();
@@ -1412,7 +1427,7 @@ export default function Emitter(){
     
     // Called as function/mixin
     } else {
-        mixinEmitter( arguments[ 0 ], arguments[ 1 ] );
+        toEmitter( arguments[ 0 ], arguments[ 1 ] );
     }
 }
 

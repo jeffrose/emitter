@@ -959,6 +959,7 @@
 
         /**
          * @function Emitter~asEmitter.getMaxListeners
+         * @returns {external:number} The maximum number of listeners before a warning occurs.
          */
         this.getMaxListeners = function () {
             return getMaxListeners(this);
