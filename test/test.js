@@ -53,20 +53,19 @@ describe( 'Emitter', () => {
                 expect( emitter.emit ).to.be.a( 'function' );
                 expect( emitter.eventTypes ).to.be.a( 'function' );
                 expect( emitter.first ).to.be.a( 'function' );
+                expect( emitter.getMaxListeners ).to.be.a( 'function' );
                 expect( emitter.listenerCount ).to.be.a( 'function' );
                 expect( emitter.listeners ).to.be.a( 'function' );
                 expect( emitter.many ).to.be.a( 'function' );
                 expect( emitter.off ).to.be.a( 'function' );
                 expect( emitter.on ).to.be.a( 'function' );
                 expect( emitter.once ).to.be.a( 'function' );
+                expect( emitter.setMaxListeners ).to.be.a( 'function' );
                 expect( emitter.toJSON ).to.be.a( 'function' );
                 expect( emitter.toString ).to.be.a( 'function' );
                 expect( emitter.trigger ).to.be.a( 'function' );
                 expect( emitter.until ).to.be.a( 'function' );
-                expect( emitter.valueOf ).to.be.a( 'function' );
                 expect( emitter.maxListeners ).to.be.a( 'number' );
-                expect( emitter.getMaxListeners ).to.be.undefined;
-                expect( emitter.setMaxListeners ).to.be.undefined;
             } );
     
             it( 'should provide event subscription', () => {
