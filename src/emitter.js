@@ -682,15 +682,10 @@ function spliceList( list, index ){
 }
 
 /**
+ * Applies a `selection` of the Emitter.js API to the `target`.
  * @function Emitter~toEmitter
  */
 function toEmitter( selection, target ){
-    
-    // Shift arguments
-    if( typeof target === 'undefined' ){
-        target = selection;
-        selection = API;
-    }
     
     // Apply the entire Emitter API
     if( selection === API ){
@@ -1306,7 +1301,7 @@ function asEmitter(){
 asEmitter.call( API );
 
 /**
- * Applies the Emitter.js API to its target.
+ * Applies the Emitter.js API to the target.
  * @function Emitter
  * @param {external:string|external:Object} [selection] A selection of the Emitter.js API that will be applied to the `target`.
  * @param {exteral:Object} target The object to which the Emitter.js API will be applied.
@@ -1425,9 +1420,18 @@ export default function Emitter(){
             enumerable: false
         } );
     
-    // Called as function/mixin
+    // Called as function
     } else {
-        toEmitter( arguments[ 0 ], arguments[ 1 ] );
+        let selection = arguments[ 0 ],
+            target = arguments[ 1 ];
+        
+        // Shift arguments
+        if( typeof target === 'undefined' ){
+            target = selection;
+            selection = API;
+        }
+        
+        toEmitter( selection, target );
     }
 }
 
@@ -1502,8 +1506,6 @@ Emitter.prototype = new Null();
 Emitter.prototype.constructor = Emitter;
 
 asEmitter.call( Emitter.prototype );
-delete Emitter.prototype.getMaxListeners;
-delete Emitter.prototype.setMaxListeners;
 
 /**
  * Destroys the emitter.
