@@ -1,4 +1,6 @@
 .c9/**
+benchmark/**
 coverage/**
 node_modules/**
+perf/**
 npm-debug.log
