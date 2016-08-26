@@ -10,7 +10,7 @@
 
 <dl>
 <dt><a href="#Emitter">Emitter([selection], target)</a></dt>
-<dd><p>Applies the Emitter.js API to its target.</p>
+<dd><p>Applies the Emitter.js API to the target.</p>
 </dd>
 </dl>
 
@@ -21,8 +21,18 @@
 <dd><p>A <a href="#external_string">string</a> or <a href="#external_symbol">symbol</a> that represents the type of event fired by the Emitter.</p>
 </dd>
 <dt><a href="#EventListener">EventListener</a> : <code><a href="#external_Function">Function</a></code></dt>
-<dd><p>A <a href="#external_Function">Function</a> bound to an emitter <a href="#EventType">EventType</a>. Any data transmitted with the event will be passed into the listener as arguments.</p>
+<dd><p>A <a href="#external_Function"> function</a> bound to an emitter <a href="#EventType">event type</a>. Any data transmitted with the event will be passed into the listener as arguments.</p>
 </dd>
+<dt><a href="#EventMapping">EventMapping</a> : <code><a href="#external_Object">Object</a></code></dt>
+<dd><p>An <a href="#external_Object">object</a> that maps <a href="#EventType">event types</a> to <a href="#EventListener">event listeners</a>.</p>
+</dd>
+<dt><a href="#EventPromise">EventPromise</a></dt>
+<dd><p>A <a href="#external_Promise">promise</a> returned when an event is emitted asynchronously. It resolves with <a href="#EventSuccess">EventSuccess</a> and rejects with <a href="#EventFailure">EventFailure</a>.</p>
+</dd>
+<dt><a href="#EventSuccess">EventSuccess</a> : <code>function</code></dt>
+<dd></dd>
+<dt><a href="#EventFailure">EventFailure</a> : <code>function</code></dt>
+<dd></dd>
 </dl>
 
 ## External
@@ -81,14 +91,14 @@ An object that emits named events which cause functions to be executed.
         * [.emit(type, [...data])](#Emitter+emit) ⇒ <code>[boolean](#external_boolean)</code>
         * [.eventTypes()](#Emitter+eventTypes) ⇒ <code>[Array.&lt;EventType&gt;](#EventType)</code>
         * [.first(type, listener)](#Emitter+first) ⇒ <code>[Emitter](#Emitter)</code>
-        * [.getMaxListeners()](#Emitter+getMaxListeners)
+        * [.getMaxListeners()](#Emitter+getMaxListeners) ⇒ <code>[number](#external_number)</code>
         * [.listenerCount(type)](#Emitter+listenerCount) ⇒ <code>[number](#external_number)</code>
         * [.listeners(type)](#Emitter+listeners) ⇒ <code>[number](#external_number)</code>
         * [.many(type, times, listener)](#Emitter+many) ⇒ <code>[Emitter](#Emitter)</code>
         * [.off(type, listener)](#Emitter+off) ⇒ <code>[Emitter](#Emitter)</code>
         * [.on([type], listener)](#Emitter+on) ⇒ <code>[Emitter](#Emitter)</code>
         * [.once([type], listener)](#Emitter+once) ⇒ <code>[Emitter](#Emitter)</code>
-        * [.setMaxListeners()](#Emitter+setMaxListeners)
+        * [.setMaxListeners(max)](#Emitter+setMaxListeners) ⇒ <code>[Emitter](#Emitter)</code>
         * [.tick(type, [...data])](#Emitter+tick) ⇒ <code>[Promise](#external_Promise)</code>
         * [.trigger([type], data)](#Emitter+trigger) ⇒ <code>[boolean](#external_boolean)</code>
         * [.until([type], listener)](#Emitter+until) ⇒ <code>[Emitter](#Emitter)</code>
@@ -109,14 +119,14 @@ An object that emits named events which cause functions to be executed.
             * [.emit(type, [...data])](#Emitter..asEmitter.emit) ⇒ <code>[boolean](#external_boolean)</code>
             * [.eventTypes()](#Emitter..asEmitter.eventTypes) ⇒ <code>[Array.&lt;EventType&gt;](#EventType)</code>
             * [.first(type, listener)](#Emitter..asEmitter.first) ⇒ <code>[Emitter](#Emitter)</code>
-            * [.getMaxListeners()](#Emitter..asEmitter.getMaxListeners)
+            * [.getMaxListeners()](#Emitter..asEmitter.getMaxListeners) ⇒ <code>[number](#external_number)</code>
             * [.listenerCount(type)](#Emitter..asEmitter.listenerCount) ⇒ <code>[number](#external_number)</code>
             * [.listeners(type)](#Emitter..asEmitter.listeners) ⇒ <code>[number](#external_number)</code>
             * [.many(type, times, listener)](#Emitter..asEmitter.many) ⇒ <code>[Emitter](#Emitter)</code>
             * [.off(type, listener)](#Emitter..asEmitter.off) ⇒ <code>[Emitter](#Emitter)</code>
             * [.on([type], listener)](#Emitter..asEmitter.on) ⇒ <code>[Emitter](#Emitter)</code>
             * [.once([type], listener)](#Emitter..asEmitter.once) ⇒ <code>[Emitter](#Emitter)</code>
-            * [.setMaxListeners()](#Emitter..asEmitter.setMaxListeners)
+            * [.setMaxListeners(max)](#Emitter..asEmitter.setMaxListeners) ⇒ <code>[Emitter](#Emitter)</code>
             * [.tick(type, [...data])](#Emitter..asEmitter.tick) ⇒ <code>[Promise](#external_Promise)</code>
             * [.trigger([type], data)](#Emitter..asEmitter.trigger) ⇒ <code>[boolean](#external_boolean)</code>
             * [.until([type], listener)](#Emitter..asEmitter.until) ⇒ <code>[Emitter](#Emitter)</code>
@@ -138,8 +148,10 @@ An object that emits named events which cause functions to be executed.
         * [~listenThree(handler, isFunction, emitter, arg1, arg2, arg3)](#Emitter..listenThree)
         * [~listenMany(handler, isFunction, emitter, args)](#Emitter..listenMany)
         * [~removeEventListener(emitter, type, listener)](#Emitter..removeEventListener)
-        * [~setMaxListeners()](#Emitter..setMaxListeners)
+        * [~setMaxListeners(The, max)](#Emitter..setMaxListeners)
         * [~spliceList(list, index)](#Emitter..spliceList)
+        * [~tick(callback)](#Emitter..tick)
+        * [~tickAllEvents(emitter, type, data)](#Emitter..tickAllEvents) ⇒ <code>[EventPromise](#EventPromise)</code>
         * [~toEmitter()](#Emitter..toEmitter)
 
 <a name="new_Emitter_new"></a>
@@ -150,7 +162,7 @@ Creates an instance of emitter. If `mapping` are provided they will automaticall
 
 | Param | Type | Description |
 | --- | --- | --- |
-| [mapping] | <code>[Object](#external_Object)</code> | A mapping of event types to event listeners. |
+| [mapping] | <code>[EventMapping](#EventMapping)</code> | A mapping of event types to event listeners. |
 
 **Example** *(Using Emitter directly)*  
 ```js
@@ -421,9 +433,10 @@ console.log( greeter.eventTypes() );
 
 <a name="Emitter+getMaxListeners"></a>
 
-### emitter.getMaxListeners()
+### emitter.getMaxListeners() ⇒ <code>[number](#external_number)</code>
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[getMaxListeners](#Emitter..asEmitter.getMaxListeners)</code>  
+**Returns**: <code>[number](#external_number)</code> - The maximum number of listeners.  
 <a name="Emitter+listenerCount"></a>
 
 ### emitter.listenerCount(type) ⇒ <code>[number](#external_number)</code>
@@ -612,13 +625,19 @@ greeter.emit( 'hello', 'World' );
 ```
 <a name="Emitter+setMaxListeners"></a>
 
-### emitter.setMaxListeners()
+### emitter.setMaxListeners(max) ⇒ <code>[Emitter](#Emitter)</code>
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[setMaxListeners](#Emitter..asEmitter.setMaxListeners)</code>  
+**Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| max | <code>[number](#external_number)</code> | The maximum number of listeners before a warning is issued. |
+
 <a name="Emitter+tick"></a>
 
 ### emitter.tick(type, [...data]) ⇒ <code>[Promise](#external_Promise)</code>
-Execute the listeners for the specified event `type` with the supplied arguments.
+Asynchronously emits specified event `type` with the supplied arguments. The listeners will still be synchronously executed in the specified order.
 
 The `type` can be namespaced using `:`, which will result in multiple events being triggered in succession. Listeners can be associated with the fully namespaced `type` or a subset of the `type`.
 
@@ -626,6 +645,7 @@ Returns a Promise.
 
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[tick](#Emitter..asEmitter.tick)</code>  
+**Returns**: <code>[Promise](#external_Promise)</code> - A promise which resolves when the listeners have completed execution but rejects if an error was thrown.  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -813,7 +833,28 @@ A "clean", empty container. Instantiating this is faster than explicitly calling
 <a name="Emitter..asEmitter"></a>
 
 ### Emitter~asEmitter
+A functional mixin that provides the Emitter.js API to its target. The `constructor()`, `destroy()`, `toJSON()`, `toString()`, and static properties on `Emitter` are not provided. This mixin is used to populate the `prototype` of `Emitter`.
+
+Like all functional mixins, this should be executed with [call()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call) or [apply()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply).
+
 **Kind**: inner mixin of <code>[Emitter](#Emitter)</code>  
+**Example** *(Applying Emitter functionality)*  
+```js
+// Create a base object
+const greeter = Object.create( null );
+
+// Apply the mixin
+asEmitter.call( greeter );
+
+greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.emit( 'hello', 'World' );
+// Hello, World!
+```
+**Example** *(Applying chaos to your world)*  
+```js
+// NO!!!
+Emitter.asEmitter(); // Madness ensues
+```
 
 * [~asEmitter](#Emitter..asEmitter)
     * [.at([type], index, listener)](#Emitter..asEmitter.at) ⇒ <code>[Emitter](#Emitter)</code>
@@ -821,14 +862,14 @@ A "clean", empty container. Instantiating this is faster than explicitly calling
     * [.emit(type, [...data])](#Emitter..asEmitter.emit) ⇒ <code>[boolean](#external_boolean)</code>
     * [.eventTypes()](#Emitter..asEmitter.eventTypes) ⇒ <code>[Array.&lt;EventType&gt;](#EventType)</code>
     * [.first(type, listener)](#Emitter..asEmitter.first) ⇒ <code>[Emitter](#Emitter)</code>
-    * [.getMaxListeners()](#Emitter..asEmitter.getMaxListeners)
+    * [.getMaxListeners()](#Emitter..asEmitter.getMaxListeners) ⇒ <code>[number](#external_number)</code>
     * [.listenerCount(type)](#Emitter..asEmitter.listenerCount) ⇒ <code>[number](#external_number)</code>
     * [.listeners(type)](#Emitter..asEmitter.listeners) ⇒ <code>[number](#external_number)</code>
     * [.many(type, times, listener)](#Emitter..asEmitter.many) ⇒ <code>[Emitter](#Emitter)</code>
     * [.off(type, listener)](#Emitter..asEmitter.off) ⇒ <code>[Emitter](#Emitter)</code>
     * [.on([type], listener)](#Emitter..asEmitter.on) ⇒ <code>[Emitter](#Emitter)</code>
     * [.once([type], listener)](#Emitter..asEmitter.once) ⇒ <code>[Emitter](#Emitter)</code>
-    * [.setMaxListeners()](#Emitter..asEmitter.setMaxListeners)
+    * [.setMaxListeners(max)](#Emitter..asEmitter.setMaxListeners) ⇒ <code>[Emitter](#Emitter)</code>
     * [.tick(type, [...data])](#Emitter..asEmitter.tick) ⇒ <code>[Promise](#external_Promise)</code>
     * [.trigger([type], data)](#Emitter..asEmitter.trigger) ⇒ <code>[boolean](#external_boolean)</code>
     * [.until([type], listener)](#Emitter..asEmitter.until) ⇒ <code>[Emitter](#Emitter)</code>
@@ -968,8 +1009,9 @@ console.log( greeter.eventTypes() );
 
 <a name="Emitter..asEmitter.getMaxListeners"></a>
 
-#### asEmitter.getMaxListeners()
+#### asEmitter.getMaxListeners() ⇒ <code>[number](#external_number)</code>
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
+**Returns**: <code>[number](#external_number)</code> - The maximum number of listeners.  
 <a name="Emitter..asEmitter.listenerCount"></a>
 
 #### asEmitter.listenerCount(type) ⇒ <code>[number](#external_number)</code>
@@ -1152,18 +1194,25 @@ greeter.emit( 'hello', 'World' );
 ```
 <a name="Emitter..asEmitter.setMaxListeners"></a>
 
-#### asEmitter.setMaxListeners()
+#### asEmitter.setMaxListeners(max) ⇒ <code>[Emitter](#Emitter)</code>
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
+**Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| max | <code>[number](#external_number)</code> | The maximum number of listeners before a warning is issued. |
+
 <a name="Emitter..asEmitter.tick"></a>
 
 #### asEmitter.tick(type, [...data]) ⇒ <code>[Promise](#external_Promise)</code>
-Execute the listeners for the specified event `type` with the supplied arguments.
+Asynchronously emits specified event `type` with the supplied arguments. The listeners will still be synchronously executed in the specified order.
 
 The `type` can be namespaced using `:`, which will result in multiple events being triggered in succession. Listeners can be associated with the fully namespaced `type` or a subset of the `type`.
 
 Returns a Promise.
 
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
+**Returns**: <code>[Promise](#external_Promise)</code> - A promise which resolves when the listeners have completed execution but rejects if an error was thrown.  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1298,7 +1347,7 @@ greeter.emit( 'hello', 'Mark' );
 | Param | Type | Description |
 | --- | --- | --- |
 | emitter | <code>[Emitter](#Emitter)</code> | The emitter on which the event would be emitted. |
-| mapping | <code>[Object](#external_Object)</code> | The event mapping. |
+| mapping | <code>[EventMapping](#EventMapping)</code> | The event mapping. |
 
 <a name="Emitter..defineEventsProperty"></a>
 
@@ -1482,8 +1531,14 @@ Execute a listener with four or more arguments.
 
 <a name="Emitter..setMaxListeners"></a>
 
-### Emitter~setMaxListeners()
+### Emitter~setMaxListeners(The, max)
 **Kind**: inner method of <code>[Emitter](#Emitter)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| The | <code>[Emitter](#Emitter)</code> | emitter on which the maximum number of listeners will be set. |
+| max | <code>[number](#external_number)</code> | The maximum number of listeners before a warning is issued. |
+
 <a name="Emitter..spliceList"></a>
 
 ### Emitter~spliceList(list, index)
@@ -1496,14 +1551,39 @@ Faster than `Array.prototype.splice`
 | list | <code>[Array](#external_Array)</code> | 
 | index | <code>[number](#external_number)</code> | 
 
+<a name="Emitter..tick"></a>
+
+### Emitter~tick(callback)
+Asynchronously executes a function.
+
+**Kind**: inner method of <code>[Emitter](#Emitter)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| callback | <code>[Function](#external_Function)</code> | The function to be executed. |
+
+<a name="Emitter..tickAllEvents"></a>
+
+### Emitter~tickAllEvents(emitter, type, data) ⇒ <code>[EventPromise](#EventPromise)</code>
+**Kind**: inner method of <code>[Emitter](#Emitter)</code>  
+**Returns**: <code>[EventPromise](#EventPromise)</code> - A promise which resolves when the listeners have completed execution but rejects if an error was thrown.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| emitter | <code>[Emitter](#Emitter)</code> | The emitter on which the event `type` will be asynchronously emitted. |
+| type | <code>[EventType](#EventType)</code> | The event type. |
+| data | <code>[Array](#external_Array)</code> | The data to be passed with the event. |
+
 <a name="Emitter..toEmitter"></a>
 
 ### Emitter~toEmitter()
+Applies a `selection` of the Emitter.js API to the `target`.
+
 **Kind**: inner method of <code>[Emitter](#Emitter)</code>  
 <a name="Emitter"></a>
 
 ## Emitter([selection], target)
-Applies the Emitter.js API to its target.
+Applies the Emitter.js API to the target.
 
 **Kind**: global function  
 
@@ -1548,14 +1628,14 @@ greeter.fire( 'hello' );
         * [.emit(type, [...data])](#Emitter+emit) ⇒ <code>[boolean](#external_boolean)</code>
         * [.eventTypes()](#Emitter+eventTypes) ⇒ <code>[Array.&lt;EventType&gt;](#EventType)</code>
         * [.first(type, listener)](#Emitter+first) ⇒ <code>[Emitter](#Emitter)</code>
-        * [.getMaxListeners()](#Emitter+getMaxListeners)
+        * [.getMaxListeners()](#Emitter+getMaxListeners) ⇒ <code>[number](#external_number)</code>
         * [.listenerCount(type)](#Emitter+listenerCount) ⇒ <code>[number](#external_number)</code>
         * [.listeners(type)](#Emitter+listeners) ⇒ <code>[number](#external_number)</code>
         * [.many(type, times, listener)](#Emitter+many) ⇒ <code>[Emitter](#Emitter)</code>
         * [.off(type, listener)](#Emitter+off) ⇒ <code>[Emitter](#Emitter)</code>
         * [.on([type], listener)](#Emitter+on) ⇒ <code>[Emitter](#Emitter)</code>
         * [.once([type], listener)](#Emitter+once) ⇒ <code>[Emitter](#Emitter)</code>
-        * [.setMaxListeners()](#Emitter+setMaxListeners)
+        * [.setMaxListeners(max)](#Emitter+setMaxListeners) ⇒ <code>[Emitter](#Emitter)</code>
         * [.tick(type, [...data])](#Emitter+tick) ⇒ <code>[Promise](#external_Promise)</code>
         * [.trigger([type], data)](#Emitter+trigger) ⇒ <code>[boolean](#external_boolean)</code>
         * [.until([type], listener)](#Emitter+until) ⇒ <code>[Emitter](#Emitter)</code>
@@ -1576,14 +1656,14 @@ greeter.fire( 'hello' );
             * [.emit(type, [...data])](#Emitter..asEmitter.emit) ⇒ <code>[boolean](#external_boolean)</code>
             * [.eventTypes()](#Emitter..asEmitter.eventTypes) ⇒ <code>[Array.&lt;EventType&gt;](#EventType)</code>
             * [.first(type, listener)](#Emitter..asEmitter.first) ⇒ <code>[Emitter](#Emitter)</code>
-            * [.getMaxListeners()](#Emitter..asEmitter.getMaxListeners)
+            * [.getMaxListeners()](#Emitter..asEmitter.getMaxListeners) ⇒ <code>[number](#external_number)</code>
             * [.listenerCount(type)](#Emitter..asEmitter.listenerCount) ⇒ <code>[number](#external_number)</code>
             * [.listeners(type)](#Emitter..asEmitter.listeners) ⇒ <code>[number](#external_number)</code>
             * [.many(type, times, listener)](#Emitter..asEmitter.many) ⇒ <code>[Emitter](#Emitter)</code>
             * [.off(type, listener)](#Emitter..asEmitter.off) ⇒ <code>[Emitter](#Emitter)</code>
             * [.on([type], listener)](#Emitter..asEmitter.on) ⇒ <code>[Emitter](#Emitter)</code>
             * [.once([type], listener)](#Emitter..asEmitter.once) ⇒ <code>[Emitter](#Emitter)</code>
-            * [.setMaxListeners()](#Emitter..asEmitter.setMaxListeners)
+            * [.setMaxListeners(max)](#Emitter..asEmitter.setMaxListeners) ⇒ <code>[Emitter](#Emitter)</code>
             * [.tick(type, [...data])](#Emitter..asEmitter.tick) ⇒ <code>[Promise](#external_Promise)</code>
             * [.trigger([type], data)](#Emitter..asEmitter.trigger) ⇒ <code>[boolean](#external_boolean)</code>
             * [.until([type], listener)](#Emitter..asEmitter.until) ⇒ <code>[Emitter](#Emitter)</code>
@@ -1605,8 +1685,10 @@ greeter.fire( 'hello' );
         * [~listenThree(handler, isFunction, emitter, arg1, arg2, arg3)](#Emitter..listenThree)
         * [~listenMany(handler, isFunction, emitter, args)](#Emitter..listenMany)
         * [~removeEventListener(emitter, type, listener)](#Emitter..removeEventListener)
-        * [~setMaxListeners()](#Emitter..setMaxListeners)
+        * [~setMaxListeners(The, max)](#Emitter..setMaxListeners)
         * [~spliceList(list, index)](#Emitter..spliceList)
+        * [~tick(callback)](#Emitter..tick)
+        * [~tickAllEvents(emitter, type, data)](#Emitter..tickAllEvents) ⇒ <code>[EventPromise](#EventPromise)</code>
         * [~toEmitter()](#Emitter..toEmitter)
 
 <a name="new_Emitter_new"></a>
@@ -1617,7 +1699,7 @@ Creates an instance of emitter. If `mapping` are provided they will automaticall
 
 | Param | Type | Description |
 | --- | --- | --- |
-| [mapping] | <code>[Object](#external_Object)</code> | A mapping of event types to event listeners. |
+| [mapping] | <code>[EventMapping](#EventMapping)</code> | A mapping of event types to event listeners. |
 
 **Example** *(Using Emitter directly)*  
 ```js
@@ -1888,9 +1970,10 @@ console.log( greeter.eventTypes() );
 
 <a name="Emitter+getMaxListeners"></a>
 
-### emitter.getMaxListeners()
+### emitter.getMaxListeners() ⇒ <code>[number](#external_number)</code>
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[getMaxListeners](#Emitter..asEmitter.getMaxListeners)</code>  
+**Returns**: <code>[number](#external_number)</code> - The maximum number of listeners.  
 <a name="Emitter+listenerCount"></a>
 
 ### emitter.listenerCount(type) ⇒ <code>[number](#external_number)</code>
@@ -2079,13 +2162,19 @@ greeter.emit( 'hello', 'World' );
 ```
 <a name="Emitter+setMaxListeners"></a>
 
-### emitter.setMaxListeners()
+### emitter.setMaxListeners(max) ⇒ <code>[Emitter](#Emitter)</code>
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[setMaxListeners](#Emitter..asEmitter.setMaxListeners)</code>  
+**Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| max | <code>[number](#external_number)</code> | The maximum number of listeners before a warning is issued. |
+
 <a name="Emitter+tick"></a>
 
 ### emitter.tick(type, [...data]) ⇒ <code>[Promise](#external_Promise)</code>
-Execute the listeners for the specified event `type` with the supplied arguments.
+Asynchronously emits specified event `type` with the supplied arguments. The listeners will still be synchronously executed in the specified order.
 
 The `type` can be namespaced using `:`, which will result in multiple events being triggered in succession. Listeners can be associated with the fully namespaced `type` or a subset of the `type`.
 
@@ -2093,6 +2182,7 @@ Returns a Promise.
 
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[tick](#Emitter..asEmitter.tick)</code>  
+**Returns**: <code>[Promise](#external_Promise)</code> - A promise which resolves when the listeners have completed execution but rejects if an error was thrown.  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2280,7 +2370,28 @@ A "clean", empty container. Instantiating this is faster than explicitly calling
 <a name="Emitter..asEmitter"></a>
 
 ### Emitter~asEmitter
+A functional mixin that provides the Emitter.js API to its target. The `constructor()`, `destroy()`, `toJSON()`, `toString()`, and static properties on `Emitter` are not provided. This mixin is used to populate the `prototype` of `Emitter`.
+
+Like all functional mixins, this should be executed with [call()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call) or [apply()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply).
+
 **Kind**: inner mixin of <code>[Emitter](#Emitter)</code>  
+**Example** *(Applying Emitter functionality)*  
+```js
+// Create a base object
+const greeter = Object.create( null );
+
+// Apply the mixin
+asEmitter.call( greeter );
+
+greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.emit( 'hello', 'World' );
+// Hello, World!
+```
+**Example** *(Applying chaos to your world)*  
+```js
+// NO!!!
+Emitter.asEmitter(); // Madness ensues
+```
 
 * [~asEmitter](#Emitter..asEmitter)
     * [.at([type], index, listener)](#Emitter..asEmitter.at) ⇒ <code>[Emitter](#Emitter)</code>
@@ -2288,14 +2399,14 @@ A "clean", empty container. Instantiating this is faster than explicitly calling
     * [.emit(type, [...data])](#Emitter..asEmitter.emit) ⇒ <code>[boolean](#external_boolean)</code>
     * [.eventTypes()](#Emitter..asEmitter.eventTypes) ⇒ <code>[Array.&lt;EventType&gt;](#EventType)</code>
     * [.first(type, listener)](#Emitter..asEmitter.first) ⇒ <code>[Emitter](#Emitter)</code>
-    * [.getMaxListeners()](#Emitter..asEmitter.getMaxListeners)
+    * [.getMaxListeners()](#Emitter..asEmitter.getMaxListeners) ⇒ <code>[number](#external_number)</code>
     * [.listenerCount(type)](#Emitter..asEmitter.listenerCount) ⇒ <code>[number](#external_number)</code>
     * [.listeners(type)](#Emitter..asEmitter.listeners) ⇒ <code>[number](#external_number)</code>
     * [.many(type, times, listener)](#Emitter..asEmitter.many) ⇒ <code>[Emitter](#Emitter)</code>
     * [.off(type, listener)](#Emitter..asEmitter.off) ⇒ <code>[Emitter](#Emitter)</code>
     * [.on([type], listener)](#Emitter..asEmitter.on) ⇒ <code>[Emitter](#Emitter)</code>
     * [.once([type], listener)](#Emitter..asEmitter.once) ⇒ <code>[Emitter](#Emitter)</code>
-    * [.setMaxListeners()](#Emitter..asEmitter.setMaxListeners)
+    * [.setMaxListeners(max)](#Emitter..asEmitter.setMaxListeners) ⇒ <code>[Emitter](#Emitter)</code>
     * [.tick(type, [...data])](#Emitter..asEmitter.tick) ⇒ <code>[Promise](#external_Promise)</code>
     * [.trigger([type], data)](#Emitter..asEmitter.trigger) ⇒ <code>[boolean](#external_boolean)</code>
     * [.until([type], listener)](#Emitter..asEmitter.until) ⇒ <code>[Emitter](#Emitter)</code>
@@ -2435,8 +2546,9 @@ console.log( greeter.eventTypes() );
 
 <a name="Emitter..asEmitter.getMaxListeners"></a>
 
-#### asEmitter.getMaxListeners()
+#### asEmitter.getMaxListeners() ⇒ <code>[number](#external_number)</code>
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
+**Returns**: <code>[number](#external_number)</code> - The maximum number of listeners.  
 <a name="Emitter..asEmitter.listenerCount"></a>
 
 #### asEmitter.listenerCount(type) ⇒ <code>[number](#external_number)</code>
@@ -2619,18 +2731,25 @@ greeter.emit( 'hello', 'World' );
 ```
 <a name="Emitter..asEmitter.setMaxListeners"></a>
 
-#### asEmitter.setMaxListeners()
+#### asEmitter.setMaxListeners(max) ⇒ <code>[Emitter](#Emitter)</code>
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
+**Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| max | <code>[number](#external_number)</code> | The maximum number of listeners before a warning is issued. |
+
 <a name="Emitter..asEmitter.tick"></a>
 
 #### asEmitter.tick(type, [...data]) ⇒ <code>[Promise](#external_Promise)</code>
-Execute the listeners for the specified event `type` with the supplied arguments.
+Asynchronously emits specified event `type` with the supplied arguments. The listeners will still be synchronously executed in the specified order.
 
 The `type` can be namespaced using `:`, which will result in multiple events being triggered in succession. Listeners can be associated with the fully namespaced `type` or a subset of the `type`.
 
 Returns a Promise.
 
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
+**Returns**: <code>[Promise](#external_Promise)</code> - A promise which resolves when the listeners have completed execution but rejects if an error was thrown.  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2765,7 +2884,7 @@ greeter.emit( 'hello', 'Mark' );
 | Param | Type | Description |
 | --- | --- | --- |
 | emitter | <code>[Emitter](#Emitter)</code> | The emitter on which the event would be emitted. |
-| mapping | <code>[Object](#external_Object)</code> | The event mapping. |
+| mapping | <code>[EventMapping](#EventMapping)</code> | The event mapping. |
 
 <a name="Emitter..defineEventsProperty"></a>
 
@@ -2949,8 +3068,14 @@ Execute a listener with four or more arguments.
 
 <a name="Emitter..setMaxListeners"></a>
 
-### Emitter~setMaxListeners()
+### Emitter~setMaxListeners(The, max)
 **Kind**: inner method of <code>[Emitter](#Emitter)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| The | <code>[Emitter](#Emitter)</code> | emitter on which the maximum number of listeners will be set. |
+| max | <code>[number](#external_number)</code> | The maximum number of listeners before a warning is issued. |
+
 <a name="Emitter..spliceList"></a>
 
 ### Emitter~spliceList(list, index)
@@ -2963,9 +3088,34 @@ Faster than `Array.prototype.splice`
 | list | <code>[Array](#external_Array)</code> | 
 | index | <code>[number](#external_number)</code> | 
 
+<a name="Emitter..tick"></a>
+
+### Emitter~tick(callback)
+Asynchronously executes a function.
+
+**Kind**: inner method of <code>[Emitter](#Emitter)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| callback | <code>[Function](#external_Function)</code> | The function to be executed. |
+
+<a name="Emitter..tickAllEvents"></a>
+
+### Emitter~tickAllEvents(emitter, type, data) ⇒ <code>[EventPromise](#EventPromise)</code>
+**Kind**: inner method of <code>[Emitter](#Emitter)</code>  
+**Returns**: <code>[EventPromise](#EventPromise)</code> - A promise which resolves when the listeners have completed execution but rejects if an error was thrown.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| emitter | <code>[Emitter](#Emitter)</code> | The emitter on which the event `type` will be asynchronously emitted. |
+| type | <code>[EventType](#EventType)</code> | The event type. |
+| data | <code>[Array](#external_Array)</code> | The data to be passed with the event. |
+
 <a name="Emitter..toEmitter"></a>
 
 ### Emitter~toEmitter()
+Applies a `selection` of the Emitter.js API to the `target`.
+
 **Kind**: inner method of <code>[Emitter](#Emitter)</code>  
 <a name="EventType"></a>
 
@@ -2976,13 +3126,43 @@ A [string](#external_string) or [symbol](#external_symbol) that represents the t
 <a name="EventListener"></a>
 
 ## EventListener : <code>[Function](#external_Function)</code>
-A [Function](#external_Function) bound to an emitter [EventType](#EventType). Any data transmitted with the event will be passed into the listener as arguments.
+A [ function](#external_Function) bound to an emitter [event type](#EventType). Any data transmitted with the event will be passed into the listener as arguments.
 
 **Kind**: global typedef  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | ...data | <code>\*</code> | The arguments passed by the `emit`. |
+
+<a name="EventMapping"></a>
+
+## EventMapping : <code>[Object](#external_Object)</code>
+An [object](#external_Object) that maps [event types](#EventType) to [event listeners](#EventListener).
+
+**Kind**: global typedef  
+<a name="EventPromise"></a>
+
+## EventPromise
+A [promise](#external_Promise) returned when an event is emitted asynchronously. It resolves with [EventSuccess](#EventSuccess) and rejects with [EventFailure](#EventFailure).
+
+**Kind**: global typedef  
+<a name="EventSuccess"></a>
+
+## EventSuccess : <code>function</code>
+**Kind**: global typedef  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| status | <code>[boolean](#external_boolean)</code> | Whether or not the specified type of event had listeners. |
+
+<a name="EventFailure"></a>
+
+## EventFailure : <code>function</code>
+**Kind**: global typedef  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| error | <code>[Error](#external_Error)</code> | The error thrown during listener execution. |
 
 <a name="external_Array"></a>
 

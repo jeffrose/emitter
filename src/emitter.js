@@ -66,9 +66,29 @@
  */ 
 
 /**
- * A {@link external:Function} bound to an emitter {@link EventType}. Any data transmitted with the event will be passed into the listener as arguments.
+ * A {@link external:Function| function} bound to an emitter {@link EventType|event type}. Any data transmitted with the event will be passed into the listener as arguments.
  * @typedef {external:Function} EventListener
  * @param {...*} data The arguments passed by the `emit`.
+ */
+
+/**
+ * An {@link external:Object|object} that maps {@link EventType|event types} to {@link EventListener|event listeners}.
+ * @typedef {external:Object} EventMapping
+ */
+
+/**
+ * A {@link external:Promise|promise} returned when an event is emitted asynchronously. It resolves with {@link EventSuccess} and rejects with {@link EventFailure}.
+ * @typedef EventPromise
+ */
+
+/**
+ * @callback EventSuccess
+ * @param {external:boolean} status Whether or not the specified type of event had listeners.
+ */
+
+/**
+ * @callback EventFailure
+ * @param {external:Error} error The error thrown during listener execution.
  */
 
 /**
@@ -230,7 +250,7 @@ function addFiniteEventListener( emitter, type, times, listener ){
 /**
  * @function Emitter~addEventMapping
  * @param {Emitter} emitter The emitter on which the event would be emitted.
- * @param {external:Object} mapping The event mapping.
+ * @param {EventMapping} mapping The event mapping.
  */
 function addEventMapping( emitter, mapping ){
     const
@@ -653,6 +673,8 @@ function removeEventListener( emitter, type, listener ){
 
 /**
  * @function Emitter~setMaxListeners
+ * @param {Emitter} The emitter on which the maximum number of listeners will be set.
+ * @param {external:number} max The maximum number of listeners before a warning is issued.
  */
 function setMaxListeners( emitter, max ){
     if( !isPositiveNumber( max ) ){
@@ -679,6 +701,34 @@ function spliceList( list, index ){
     }
     
     list.pop();
+}
+
+/**
+ * Asynchronously executes a function.
+ * @function Emitter~tick
+ * @param {external:Function} callback The function to be executed.
+ */
+function tick( callback ){
+    return setTimeout( callback, 0 );
+}
+
+/**
+ * @function Emitter~tickAllEvents
+ * @param {Emitter} emitter The emitter on which the event `type` will be asynchronously emitted.
+ * @param {EventType} type The event type.
+ * @param {external:Array} data The data to be passed with the event.
+ * @returns {EventPromise} A promise which resolves when the listeners have completed execution but rejects if an error was thrown.
+ */
+function tickAllEvents( emitter, type, data ){
+    return new Promise( function( resolve, reject ){
+        tick( function(){
+            try {
+                resolve( emitAllEvents( emitter, type, data ) );
+            } catch( e ){
+                reject( e );
+            }
+        } );
+    } );
 }
 
 /**
@@ -717,7 +767,23 @@ function toEmitter( selection, target ){
 }
 
 /**
+ * A functional mixin that provides the Emitter.js API to its target. The `constructor()`, `destroy()`, `toJSON()`, `toString()`, and static properties on `Emitter` are not provided. This mixin is used to populate the `prototype` of `Emitter`.
+ * 
+ * Like all functional mixins, this should be executed with [call()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call) or [apply()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply).
  * @mixin Emitter~asEmitter
+ * @example <caption>Applying Emitter functionality</caption>
+ * // Create a base object
+ * const greeter = Object.create( null );
+ * 
+ * // Apply the mixin
+ * asEmitter.call( greeter );
+ * 
+ * greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+ * greeter.emit( 'hello', 'World' );
+ * // Hello, World!
+ * @example <caption>Applying chaos to your world</caption>
+ * // NO!!!
+ * Emitter.asEmitter(); // Madness ensues
  */
 function asEmitter(){
     
@@ -923,6 +989,7 @@ function asEmitter(){
     
     /**
      * @function Emitter~asEmitter.getMaxListeners
+     * @returns {external:number} The maximum number of listeners.
      */
     this.getMaxListeners = function(){
         return getMaxListeners( this );
@@ -1181,6 +1248,8 @@ function asEmitter(){
     
     /**
      * @function Emitter~asEmitter.setMaxListeners
+     * @param {external:number} max The maximum number of listeners before a warning is issued.
+     * @returns {Emitter} The emitter.
      */
     this.setMaxListeners = function( max ){
         setMaxListeners( this, max );
@@ -1188,7 +1257,7 @@ function asEmitter(){
     };
     
     /**
-     * Execute the listeners for the specified event `type` with the supplied arguments.
+     * Asynchronously emits specified event `type` with the supplied arguments. The listeners will still be synchronously executed in the specified order.
      * 
      * The `type` can be namespaced using `:`, which will result in multiple events being triggered in succession. Listeners can be associated with the fully namespaced `type` or a subset of the `type`.
      * 
@@ -1196,7 +1265,7 @@ function asEmitter(){
      * @function Emitter~asEmitter.tick
      * @param {EventType} type The event type.
      * @param {...*} [data] The data passed into the listeners.
-     * @returns {external:Promise}
+     * @returns {external:Promise} A promise which resolves when the listeners have completed execution but rejects if an error was thrown.
      * @example <caption>Asynchronously emitting an event</caption>
      * const greeter = new Emitter();
      * greeter.on( 'hello', () => console.log( 'Hello!' ) );
@@ -1207,17 +1276,7 @@ function asEmitter(){
      * // goodbye heard? false
      */
     this.tick = function( type, ...data ){
-        const emitter = this;
-        
-        return new Promise( function( resolve, reject ){
-            setTimeout( function(){
-                try {
-                    resolve( emitAllEvents( emitter, type, data ) );
-                } catch( e ){
-                    reject( e );
-                }
-            }, 0 );
-        } );
+        return tickAllEvents( this, type, data );
     };
     
     /**
@@ -1331,7 +1390,7 @@ asEmitter.call( API );
  * @classdesc An object that emits named events which cause functions to be executed.
  * @extends Emitter~Null
  * @mixes Emitter~asEmitter
- * @param {external:Object} [mapping] A mapping of event types to event listeners.
+ * @param {EventMapping} [mapping] A mapping of event types to event listeners.
  * @see {@link https://github.com/nodejs/node/blob/master/lib/events.js}
  * @example <caption>Using Emitter directly</caption>
  * const greeter = new Emitter();
