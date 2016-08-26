@@ -42,10 +42,11 @@ gulp.task( 'docs', () => {
         .on( 'error', ( error ) => {
             log( colors.red( 'jsdoc failed' ), error.message );
         } )
-        .pipe( rename( ( path ) => {
-            path.extname = '.md';
+        .pipe( rename( {
+            basename: 'API',
+            extname: '.md'
         } ) )
-        .pipe( gulp.dest( 'api' ) );
+        .pipe( gulp.dest( 'docs' ) );
 } );
 
 gulp.task( 'test', [ 'dist' ], ( done ) => {
