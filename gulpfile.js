@@ -14,7 +14,7 @@ const gulp = require( 'gulp' ),
     colors = gutil.colors,
     log = gutil.log;
 
-gulp.task( 'dist', /*[ 'docs' ],*/ () => mergeStream(
+gulp.task( 'dist', [ 'docs' ], () => mergeStream(
     
         // Distribution for modern environments
         gulp.src( [ 'src/emitter.js' ] )

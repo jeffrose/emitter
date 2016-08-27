@@ -77,21 +77,6 @@
  */
 
 /**
- * A {@link external:Promise|promise} returned when an event is emitted asynchronously. It resolves with {@link EventSuccess} and rejects with {@link EventFailure}.
- * @typedef EventPromise
- */
-
-/**
- * @callback EventSuccess
- * @param {external:boolean} status Whether or not the specified type of event had listeners.
- */
-
-/**
- * @callback EventFailure
- * @param {external:Error} error The error thrown during listener execution.
- */
-
-/**
  * This event is emitted _before_ an emitter destroys itself.
  * @event Emitter#:destroy
  */ 
@@ -717,7 +702,7 @@ function tick( callback ){
  * @param {Emitter} emitter The emitter on which the event `type` will be asynchronously emitted.
  * @param {EventType} type The event type.
  * @param {external:Array} data The data to be passed with the event.
- * @returns {EventPromise} A promise which resolves when the listeners have completed execution but rejects if an error was thrown.
+ * @returns {external:Promise} A promise which *resolves* if the event had listeners, *rejects* otherwise.
  */
 function tickAllEvents( emitter, type, data ){
     return new Promise( function( resolve, reject ){
@@ -1257,11 +1242,11 @@ function asEmitter(){
      * 
      * The `type` can be namespaced using `:`, which will result in multiple events being triggered in succession. Listeners can be associated with the fully namespaced `type` or a subset of the `type`.
      * 
-     * Returns a Promise.
+     * Returns {@link external:Promise|promise} which *resolves* if the event had listeners, *rejects* otherwise.
      * @function Emitter~asEmitter.tick
      * @param {EventType} type The event type.
      * @param {...*} [data] The data passed into the listeners.
-     * @returns {external:Promise} A promise which resolves when the listeners have completed execution but rejects if an error was thrown.
+     * @returns {external:Promise} A promise which *resolves* if the event had listeners, *rejects* otherwise.
      * @example <caption>Asynchronously emitting an event</caption>
      * const greeter = new Emitter();
      * greeter.on( 'hello', () => console.log( 'Hello!' ) );

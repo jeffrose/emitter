@@ -26,13 +26,6 @@
 <dt><a href="#EventMapping">EventMapping</a> : <code><a href="#external_Object">Object</a></code></dt>
 <dd><p>An <a href="#external_Object">object</a> that maps <a href="#EventType">event types</a> to <a href="#EventListener">event listeners</a>.</p>
 </dd>
-<dt><a href="#EventPromise">EventPromise</a></dt>
-<dd><p>A <a href="#external_Promise">promise</a> returned when an event is emitted asynchronously. It resolves with <a href="#EventSuccess">EventSuccess</a> and rejects with <a href="#EventFailure">EventFailure</a>.</p>
-</dd>
-<dt><a href="#EventSuccess">EventSuccess</a> : <code>function</code></dt>
-<dd></dd>
-<dt><a href="#EventFailure">EventFailure</a> : <code>function</code></dt>
-<dd></dd>
 </dl>
 
 ## External
@@ -151,7 +144,7 @@ An object that emits named events which cause functions to be executed.
         * [~setMaxListeners(The, max)](#Emitter..setMaxListeners)
         * [~spliceList(list, index)](#Emitter..spliceList)
         * [~tick(callback)](#Emitter..tick)
-        * [~tickAllEvents(emitter, type, data)](#Emitter..tickAllEvents) ⇒ <code>[EventPromise](#EventPromise)</code>
+        * [~tickAllEvents(emitter, type, data)](#Emitter..tickAllEvents) ⇒ <code>[Promise](#external_Promise)</code>
         * [~toEmitter()](#Emitter..toEmitter)
 
 <a name="new_Emitter_new"></a>
@@ -641,11 +634,11 @@ Asynchronously emits specified event `type` with the supplied arguments. The lis
 
 The `type` can be namespaced using `:`, which will result in multiple events being triggered in succession. Listeners can be associated with the fully namespaced `type` or a subset of the `type`.
 
-Returns a Promise.
+Returns [promise](#external_Promise) which *resolves* if the event had listeners, *rejects* otherwise.
 
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[tick](#Emitter..asEmitter.tick)</code>  
-**Returns**: <code>[Promise](#external_Promise)</code> - A promise which resolves when the listeners have completed execution but rejects if an error was thrown.  
+**Returns**: <code>[Promise](#external_Promise)</code> - A promise which *resolves* if the event had listeners, *rejects* otherwise.  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1209,10 +1202,10 @@ Asynchronously emits specified event `type` with the supplied arguments. The lis
 
 The `type` can be namespaced using `:`, which will result in multiple events being triggered in succession. Listeners can be associated with the fully namespaced `type` or a subset of the `type`.
 
-Returns a Promise.
+Returns [promise](#external_Promise) which *resolves* if the event had listeners, *rejects* otherwise.
 
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
-**Returns**: <code>[Promise](#external_Promise)</code> - A promise which resolves when the listeners have completed execution but rejects if an error was thrown.  
+**Returns**: <code>[Promise](#external_Promise)</code> - A promise which *resolves* if the event had listeners, *rejects* otherwise.  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1564,9 +1557,9 @@ Asynchronously executes a function.
 
 <a name="Emitter..tickAllEvents"></a>
 
-### Emitter~tickAllEvents(emitter, type, data) ⇒ <code>[EventPromise](#EventPromise)</code>
+### Emitter~tickAllEvents(emitter, type, data) ⇒ <code>[Promise](#external_Promise)</code>
 **Kind**: inner method of <code>[Emitter](#Emitter)</code>  
-**Returns**: <code>[EventPromise](#EventPromise)</code> - A promise which resolves when the listeners have completed execution but rejects if an error was thrown.  
+**Returns**: <code>[Promise](#external_Promise)</code> - A promise which *resolves* if the event had listeners, *rejects* otherwise.  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1688,7 +1681,7 @@ greeter.fire( 'hello' );
         * [~setMaxListeners(The, max)](#Emitter..setMaxListeners)
         * [~spliceList(list, index)](#Emitter..spliceList)
         * [~tick(callback)](#Emitter..tick)
-        * [~tickAllEvents(emitter, type, data)](#Emitter..tickAllEvents) ⇒ <code>[EventPromise](#EventPromise)</code>
+        * [~tickAllEvents(emitter, type, data)](#Emitter..tickAllEvents) ⇒ <code>[Promise](#external_Promise)</code>
         * [~toEmitter()](#Emitter..toEmitter)
 
 <a name="new_Emitter_new"></a>
@@ -2178,11 +2171,11 @@ Asynchronously emits specified event `type` with the supplied arguments. The lis
 
 The `type` can be namespaced using `:`, which will result in multiple events being triggered in succession. Listeners can be associated with the fully namespaced `type` or a subset of the `type`.
 
-Returns a Promise.
+Returns [promise](#external_Promise) which *resolves* if the event had listeners, *rejects* otherwise.
 
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[tick](#Emitter..asEmitter.tick)</code>  
-**Returns**: <code>[Promise](#external_Promise)</code> - A promise which resolves when the listeners have completed execution but rejects if an error was thrown.  
+**Returns**: <code>[Promise](#external_Promise)</code> - A promise which *resolves* if the event had listeners, *rejects* otherwise.  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2746,10 +2739,10 @@ Asynchronously emits specified event `type` with the supplied arguments. The lis
 
 The `type` can be namespaced using `:`, which will result in multiple events being triggered in succession. Listeners can be associated with the fully namespaced `type` or a subset of the `type`.
 
-Returns a Promise.
+Returns [promise](#external_Promise) which *resolves* if the event had listeners, *rejects* otherwise.
 
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
-**Returns**: <code>[Promise](#external_Promise)</code> - A promise which resolves when the listeners have completed execution but rejects if an error was thrown.  
+**Returns**: <code>[Promise](#external_Promise)</code> - A promise which *resolves* if the event had listeners, *rejects* otherwise.  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -3101,9 +3094,9 @@ Asynchronously executes a function.
 
 <a name="Emitter..tickAllEvents"></a>
 
-### Emitter~tickAllEvents(emitter, type, data) ⇒ <code>[EventPromise](#EventPromise)</code>
+### Emitter~tickAllEvents(emitter, type, data) ⇒ <code>[Promise](#external_Promise)</code>
 **Kind**: inner method of <code>[Emitter](#Emitter)</code>  
-**Returns**: <code>[EventPromise](#EventPromise)</code> - A promise which resolves when the listeners have completed execution but rejects if an error was thrown.  
+**Returns**: <code>[Promise](#external_Promise)</code> - A promise which *resolves* if the event had listeners, *rejects* otherwise.  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -3140,30 +3133,6 @@ A [ function](#external_Function) bound to an emitter [event type](#EventType). 
 An [object](#external_Object) that maps [event types](#EventType) to [event listeners](#EventListener).
 
 **Kind**: global typedef  
-<a name="EventPromise"></a>
-
-## EventPromise
-A [promise](#external_Promise) returned when an event is emitted asynchronously. It resolves with [EventSuccess](#EventSuccess) and rejects with [EventFailure](#EventFailure).
-
-**Kind**: global typedef  
-<a name="EventSuccess"></a>
-
-## EventSuccess : <code>function</code>
-**Kind**: global typedef  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| status | <code>[boolean](#external_boolean)</code> | Whether or not the specified type of event had listeners. |
-
-<a name="EventFailure"></a>
-
-## EventFailure : <code>function</code>
-**Kind**: global typedef  
-
-| Param | Type | Description |
-| --- | --- | --- |
-| error | <code>[Error](#external_Error)</code> | The error thrown during listener execution. |
-
 <a name="external_Array"></a>
 
 ## Array
