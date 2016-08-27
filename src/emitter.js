@@ -764,7 +764,7 @@ function toEmitter( selection, target ){
  * // Hello, World!
  * @example <caption>Applying chaos to your world</caption>
  * // NO!!!
- * Emitter.asEmitter(); // Madness ensues
+ * asEmitter(); // Madness ensues
  */
 function asEmitter(){
     
