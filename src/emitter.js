@@ -948,8 +948,32 @@ function asEmitter(){
      * // Hello, Jeff!
      * // Jeff was greeted.
      */
-    this.emit = function( type, ...data ){
+    this.emit = function( type ){
+        let data = [],
+            length = arguments.length;
+        
+        if( length > 1 ){
+            data = Array( length - 1 );
+            
+            for( let key = 1; key < length; key++ ){
+                data[ key - 1 ] = arguments[ key ];
+            }
+        }
+        
         return emitAllEvents( this, type, data );
+        /*
+        // This logic will change once Emitter.every becomes a Symbol
+        
+        if( typeof type === 'string' ){
+            let index = type.lastIndexOf( ':' );
+            
+            return index === -1 ?
+                emitEvent( this, type, data, type === $every ) :
+                emitAllEvents( this, type, data );
+        } else {
+            return emitEvent( this, type, data, false );
+        }
+        */
     };
     
     /**
@@ -1309,7 +1333,18 @@ function asEmitter(){
      * // hello heard? true
      * // goodbye heard? false
      */
-    this.tick = function( type, ...data ){
+    this.tick = function( type ){
+        let data = [],
+            length = arguments.length;
+        
+        if( length > 1 ){
+            data = Array( length - 1 );
+            
+            for( let key = 1; key < length; key++ ){
+                data[ key - 1 ] = arguments[ key ];
+            }
+        }
+        
         return tickAllEvents( this, type, data );
     };
     

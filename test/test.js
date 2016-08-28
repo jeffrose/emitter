@@ -262,7 +262,7 @@ describe( 'Emitter', () => {
                 expect( () => emitter.once( 'test' ) ).to.throw( TypeError );
             } );
     
-            it( 'should provide for many-time event subscription', () => {
+            it( 'should provide many-time event subscription', () => {
                 let onEmit = sinon.spy();
     
                 emitter.many( 'test', 2, onEmit );
@@ -279,7 +279,7 @@ describe( 'Emitter', () => {
                 expect( () => emitter.many( 'test' ) ).to.throw( TypeError );
             } );
             
-            it( 'should allow for unsubscribing early from a many-time event', () => {
+            it( 'should allow unsubscribing early from a many-time event', () => {
                 let onEmit = sinon.spy();
     
                 emitter.many( 'test', 5, onEmit );
@@ -296,7 +296,7 @@ describe( 'Emitter', () => {
                 expect( onEmit ).to.have.been.calledThrice;
             } );
             
-            it( 'should provide for conditional event subscription', () => {
+            it( 'should provide conditional event subscription', () => {
                 let onEmit = sinon.spy();
     
                 emitter.until( 'test', ( first, second, third ) => {

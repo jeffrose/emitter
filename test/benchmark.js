@@ -20,21 +20,21 @@ module.exports = {
     maxTime: 5,
     tests: {
         'Emitter#emit': function(){
-            emitter.emit( 'foo', 1, 2, 3 );
+            emitter.emit( 'foo' );
         },
         'Emitter#tick': {
             defer: true,
             fn: function( deferred ){
-                emitter.tick( 'foo', 1, 2, 3 ).then( function(){
+                emitter.tick( 'foo' ).then( function(){
                     deferred.resolve();
                 } );
             }
         },
         'Emitter#trigger': function(){
-            emitter.trigger( 'foo', [ 1, 2, 3 ] );
+            emitter.trigger( 'foo' );
         },
         'EventEmitter#emit': function(){
-            ee.emit( 'foo', 1, 2, 3 );
+            ee.emit( 'foo' );
         }
     }
 };
