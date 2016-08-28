@@ -61,9 +61,20 @@
  */
 
 /**
- * A {@link external:string} or {@link external:symbol} that represents the type of event fired by the Emitter.
- * @typedef {external:string|external:symbol} EventType
- */ 
+ * A set of method references to the Emitter.js API.
+ * @typedef {external:string|external:Object} APIReference
+ * @example <caption>A selection reference</caption>
+ * 'emit off on once'
+ * @example <caption>A mapping reference</caption>
+ * // 'emit()' will be mapped to 'fire()'
+ * // 'on()' will be mapped to 'addListener()'
+ * // 'off()' will be mapped to 'removeListener()'
+ * {
+ *  fire: 'emit',
+ *  addListener: 'on',
+ *  removeListener: 'off'
+ * }
+ */
 
 /**
  * A {@link external:Function| function} bound to an emitter {@link EventType|event type}. Any data transmitted with the event will be passed into the listener as arguments.
@@ -75,6 +86,11 @@
  * An {@link external:Object|object} that maps {@link EventType|event types} to {@link EventListener|event listeners}.
  * @typedef {external:Object} EventMapping
  */
+
+/**
+ * A {@link external:string} or {@link external:symbol} that represents the type of event fired by the Emitter.
+ * @typedef {external:string|external:symbol} EventType
+ */ 
 
 /**
  * This event is emitted _before_ an emitter destroys itself.
@@ -715,6 +731,8 @@ function tickAllEvents( emitter, type, data ){
 /**
  * Applies a `selection` of the Emitter.js API to the `target`.
  * @function Emitter~toEmitter
+ * @param {APIReference} [selection] A selection of the Emitter.js API.
+ * @param {external:Object} target The object on which the API will be applied.
  */
 function toEmitter( selection, target ){
     
@@ -777,6 +795,7 @@ function asEmitter(){
      * @param {external:number} index Where the listener will be added in the trigger list.
      * @param {EventListener} listener The event callback.
      * @returns {Emitter} The emitter.
+     * @since 2.0.0
      * @fires Emitter#:on
      * @fires Emitter#:maxListeners
      */
@@ -806,6 +825,7 @@ function asEmitter(){
      * @function Emitter~asEmitter.clear
      * @param {String} [type] The event type.
      * @returns {Emitter} The emitter.
+     * @since 1.0.0
      * @example <caption>Clearing all event types</caption>
      * const greeter = new Emitter();
      * greeter.on( 'hello', () => console.log( 'Hello!' ) );
@@ -899,6 +919,7 @@ function asEmitter(){
      * @param {EventType} type The event type.
      * @param {...*} [data] The data passed into the listeners.
      * @returns {external:boolean} Whether or not the event had listeners.
+     * @since 1.0.0
      * @example <caption>Emitting an event</caption>
      * const greeter = new Emitter();
      * greeter.on( 'hello', () => console.log( 'Hello!' ) );
@@ -934,6 +955,7 @@ function asEmitter(){
     /**
      * @function Emitter~asEmitter.eventTypes
      * @returns {Array<EventType>} The list of event types registered to the emitter.
+     * @since 2.0.0
      * @example
      * const greeter = new Emitter();
      * greeter.on( 'hello', () => console.log( `Hello` ) );
@@ -951,6 +973,7 @@ function asEmitter(){
      * @param {EventType} type The event type.
      * @param {EventListener} listener The event callback.
      * @returns {Emitter} The emitter.
+     * @since 2.0.0
      */
     this.first = function( type, listener ){
         // Shift arguments if type is not provided
@@ -969,8 +992,20 @@ function asEmitter(){
     };
     
     /**
+     * By default Emitter will emit a `:maxListeners` evet if more than **10** listeners are added for a particular event `type`. This method returns the current value.
      * @function Emitter~asEmitter.getMaxListeners
      * @returns {external:number} The maximum number of listeners.
+     * @since 2.0.0
+     * @example
+     * const greeter = new Emitter();
+     * 
+     * console.log( greeter.getMaxListeners() );
+     * // 10
+     * 
+     * greeter.setMaxListeners( 5 );
+     * 
+     * console.log( greeter.getMaxListeners() );
+     * // 5
      */
     this.getMaxListeners = function(){
         return getMaxListeners( this );
@@ -980,6 +1015,7 @@ function asEmitter(){
      * @function Emitter~asEmitter.listenerCount
      * @param {EventType} type The event type.
      * @returns {external:number} The number of listeners for that event type within the given emitter.
+     * @since 1.0.0
      * @example
      * const greeter = new Emitter();
      * greeter.on( 'hello', () => console.log( 'Hello!' ) );
@@ -1011,6 +1047,7 @@ function asEmitter(){
      * @function Emitter~asEmitter.listeners
      * @param {EventType} type The event type.
      * @returns {external:number} The number of listeners for that event type within the given emitter.
+     * @since 1.0.0
      * @example
      * const hello = function(){
      *  console.log( 'Hello!' );
@@ -1052,6 +1089,7 @@ function asEmitter(){
      * @param {external:number} times The number times the listener will be executed before being removed.
      * @param {EventListener} listener The event callback.
      * @returns {Emitter} The emitter.
+     * @since 1.0.0
      * @example <caption>Listen to any event type a set number of times</caption>
      * const greeter = new Emitter();
      * greeter.many( 2, ( name ) => console.log( `Greeted ${ name }` ) );
@@ -1098,6 +1136,7 @@ function asEmitter(){
      * @param {EventType} type The event type.
      * @param {EventListener} listener The event callback.
      * @returns {Emitter} The emitter.
+     * @since 1.0.0
      * @fires Emitter#:off
      * @example <caption>Remove a listener from any event type</caption>
      * function greet( name ){
@@ -1152,6 +1191,7 @@ function asEmitter(){
      * @param {EventType} [type] The event type.
      * @param {EventListener} listener The event callback.
      * @returns {Emitter} The emitter.
+     * @since 1.0.0
      * @fires Emitter#:on
      * @fires Emitter#:maxListeners
      * @example <caption>Listen to all event types</caption>
@@ -1197,6 +1237,7 @@ function asEmitter(){
      * @param {EventType} [type] The event type.
      * @param {EventListener} listener The event callback.
      * @returns {Emitter} The emitter.
+     * @since 1.0.0
      * @fires Emitter#:on
      * @fires Emitter#:maxListeners
      * const greeter = new Emitter();
@@ -1228,9 +1269,20 @@ function asEmitter(){
     };
     
     /**
+     * By default Emitter will emit a `:maxListeners` evet if more than **10** listeners are added for a particular event `type`. This method allows that to be changed. Set to **0** for unlimited.
      * @function Emitter~asEmitter.setMaxListeners
      * @param {external:number} max The maximum number of listeners before a warning is issued.
      * @returns {Emitter} The emitter.
+     * @since 2.0.0
+     * @example
+     * const greeter = new Emitter();
+     * 
+     * greeter.setMaxListeners( 1 );
+     * 
+     * greeter.on( ':maxListeners', ( greeting ) => console.log( `Greeting "${ greeting }" has one too many!` ) );
+     * greeter.on( 'hello', () => console.log( 'Hello!' ) );
+     * greeter.on( 'hello', () => alert( 'Hello!' ) );
+     * // Greeting "hello" has one too many!
      */
     this.setMaxListeners = function( max ){
         setMaxListeners( this, max );
@@ -1247,6 +1299,7 @@ function asEmitter(){
      * @param {EventType} type The event type.
      * @param {...*} [data] The data passed into the listeners.
      * @returns {external:Promise} A promise which *resolves* if the event had listeners, *rejects* otherwise.
+     * @since 2.0.0
      * @example <caption>Asynchronously emitting an event</caption>
      * const greeter = new Emitter();
      * greeter.on( 'hello', () => console.log( 'Hello!' ) );
@@ -1268,6 +1321,8 @@ function asEmitter(){
      * @param {EventType} [type] The event type.
      * @param {external:Array} data
      * @returns {external:boolean} Whether or not the event had listeners.
+     * @since 1.0.0
+     * @example
      * const greeter = new Emitter();
      * greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
      * greeter.trigger( 'hello', [ 'World' ] );
@@ -1298,6 +1353,7 @@ function asEmitter(){
      * @param {EventType} [type] The event type.
      * @param {EventListener} listener The event callback.
      * @returns {Emitter} The emitter.
+     * @since 1.2.0
      * @example
      * const greeter = new Emitter();
      * greeter.until( function( name ){
@@ -1343,7 +1399,7 @@ asEmitter.call( API );
 /**
  * Applies the Emitter.js API to the target.
  * @function Emitter
- * @param {external:string|external:Object} [selection] A selection of the Emitter.js API that will be applied to the `target`.
+ * @param {APIReference} [selection] A selection of the Emitter.js API that will be applied to the `target`.
  * @param {exteral:Object} target The object to which the Emitter.js API will be applied.
  * @example <caption>Applying all of the API</caption>
  * let greeter = Object.create( null );
@@ -1368,11 +1424,12 @@ asEmitter.call( API );
 /**
  * Creates an instance of emitter. If `mapping` are provided they will automatically be passed into `on()` once construction is complete.
  * @class Emitter
+ * @param {EventMapping} [mapping] A mapping of event types to event listeners.
  * @classdesc An object that emits named events which cause functions to be executed.
  * @extends Emitter~Null
  * @mixes Emitter~asEmitter
- * @param {EventMapping} [mapping] A mapping of event types to event listeners.
  * @see {@link https://github.com/nodejs/node/blob/master/lib/events.js}
+ * @since 1.0.0
  * @example <caption>Using Emitter directly</caption>
  * const greeter = new Emitter();
  * greeter.on( 'hello', () => console.log( 'Hello!' ) );
@@ -1449,6 +1506,23 @@ export default function Emitter(){
         let mapping = arguments[ 0 ];
         typeof mapping !== 'undefined' && addEventMapping( this, mapping );
         
+        /**
+         * By default Emitters will emit a `:maxListeners` event if more than **10** listeners are added for a particular event `type`. This property allows that to be changed. Set to **0** for unlimited.
+         * @member {external:number} Emitter#maxListeners
+         * @since 1.0.0
+         * @example
+         * const greeter = new Emitter();
+         * 
+         * console.log( greeter.maxListeners );
+         * // 10
+         * 
+         * greeter.maxListeners = 1;
+         * 
+         * greeter.on( ':maxListeners', ( greeting ) => console.log( `Greeting "${ greeting }" has one too many!` ) );
+         * greeter.on( 'hello', () => console.log( 'Hello!' ) );
+         * greeter.on( 'hello', () => alert( 'Hello!' ) );
+         * // Greeting "hello" has one too many!
+         */
         Object.defineProperty( this, 'maxListeners', {
             get: function(){
                 return getMaxListeners( this );
@@ -1481,6 +1555,7 @@ Object.defineProperties( Emitter, {
      * 
      * By default Emitter will emit a `:maxListeners` event if more than 10 listeners are added to a specific event type.
      * @member {external:number} Emitter.defaultMaxListeners=10
+     * @since 1.0.0
      * @example <caption>Changing the default maximum listeners</caption>
      * console.log( Emitter.defaultMaxListeners );
      * // 10
@@ -1499,7 +1574,6 @@ Object.defineProperties( Emitter, {
      * greeter2.on( 'hi', () => console.log( 'Hi!' ) );
      * greeter2.on( 'hi', () => alert( 'Hi!' ) );
      * // Greeting "hi" has one too many!
-     * 
      */
     defaultMaxListeners: {
         value: 10,
@@ -1512,6 +1586,7 @@ Object.defineProperties( Emitter, {
      * 
      * Using `Emitter.every` is typically not necessary.
      * @member {external:symbol} Emitter.every
+     * @since 1.0.0
      * @example
      * const greeter = new Emitter();
      * greeter.on( Emitter.every, () => console.log( 'Greeted' ) );
@@ -1529,6 +1604,7 @@ Object.defineProperties( Emitter, {
     /**
      * The current version of *Emitter.js*.
      * @member {external:string} Emitter.version
+     * @since 1.1.2
      * @example
      * console.log( Emitter.version );
      * // 2.0.0

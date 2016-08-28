@@ -17,14 +17,17 @@
 ## Typedefs
 
 <dl>
-<dt><a href="#EventType">EventType</a> : <code><a href="#external_string">string</a></code> | <code><a href="#external_symbol">symbol</a></code></dt>
-<dd><p>A <a href="#external_string">string</a> or <a href="#external_symbol">symbol</a> that represents the type of event fired by the Emitter.</p>
+<dt><a href="#APIReference">APIReference</a> : <code><a href="#external_string">string</a></code> | <code><a href="#external_Object">Object</a></code></dt>
+<dd><p>A set of method references to the Emitter.js API.</p>
 </dd>
 <dt><a href="#EventListener">EventListener</a> : <code><a href="#external_Function">Function</a></code></dt>
 <dd><p>A <a href="#external_Function"> function</a> bound to an emitter <a href="#EventType">event type</a>. Any data transmitted with the event will be passed into the listener as arguments.</p>
 </dd>
 <dt><a href="#EventMapping">EventMapping</a> : <code><a href="#external_Object">Object</a></code></dt>
 <dd><p>An <a href="#external_Object">object</a> that maps <a href="#EventType">event types</a> to <a href="#EventListener">event listeners</a>.</p>
+</dd>
+<dt><a href="#EventType">EventType</a> : <code><a href="#external_string">string</a></code> | <code><a href="#external_symbol">symbol</a></code></dt>
+<dd><p>A <a href="#external_string">string</a> or <a href="#external_symbol">symbol</a> that represents the type of event fired by the Emitter.</p>
 </dd>
 </dl>
 
@@ -72,10 +75,12 @@ An object that emits named events which cause functions to be executed.
 **Extends:** <code>[Null](#Emitter..Null)</code>  
 **Mixes**: <code>[asEmitter](#Emitter..asEmitter)</code>  
 **See**: [https://github.com/nodejs/node/blob/master/lib/events.js](https://github.com/nodejs/node/blob/master/lib/events.js)  
+**Since**: 1.0.0  
 
 * [Emitter](#Emitter) ⇐ <code>[Null](#Emitter..Null)</code>
     * [new Emitter([mapping])](#new_Emitter_new)
     * _instance_
+        * [.maxListeners](#Emitter+maxListeners) : <code>[number](#external_number)</code>
         * [.destroy()](#Emitter+destroy)
         * [.toJSON()](#Emitter+toJSON) ⇒ <code>[Object](#external_Object)</code>
         * [.toString()](#Emitter+toString) ⇒ <code>[string](#external_string)</code>
@@ -145,7 +150,7 @@ An object that emits named events which cause functions to be executed.
         * [~spliceList(list, index)](#Emitter..spliceList)
         * [~tick(callback)](#Emitter..tick)
         * [~tickAllEvents(emitter, type, data)](#Emitter..tickAllEvents) ⇒ <code>[Promise](#external_Promise)</code>
-        * [~toEmitter()](#Emitter..toEmitter)
+        * [~toEmitter([selection], target)](#Emitter..toEmitter)
 
 <a name="new_Emitter_new"></a>
 
@@ -239,6 +244,27 @@ greeter.emit( 'hello', 'Steve' );    // 3
 // Hello, Jeff!
 // Hello, Terry!
 ```
+<a name="Emitter+maxListeners"></a>
+
+### emitter.maxListeners : <code>[number](#external_number)</code>
+By default Emitters will emit a `:maxListeners` event if more than **10** listeners are added for a particular event `type`. This property allows that to be changed. Set to **0** for unlimited.
+
+**Kind**: instance property of <code>[Emitter](#Emitter)</code>  
+**Since**: 1.0.0  
+**Example**  
+```js
+const greeter = new Emitter();
+
+console.log( greeter.maxListeners );
+// 10
+
+greeter.maxListeners = 1;
+
+greeter.on( ':maxListeners', ( greeting ) => console.log( `Greeting "${ greeting }" has one too many!` ) );
+greeter.on( 'hello', () => console.log( 'Hello!' ) );
+greeter.on( 'hello', () => alert( 'Hello!' ) );
+// Greeting "hello" has one too many!
+```
 <a name="Emitter+destroy"></a>
 
 ### emitter.destroy()
@@ -297,6 +323,7 @@ No checks are made to see if the `listener` has already been added. Multiple cal
 **Mixes**: <code>[at](#Emitter..asEmitter.at)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
 **Emits**: <code>[:on](#Emitter+event__on)</code>, <code>[:maxListeners](#Emitter+event__maxListeners)</code>  
+**Since**: 2.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -312,6 +339,7 @@ Remove all listeners, or those for the specified event `type`.
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[clear](#Emitter..asEmitter.clear)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -358,6 +386,7 @@ Returns `true` if the event had listeners, `false` otherwise.
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[emit](#Emitter..asEmitter.emit)</code>  
 **Returns**: <code>[boolean](#external_boolean)</code> - Whether or not the event had listeners.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -403,6 +432,7 @@ greeter.emit( 'greeting:hello', 'Jeff' );
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[eventTypes](#Emitter..asEmitter.eventTypes)</code>  
 **Returns**: <code>[Array.&lt;EventType&gt;](#EventType)</code> - The list of event types registered to the emitter.  
+**Since**: 2.0.0  
 **Example**  
 ```js
 const greeter = new Emitter();
@@ -418,6 +448,7 @@ console.log( greeter.eventTypes() );
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[first](#Emitter..asEmitter.first)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+**Since**: 2.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -427,15 +458,31 @@ console.log( greeter.eventTypes() );
 <a name="Emitter+getMaxListeners"></a>
 
 ### emitter.getMaxListeners() ⇒ <code>[number](#external_number)</code>
+By default Emitter will emit a `:maxListeners` evet if more than **10** listeners are added for a particular event `type`. This method returns the current value.
+
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[getMaxListeners](#Emitter..asEmitter.getMaxListeners)</code>  
 **Returns**: <code>[number](#external_number)</code> - The maximum number of listeners.  
+**Since**: 2.0.0  
+**Example**  
+```js
+const greeter = new Emitter();
+
+console.log( greeter.getMaxListeners() );
+// 10
+
+greeter.setMaxListeners( 5 );
+
+console.log( greeter.getMaxListeners() );
+// 5
+```
 <a name="Emitter+listenerCount"></a>
 
 ### emitter.listenerCount(type) ⇒ <code>[number](#external_number)</code>
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[listenerCount](#Emitter..asEmitter.listenerCount)</code>  
 **Returns**: <code>[number](#external_number)</code> - The number of listeners for that event type within the given emitter.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -456,6 +503,7 @@ console.log( greeter.listenerCount( 'goodbye' ) );
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[listeners](#Emitter..asEmitter.listeners)</code>  
 **Returns**: <code>[number](#external_number)</code> - The number of listeners for that event type within the given emitter.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -484,6 +532,7 @@ No checks are made to see if the `listener` has already been added. Multiple cal
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[many](#Emitter..asEmitter.many)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -522,6 +571,7 @@ If any single listener has been added multiple times for the specified `type`, t
 **Mixes**: <code>[off](#Emitter..asEmitter.off)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
 **Emits**: <code>[:off](#Emitter+event__off)</code>  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -567,6 +617,7 @@ No checks are made to see if the `listener` has already been added. Multiple cal
 **Mixes**: <code>[on](#Emitter..asEmitter.on)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
 **Emits**: <code>[:on](#Emitter+event__on)</code>, <code>[:maxListeners](#Emitter+event__maxListeners)</code>  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -602,6 +653,7 @@ greeter.once( () =&gt; console.log( &#x27;Greeted&#x27; ) );
 greeter.emit( &#x27;hello&#x27; );
 // Greeted
 greeter.emit( &#x27;goodbye&#x27; );event:</code>  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -619,14 +671,28 @@ greeter.emit( 'hello', 'World' );
 <a name="Emitter+setMaxListeners"></a>
 
 ### emitter.setMaxListeners(max) ⇒ <code>[Emitter](#Emitter)</code>
+By default Emitter will emit a `:maxListeners` evet if more than **10** listeners are added for a particular event `type`. This method allows that to be changed. Set to **0** for unlimited.
+
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[setMaxListeners](#Emitter..asEmitter.setMaxListeners)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+**Since**: 2.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | max | <code>[number](#external_number)</code> | The maximum number of listeners before a warning is issued. |
 
+**Example**  
+```js
+const greeter = new Emitter();
+
+greeter.setMaxListeners( 1 );
+
+greeter.on( ':maxListeners', ( greeting ) => console.log( `Greeting "${ greeting }" has one too many!` ) );
+greeter.on( 'hello', () => console.log( 'Hello!' ) );
+greeter.on( 'hello', () => alert( 'Hello!' ) );
+// Greeting "hello" has one too many!
+```
 <a name="Emitter+tick"></a>
 
 ### emitter.tick(type, [...data]) ⇒ <code>[Promise](#external_Promise)</code>
@@ -639,6 +705,7 @@ Returns [promise](#external_Promise) which *resolves* if the event had listeners
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[tick](#Emitter..asEmitter.tick)</code>  
 **Returns**: <code>[Promise](#external_Promise)</code> - A promise which *resolves* if the event had listeners, *rejects* otherwise.  
+**Since**: 2.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -664,17 +731,21 @@ Returns `true` if the event had listeners, `false` otherwise.
 
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[trigger](#Emitter..asEmitter.trigger)</code>  
-**Returns**: <code>[boolean](#external_boolean)</code> - Whether or not the event had listeners.
-const greeter = new Emitter();
-greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
-greeter.trigger( 'hello', [ 'World' ] );
-// Hello, World!  
+**Returns**: <code>[boolean](#external_boolean)</code> - Whether or not the event had listeners.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | [type] | <code>[EventType](#EventType)</code> | The event type. |
 | data | <code>[Array](#external_Array)</code> |  |
 
+**Example**  
+```js
+const greeter = new Emitter();
+greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.trigger( 'hello', [ 'World' ] );
+// Hello, World!
+```
 **Example**  
 ```js
 const greeter = new Emitter();
@@ -700,6 +771,7 @@ No checks are made to see if the `listener` has already been added. Multiple cal
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[until](#Emitter..asEmitter.until)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+**Since**: 1.2.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -765,6 +837,7 @@ By default Emitter will emit a `:maxListeners` event if more than 10 listeners a
 
 **Kind**: static property of <code>[Emitter](#Emitter)</code>  
 **Default**: <code>10</code>  
+**Since**: 1.0.0  
 **Example** *(Changing the default maximum listeners)*  
 ```js
 console.log( Emitter.defaultMaxListeners );
@@ -793,6 +866,7 @@ The symbol used to listen for events of any `type`. For _most_ methods, when no 
 Using `Emitter.every` is typically not necessary.
 
 **Kind**: static property of <code>[Emitter](#Emitter)</code>  
+**Since**: 1.0.0  
 **Example**  
 ```js
 const greeter = new Emitter();
@@ -808,6 +882,7 @@ greeter.emit( 'goodbye' );
 The current version of *Emitter.js*.
 
 **Kind**: static property of <code>[Emitter](#Emitter)</code>  
+**Since**: 1.1.2  
 **Example**  
 ```js
 console.log( Emitter.version );
@@ -846,7 +921,7 @@ greeter.emit( 'hello', 'World' );
 **Example** *(Applying chaos to your world)*  
 ```js
 // NO!!!
-Emitter.asEmitter(); // Madness ensues
+asEmitter(); // Madness ensues
 ```
 
 * [~asEmitter](#Emitter..asEmitter)
@@ -877,6 +952,7 @@ No checks are made to see if the `listener` has already been added. Multiple cal
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
 **Emits**: <code>[:on](#Emitter+event__on)</code>, <code>[:maxListeners](#Emitter+event__maxListeners)</code>  
+**Since**: 2.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -891,6 +967,7 @@ Remove all listeners, or those for the specified event `type`.
 
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -936,6 +1013,7 @@ Returns `true` if the event had listeners, `false` otherwise.
 
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[boolean](#external_boolean)</code> - Whether or not the event had listeners.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -980,6 +1058,7 @@ greeter.emit( 'greeting:hello', 'Jeff' );
 #### asEmitter.eventTypes() ⇒ <code>[Array.&lt;EventType&gt;](#EventType)</code>
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[Array.&lt;EventType&gt;](#EventType)</code> - The list of event types registered to the emitter.  
+**Since**: 2.0.0  
 **Example**  
 ```js
 const greeter = new Emitter();
@@ -994,6 +1073,7 @@ console.log( greeter.eventTypes() );
 #### asEmitter.first(type, listener) ⇒ <code>[Emitter](#Emitter)</code>
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+**Since**: 2.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1003,13 +1083,29 @@ console.log( greeter.eventTypes() );
 <a name="Emitter..asEmitter.getMaxListeners"></a>
 
 #### asEmitter.getMaxListeners() ⇒ <code>[number](#external_number)</code>
+By default Emitter will emit a `:maxListeners` evet if more than **10** listeners are added for a particular event `type`. This method returns the current value.
+
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[number](#external_number)</code> - The maximum number of listeners.  
+**Since**: 2.0.0  
+**Example**  
+```js
+const greeter = new Emitter();
+
+console.log( greeter.getMaxListeners() );
+// 10
+
+greeter.setMaxListeners( 5 );
+
+console.log( greeter.getMaxListeners() );
+// 5
+```
 <a name="Emitter..asEmitter.listenerCount"></a>
 
 #### asEmitter.listenerCount(type) ⇒ <code>[number](#external_number)</code>
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[number](#external_number)</code> - The number of listeners for that event type within the given emitter.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1029,6 +1125,7 @@ console.log( greeter.listenerCount( 'goodbye' ) );
 #### asEmitter.listeners(type) ⇒ <code>[number](#external_number)</code>
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[number](#external_number)</code> - The number of listeners for that event type within the given emitter.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1056,6 +1153,7 @@ No checks are made to see if the `listener` has already been added. Multiple cal
 
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1093,6 +1191,7 @@ If any single listener has been added multiple times for the specified `type`, t
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
 **Emits**: <code>[:off](#Emitter+event__off)</code>  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1137,6 +1236,7 @@ No checks are made to see if the `listener` has already been added. Multiple cal
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
 **Emits**: <code>[:on](#Emitter+event__on)</code>, <code>[:maxListeners](#Emitter+event__maxListeners)</code>  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1171,6 +1271,7 @@ greeter.once( () =&gt; console.log( &#x27;Greeted&#x27; ) );
 greeter.emit( &#x27;hello&#x27; );
 // Greeted
 greeter.emit( &#x27;goodbye&#x27; );event:</code>  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1188,13 +1289,27 @@ greeter.emit( 'hello', 'World' );
 <a name="Emitter..asEmitter.setMaxListeners"></a>
 
 #### asEmitter.setMaxListeners(max) ⇒ <code>[Emitter](#Emitter)</code>
+By default Emitter will emit a `:maxListeners` evet if more than **10** listeners are added for a particular event `type`. This method allows that to be changed. Set to **0** for unlimited.
+
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+**Since**: 2.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | max | <code>[number](#external_number)</code> | The maximum number of listeners before a warning is issued. |
 
+**Example**  
+```js
+const greeter = new Emitter();
+
+greeter.setMaxListeners( 1 );
+
+greeter.on( ':maxListeners', ( greeting ) => console.log( `Greeting "${ greeting }" has one too many!` ) );
+greeter.on( 'hello', () => console.log( 'Hello!' ) );
+greeter.on( 'hello', () => alert( 'Hello!' ) );
+// Greeting "hello" has one too many!
+```
 <a name="Emitter..asEmitter.tick"></a>
 
 #### asEmitter.tick(type, [...data]) ⇒ <code>[Promise](#external_Promise)</code>
@@ -1206,6 +1321,7 @@ Returns [promise](#external_Promise) which *resolves* if the event had listeners
 
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[Promise](#external_Promise)</code> - A promise which *resolves* if the event had listeners, *rejects* otherwise.  
+**Since**: 2.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1230,17 +1346,21 @@ Execute the listeners for the specified event `type` with the supplied `data`.
 Returns `true` if the event had listeners, `false` otherwise.
 
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
-**Returns**: <code>[boolean](#external_boolean)</code> - Whether or not the event had listeners.
-const greeter = new Emitter();
-greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
-greeter.trigger( 'hello', [ 'World' ] );
-// Hello, World!  
+**Returns**: <code>[boolean](#external_boolean)</code> - Whether or not the event had listeners.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | [type] | <code>[EventType](#EventType)</code> | The event type. |
 | data | <code>[Array](#external_Array)</code> |  |
 
+**Example**  
+```js
+const greeter = new Emitter();
+greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.trigger( 'hello', [ 'World' ] );
+// Hello, World!
+```
 **Example**  
 ```js
 const greeter = new Emitter();
@@ -1265,6 +1385,7 @@ No checks are made to see if the `listener` has already been added. Multiple cal
 
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+**Since**: 1.2.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1569,10 +1690,16 @@ Asynchronously executes a function.
 
 <a name="Emitter..toEmitter"></a>
 
-### Emitter~toEmitter()
+### Emitter~toEmitter([selection], target)
 Applies a `selection` of the Emitter.js API to the `target`.
 
 **Kind**: inner method of <code>[Emitter](#Emitter)</code>  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| [selection] | <code>[APIReference](#APIReference)</code> | A selection of the Emitter.js API. |
+| target | <code>[Object](#external_Object)</code> | The object on which the API will be applied. |
+
 <a name="Emitter"></a>
 
 ## Emitter([selection], target)
@@ -1582,7 +1709,7 @@ Applies the Emitter.js API to the target.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| [selection] | <code>[string](#external_string)</code> &#124; <code>[Object](#external_Object)</code> | A selection of the Emitter.js API that will be applied to the `target`. |
+| [selection] | <code>[APIReference](#APIReference)</code> | A selection of the Emitter.js API that will be applied to the `target`. |
 | target | <code>exteral:Object</code> | The object to which the Emitter.js API will be applied. |
 
 **Example** *(Applying all of the API)*  
@@ -1613,6 +1740,7 @@ greeter.fire( 'hello' );
 * [Emitter([selection], target)](#Emitter)
     * [new Emitter([mapping])](#new_Emitter_new)
     * _instance_
+        * [.maxListeners](#Emitter+maxListeners) : <code>[number](#external_number)</code>
         * [.destroy()](#Emitter+destroy)
         * [.toJSON()](#Emitter+toJSON) ⇒ <code>[Object](#external_Object)</code>
         * [.toString()](#Emitter+toString) ⇒ <code>[string](#external_string)</code>
@@ -1682,7 +1810,7 @@ greeter.fire( 'hello' );
         * [~spliceList(list, index)](#Emitter..spliceList)
         * [~tick(callback)](#Emitter..tick)
         * [~tickAllEvents(emitter, type, data)](#Emitter..tickAllEvents) ⇒ <code>[Promise](#external_Promise)</code>
-        * [~toEmitter()](#Emitter..toEmitter)
+        * [~toEmitter([selection], target)](#Emitter..toEmitter)
 
 <a name="new_Emitter_new"></a>
 
@@ -1776,6 +1904,27 @@ greeter.emit( 'hello', 'Steve' );    // 3
 // Hello, Jeff!
 // Hello, Terry!
 ```
+<a name="Emitter+maxListeners"></a>
+
+### emitter.maxListeners : <code>[number](#external_number)</code>
+By default Emitters will emit a `:maxListeners` event if more than **10** listeners are added for a particular event `type`. This property allows that to be changed. Set to **0** for unlimited.
+
+**Kind**: instance property of <code>[Emitter](#Emitter)</code>  
+**Since**: 1.0.0  
+**Example**  
+```js
+const greeter = new Emitter();
+
+console.log( greeter.maxListeners );
+// 10
+
+greeter.maxListeners = 1;
+
+greeter.on( ':maxListeners', ( greeting ) => console.log( `Greeting "${ greeting }" has one too many!` ) );
+greeter.on( 'hello', () => console.log( 'Hello!' ) );
+greeter.on( 'hello', () => alert( 'Hello!' ) );
+// Greeting "hello" has one too many!
+```
 <a name="Emitter+destroy"></a>
 
 ### emitter.destroy()
@@ -1834,6 +1983,7 @@ No checks are made to see if the `listener` has already been added. Multiple cal
 **Mixes**: <code>[at](#Emitter..asEmitter.at)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
 **Emits**: <code>[:on](#Emitter+event__on)</code>, <code>[:maxListeners](#Emitter+event__maxListeners)</code>  
+**Since**: 2.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1849,6 +1999,7 @@ Remove all listeners, or those for the specified event `type`.
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[clear](#Emitter..asEmitter.clear)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1895,6 +2046,7 @@ Returns `true` if the event had listeners, `false` otherwise.
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[emit](#Emitter..asEmitter.emit)</code>  
 **Returns**: <code>[boolean](#external_boolean)</code> - Whether or not the event had listeners.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1940,6 +2092,7 @@ greeter.emit( 'greeting:hello', 'Jeff' );
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[eventTypes](#Emitter..asEmitter.eventTypes)</code>  
 **Returns**: <code>[Array.&lt;EventType&gt;](#EventType)</code> - The list of event types registered to the emitter.  
+**Since**: 2.0.0  
 **Example**  
 ```js
 const greeter = new Emitter();
@@ -1955,6 +2108,7 @@ console.log( greeter.eventTypes() );
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[first](#Emitter..asEmitter.first)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+**Since**: 2.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1964,15 +2118,31 @@ console.log( greeter.eventTypes() );
 <a name="Emitter+getMaxListeners"></a>
 
 ### emitter.getMaxListeners() ⇒ <code>[number](#external_number)</code>
+By default Emitter will emit a `:maxListeners` evet if more than **10** listeners are added for a particular event `type`. This method returns the current value.
+
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[getMaxListeners](#Emitter..asEmitter.getMaxListeners)</code>  
 **Returns**: <code>[number](#external_number)</code> - The maximum number of listeners.  
+**Since**: 2.0.0  
+**Example**  
+```js
+const greeter = new Emitter();
+
+console.log( greeter.getMaxListeners() );
+// 10
+
+greeter.setMaxListeners( 5 );
+
+console.log( greeter.getMaxListeners() );
+// 5
+```
 <a name="Emitter+listenerCount"></a>
 
 ### emitter.listenerCount(type) ⇒ <code>[number](#external_number)</code>
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[listenerCount](#Emitter..asEmitter.listenerCount)</code>  
 **Returns**: <code>[number](#external_number)</code> - The number of listeners for that event type within the given emitter.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1993,6 +2163,7 @@ console.log( greeter.listenerCount( 'goodbye' ) );
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[listeners](#Emitter..asEmitter.listeners)</code>  
 **Returns**: <code>[number](#external_number)</code> - The number of listeners for that event type within the given emitter.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2021,6 +2192,7 @@ No checks are made to see if the `listener` has already been added. Multiple cal
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[many](#Emitter..asEmitter.many)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2059,6 +2231,7 @@ If any single listener has been added multiple times for the specified `type`, t
 **Mixes**: <code>[off](#Emitter..asEmitter.off)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
 **Emits**: <code>[:off](#Emitter+event__off)</code>  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2104,6 +2277,7 @@ No checks are made to see if the `listener` has already been added. Multiple cal
 **Mixes**: <code>[on](#Emitter..asEmitter.on)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
 **Emits**: <code>[:on](#Emitter+event__on)</code>, <code>[:maxListeners](#Emitter+event__maxListeners)</code>  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2139,6 +2313,7 @@ greeter.once( () =&gt; console.log( &#x27;Greeted&#x27; ) );
 greeter.emit( &#x27;hello&#x27; );
 // Greeted
 greeter.emit( &#x27;goodbye&#x27; );event:</code>  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2156,14 +2331,28 @@ greeter.emit( 'hello', 'World' );
 <a name="Emitter+setMaxListeners"></a>
 
 ### emitter.setMaxListeners(max) ⇒ <code>[Emitter](#Emitter)</code>
+By default Emitter will emit a `:maxListeners` evet if more than **10** listeners are added for a particular event `type`. This method allows that to be changed. Set to **0** for unlimited.
+
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[setMaxListeners](#Emitter..asEmitter.setMaxListeners)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+**Since**: 2.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | max | <code>[number](#external_number)</code> | The maximum number of listeners before a warning is issued. |
 
+**Example**  
+```js
+const greeter = new Emitter();
+
+greeter.setMaxListeners( 1 );
+
+greeter.on( ':maxListeners', ( greeting ) => console.log( `Greeting "${ greeting }" has one too many!` ) );
+greeter.on( 'hello', () => console.log( 'Hello!' ) );
+greeter.on( 'hello', () => alert( 'Hello!' ) );
+// Greeting "hello" has one too many!
+```
 <a name="Emitter+tick"></a>
 
 ### emitter.tick(type, [...data]) ⇒ <code>[Promise](#external_Promise)</code>
@@ -2176,6 +2365,7 @@ Returns [promise](#external_Promise) which *resolves* if the event had listeners
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[tick](#Emitter..asEmitter.tick)</code>  
 **Returns**: <code>[Promise](#external_Promise)</code> - A promise which *resolves* if the event had listeners, *rejects* otherwise.  
+**Since**: 2.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2201,17 +2391,21 @@ Returns `true` if the event had listeners, `false` otherwise.
 
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[trigger](#Emitter..asEmitter.trigger)</code>  
-**Returns**: <code>[boolean](#external_boolean)</code> - Whether or not the event had listeners.
-const greeter = new Emitter();
-greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
-greeter.trigger( 'hello', [ 'World' ] );
-// Hello, World!  
+**Returns**: <code>[boolean](#external_boolean)</code> - Whether or not the event had listeners.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | [type] | <code>[EventType](#EventType)</code> | The event type. |
 | data | <code>[Array](#external_Array)</code> |  |
 
+**Example**  
+```js
+const greeter = new Emitter();
+greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.trigger( 'hello', [ 'World' ] );
+// Hello, World!
+```
 **Example**  
 ```js
 const greeter = new Emitter();
@@ -2237,6 +2431,7 @@ No checks are made to see if the `listener` has already been added. Multiple cal
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Mixes**: <code>[until](#Emitter..asEmitter.until)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+**Since**: 1.2.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2302,6 +2497,7 @@ By default Emitter will emit a `:maxListeners` event if more than 10 listeners a
 
 **Kind**: static property of <code>[Emitter](#Emitter)</code>  
 **Default**: <code>10</code>  
+**Since**: 1.0.0  
 **Example** *(Changing the default maximum listeners)*  
 ```js
 console.log( Emitter.defaultMaxListeners );
@@ -2330,6 +2526,7 @@ The symbol used to listen for events of any `type`. For _most_ methods, when no 
 Using `Emitter.every` is typically not necessary.
 
 **Kind**: static property of <code>[Emitter](#Emitter)</code>  
+**Since**: 1.0.0  
 **Example**  
 ```js
 const greeter = new Emitter();
@@ -2345,6 +2542,7 @@ greeter.emit( 'goodbye' );
 The current version of *Emitter.js*.
 
 **Kind**: static property of <code>[Emitter](#Emitter)</code>  
+**Since**: 1.1.2  
 **Example**  
 ```js
 console.log( Emitter.version );
@@ -2383,7 +2581,7 @@ greeter.emit( 'hello', 'World' );
 **Example** *(Applying chaos to your world)*  
 ```js
 // NO!!!
-Emitter.asEmitter(); // Madness ensues
+asEmitter(); // Madness ensues
 ```
 
 * [~asEmitter](#Emitter..asEmitter)
@@ -2414,6 +2612,7 @@ No checks are made to see if the `listener` has already been added. Multiple cal
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
 **Emits**: <code>[:on](#Emitter+event__on)</code>, <code>[:maxListeners](#Emitter+event__maxListeners)</code>  
+**Since**: 2.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2428,6 +2627,7 @@ Remove all listeners, or those for the specified event `type`.
 
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2473,6 +2673,7 @@ Returns `true` if the event had listeners, `false` otherwise.
 
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[boolean](#external_boolean)</code> - Whether or not the event had listeners.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2517,6 +2718,7 @@ greeter.emit( 'greeting:hello', 'Jeff' );
 #### asEmitter.eventTypes() ⇒ <code>[Array.&lt;EventType&gt;](#EventType)</code>
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[Array.&lt;EventType&gt;](#EventType)</code> - The list of event types registered to the emitter.  
+**Since**: 2.0.0  
 **Example**  
 ```js
 const greeter = new Emitter();
@@ -2531,6 +2733,7 @@ console.log( greeter.eventTypes() );
 #### asEmitter.first(type, listener) ⇒ <code>[Emitter](#Emitter)</code>
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+**Since**: 2.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2540,13 +2743,29 @@ console.log( greeter.eventTypes() );
 <a name="Emitter..asEmitter.getMaxListeners"></a>
 
 #### asEmitter.getMaxListeners() ⇒ <code>[number](#external_number)</code>
+By default Emitter will emit a `:maxListeners` evet if more than **10** listeners are added for a particular event `type`. This method returns the current value.
+
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[number](#external_number)</code> - The maximum number of listeners.  
+**Since**: 2.0.0  
+**Example**  
+```js
+const greeter = new Emitter();
+
+console.log( greeter.getMaxListeners() );
+// 10
+
+greeter.setMaxListeners( 5 );
+
+console.log( greeter.getMaxListeners() );
+// 5
+```
 <a name="Emitter..asEmitter.listenerCount"></a>
 
 #### asEmitter.listenerCount(type) ⇒ <code>[number](#external_number)</code>
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[number](#external_number)</code> - The number of listeners for that event type within the given emitter.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2566,6 +2785,7 @@ console.log( greeter.listenerCount( 'goodbye' ) );
 #### asEmitter.listeners(type) ⇒ <code>[number](#external_number)</code>
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[number](#external_number)</code> - The number of listeners for that event type within the given emitter.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2593,6 +2813,7 @@ No checks are made to see if the `listener` has already been added. Multiple cal
 
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2630,6 +2851,7 @@ If any single listener has been added multiple times for the specified `type`, t
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
 **Emits**: <code>[:off](#Emitter+event__off)</code>  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2674,6 +2896,7 @@ No checks are made to see if the `listener` has already been added. Multiple cal
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
 **Emits**: <code>[:on](#Emitter+event__on)</code>, <code>[:maxListeners](#Emitter+event__maxListeners)</code>  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2708,6 +2931,7 @@ greeter.once( () =&gt; console.log( &#x27;Greeted&#x27; ) );
 greeter.emit( &#x27;hello&#x27; );
 // Greeted
 greeter.emit( &#x27;goodbye&#x27; );event:</code>  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2725,13 +2949,27 @@ greeter.emit( 'hello', 'World' );
 <a name="Emitter..asEmitter.setMaxListeners"></a>
 
 #### asEmitter.setMaxListeners(max) ⇒ <code>[Emitter](#Emitter)</code>
+By default Emitter will emit a `:maxListeners` evet if more than **10** listeners are added for a particular event `type`. This method allows that to be changed. Set to **0** for unlimited.
+
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+**Since**: 2.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | max | <code>[number](#external_number)</code> | The maximum number of listeners before a warning is issued. |
 
+**Example**  
+```js
+const greeter = new Emitter();
+
+greeter.setMaxListeners( 1 );
+
+greeter.on( ':maxListeners', ( greeting ) => console.log( `Greeting "${ greeting }" has one too many!` ) );
+greeter.on( 'hello', () => console.log( 'Hello!' ) );
+greeter.on( 'hello', () => alert( 'Hello!' ) );
+// Greeting "hello" has one too many!
+```
 <a name="Emitter..asEmitter.tick"></a>
 
 #### asEmitter.tick(type, [...data]) ⇒ <code>[Promise](#external_Promise)</code>
@@ -2743,6 +2981,7 @@ Returns [promise](#external_Promise) which *resolves* if the event had listeners
 
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[Promise](#external_Promise)</code> - A promise which *resolves* if the event had listeners, *rejects* otherwise.  
+**Since**: 2.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -2767,17 +3006,21 @@ Execute the listeners for the specified event `type` with the supplied `data`.
 Returns `true` if the event had listeners, `false` otherwise.
 
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
-**Returns**: <code>[boolean](#external_boolean)</code> - Whether or not the event had listeners.
-const greeter = new Emitter();
-greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
-greeter.trigger( 'hello', [ 'World' ] );
-// Hello, World!  
+**Returns**: <code>[boolean](#external_boolean)</code> - Whether or not the event had listeners.  
+**Since**: 1.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
 | [type] | <code>[EventType](#EventType)</code> | The event type. |
 | data | <code>[Array](#external_Array)</code> |  |
 
+**Example**  
+```js
+const greeter = new Emitter();
+greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
+greeter.trigger( 'hello', [ 'World' ] );
+// Hello, World!
+```
 **Example**  
 ```js
 const greeter = new Emitter();
@@ -2802,6 +3045,7 @@ No checks are made to see if the `listener` has already been added. Multiple cal
 
 **Kind**: static method of <code>[asEmitter](#Emitter..asEmitter)</code>  
 **Returns**: <code>[Emitter](#Emitter)</code> - The emitter.  
+**Since**: 1.2.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -3106,16 +3350,37 @@ Asynchronously executes a function.
 
 <a name="Emitter..toEmitter"></a>
 
-### Emitter~toEmitter()
+### Emitter~toEmitter([selection], target)
 Applies a `selection` of the Emitter.js API to the `target`.
 
 **Kind**: inner method of <code>[Emitter](#Emitter)</code>  
-<a name="EventType"></a>
 
-## EventType : <code>[string](#external_string)</code> &#124; <code>[symbol](#external_symbol)</code>
-A [string](#external_string) or [symbol](#external_symbol) that represents the type of event fired by the Emitter.
+| Param | Type | Description |
+| --- | --- | --- |
+| [selection] | <code>[APIReference](#APIReference)</code> | A selection of the Emitter.js API. |
+| target | <code>[Object](#external_Object)</code> | The object on which the API will be applied. |
+
+<a name="APIReference"></a>
+
+## APIReference : <code>[string](#external_string)</code> &#124; <code>[Object](#external_Object)</code>
+A set of method references to the Emitter.js API.
 
 **Kind**: global typedef  
+**Example** *(A selection reference)*  
+```js
+'emit off on once'
+```
+**Example** *(A mapping reference)*  
+```js
+// 'emit()' will be mapped to 'fire()'
+// 'on()' will be mapped to 'addListener()'
+// 'off()' will be mapped to 'removeListener()'
+{
+ fire: 'emit',
+ addListener: 'on',
+ removeListener: 'off'
+}
+```
 <a name="EventListener"></a>
 
 ## EventListener : <code>[Function](#external_Function)</code>
@@ -3131,6 +3396,12 @@ A [ function](#external_Function) bound to an emitter [event type](#EventType). 
 
 ## EventMapping : <code>[Object](#external_Object)</code>
 An [object](#external_Object) that maps [event types](#EventType) to [event listeners](#EventListener).
+
+**Kind**: global typedef  
+<a name="EventType"></a>
+
+## EventType : <code>[string](#external_string)</code> &#124; <code>[symbol](#external_symbol)</code>
+A [string](#external_string) or [symbol](#external_symbol) that represents the type of event fired by the Emitter.
 
 **Kind**: global typedef  
 <a name="external_Array"></a>

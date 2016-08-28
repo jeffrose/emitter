@@ -46,12 +46,13 @@
 ## 2.0.0
 
 * Updated development environment.
+* Added roadmap to documentation.
 * Removed `Symbol` and `setImmediate()` shims.
 * Removed `defineEvents()`, `defineMaxListeners()`, `destroyEvents()`, and `destroyMaxListeners()`.
 * `toJSON()` and `toString()` are no longer provided by the mixin but are part of `Emitter.prototype`.
 * Removed `Emitter.listenerCount()`.
 * Added `at()`, `eventTypes()`, `first()`, `getMaxListeners()`, and `setMaxListeners()`.
 * Migrated to jsdocs for API documentation.
-* `Symbol` values are now `String` due to browser support.
+* `Symbol` values are now `String` values due to browser support.
 * `Emitter.asEmitter()` is now built into `Emitter()`.
 * Mixin has expanded syntax to allow for more flexibility.
