@@ -22,6 +22,7 @@ Emitter.js is an event emitter based on the nodejs [EventEmitter](https://nodejs
 
 * [API](docs/API.md)
 * [CHANGES](docs/CHANGES.md)
+* [ROADMAP](docs/ROADMAP.md)
 
 ## Usage
 
@@ -64,10 +65,3 @@ greeter.emit( 'hello', 'World' );
 * Has a succint API with no backward compatibility aliases, e.g. `clear()` instead of `removeAllListeners()`.
 * Has namespaced lifecycle event types, e.g. `:off` instead of `removeListener`.
 * Does not use `console.log()`.
-
-# Roadmap
-
-* Make `maxListeners` functionality optional.
-* Use `WeakMap` for private data.
-* Use `Symbol` instead of `String` for API references.
-* Optional asynchronous listener execution.

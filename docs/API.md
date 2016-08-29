@@ -272,11 +272,13 @@ Destroys the emitter.
 
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Emits**: <code>[:destroy](#Emitter+event__destroy)</code>  
+**Since**: 1.0.0  
 <a name="Emitter+toJSON"></a>
 
 ### emitter.toJSON() ⇒ <code>[Object](#external_Object)</code>
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Returns**: <code>[Object](#external_Object)</code> - An plain object representation of the emitter.  
+**Since**: 1.3.0  
 **Example**  
 ```js
 const greeter = new Emitter();
@@ -297,6 +299,7 @@ console.log( greeter.toJSON() );
 ### emitter.toString() ⇒ <code>[string](#external_string)</code>
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Returns**: <code>[string](#external_string)</code> - A string representation of the emitter.  
+**Since**: 1.3.0  
 **Example**  
 ```js
 const greeter = new Emitter();
@@ -906,6 +909,7 @@ A functional mixin that provides the Emitter.js API to its target. The `construc
 Like all functional mixins, this should be executed with [call()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call) or [apply()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply).
 
 **Kind**: inner mixin of <code>[Emitter](#Emitter)</code>  
+**Since**: 1.1.0  
 **Example** *(Applying Emitter functionality)*  
 ```js
 // Create a base object
@@ -1706,6 +1710,7 @@ Applies a `selection` of the Emitter.js API to the `target`.
 Applies the Emitter.js API to the target.
 
 **Kind**: global function  
+**Since**: 2.0.0  
 
 | Param | Type | Description |
 | --- | --- | --- |
@@ -1932,11 +1937,13 @@ Destroys the emitter.
 
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Emits**: <code>[:destroy](#Emitter+event__destroy)</code>  
+**Since**: 1.0.0  
 <a name="Emitter+toJSON"></a>
 
 ### emitter.toJSON() ⇒ <code>[Object](#external_Object)</code>
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Returns**: <code>[Object](#external_Object)</code> - An plain object representation of the emitter.  
+**Since**: 1.3.0  
 **Example**  
 ```js
 const greeter = new Emitter();
@@ -1957,6 +1964,7 @@ console.log( greeter.toJSON() );
 ### emitter.toString() ⇒ <code>[string](#external_string)</code>
 **Kind**: instance method of <code>[Emitter](#Emitter)</code>  
 **Returns**: <code>[string](#external_string)</code> - A string representation of the emitter.  
+**Since**: 1.3.0  
 **Example**  
 ```js
 const greeter = new Emitter();
@@ -2566,6 +2574,7 @@ A functional mixin that provides the Emitter.js API to its target. The `construc
 Like all functional mixins, this should be executed with [call()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call) or [apply()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply).
 
 **Kind**: inner mixin of <code>[Emitter](#Emitter)</code>  
+**Since**: 1.1.0  
 **Example** *(Applying Emitter functionality)*  
 ```js
 // Create a base object
