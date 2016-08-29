@@ -211,6 +211,15 @@ describe( 'Emitter', () => {
                 expect( () => emitter.emit( 'test' ) ).to.throw( badListenerError );
                 expect( onEmit ).to.have.been.calledTwice;
             } );
+            
+            it( 'should provide asynchronous event emission', () => {
+                let onEmit = sinon.spy();
+    
+                emitter.on( 'test', onEmit );
+    
+                expect( emitter.tick( 'test', 1, 2, 3 ) ).to.be.fulfilled;
+                expect( emitter.tick( 'none', 4, 5, 6 ) ).to.be.rejected;
+            } );
     
             it( 'should provide a way to unsubscribe', () => {
                 let onAll       = sinon.spy(),
@@ -416,6 +425,8 @@ describe( 'Emitter', () => {
                     onMaxListeners = sinon.spy();
     
                 emitter.maxListeners = 2;
+                
+                expect( emitter.getMaxListeners() ).to.equal( 2 );
     
                 emitter.on( ':maxListeners', onMaxListeners );
     
@@ -506,7 +517,7 @@ describe( 'Emitter', () => {
         
         afterEach( () => emitter = undefined );
         
-        it( 'should mix in functionality', () => {
+        it( 'should mix in functionality to instances', () => {
             Emitter( emitter );
             
             expect( emitter.clear ).to.be.a( 'function' );
@@ -530,6 +541,55 @@ describe( 'Emitter', () => {
             emitter.emit( 'test', 123 );
             
             expect( onEmit ).to.have.been.calledWith( 123 );
+        } );
+        
+        it( 'should mix in functionality to prototypes', () => {
+            function Events(){}
+            Events.prototype = emitter;
+            Emitter( Events.prototype );
+            
+            const
+                one = new Events(),
+                two = new Events(),
+                onEmit = sinon.spy();
+            
+            expect( one.clear ).to.be.a( 'function' );
+            expect( one.emit ).to.be.a( 'function' );
+            expect( one.eventTypes ).to.be.a( 'function' );
+            expect( one.first ).to.be.a( 'function' );
+            expect( one.getMaxListeners ).to.be.a( 'function' );
+            expect( one.listenerCount ).to.be.a( 'function' );
+            expect( one.listeners ).to.be.a( 'function' );
+            expect( one.many ).to.be.a( 'function' );
+            expect( one.off ).to.be.a( 'function' );
+            expect( one.on ).to.be.a( 'function' );
+            expect( one.once ).to.be.a( 'function' );
+            expect( one.setMaxListeners ).to.be.a( 'function' );
+            expect( one.trigger ).to.be.a( 'function' );
+            expect( one.until ).to.be.a( 'function' );
+            
+            expect( two.clear ).to.be.a( 'function' );
+            expect( two.emit ).to.be.a( 'function' );
+            expect( two.eventTypes ).to.be.a( 'function' );
+            expect( two.first ).to.be.a( 'function' );
+            expect( two.getMaxListeners ).to.be.a( 'function' );
+            expect( two.listenerCount ).to.be.a( 'function' );
+            expect( two.listeners ).to.be.a( 'function' );
+            expect( two.many ).to.be.a( 'function' );
+            expect( two.off ).to.be.a( 'function' );
+            expect( two.on ).to.be.a( 'function' );
+            expect( two.once ).to.be.a( 'function' );
+            expect( two.setMaxListeners ).to.be.a( 'function' );
+            expect( two.trigger ).to.be.a( 'function' );
+            expect( two.until ).to.be.a( 'function' );
+            
+            one.on( 'one', onEmit );
+            two.on( 'two', onEmit );
+            
+            expect( one.listenerCount( 'one' ) ).to.equal( 1 );
+            expect( one.listenerCount( 'two' ) ).to.equal( 0 );
+            expect( two.listenerCount( 'one' ) ).to.equal( 0 );
+            expect( two.listenerCount( 'two' ) ).to.equal( 1 );
         } );
         
         it( 'should mix in selected functionality', () => {

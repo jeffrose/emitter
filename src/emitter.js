@@ -175,7 +175,6 @@ function addEventListener( emitter, type, listener, index ){
         throw new TypeError( 'listener must be a function' );
     }
     
-    // Define the event registry if it does not exist.
     defineEventsProperty( emitter, new Null() );
     
     const _events = emitter[ $events ];
@@ -347,37 +346,34 @@ function emitErrors( emitter, errors ){
  * @throws {external:Error} If `type` is `error` and no listeners are subscribed.
  */
 function emitEvent( emitter, type, data, emitEvery ){
-    // Define the event registry if it does not exist.
-    defineEventsProperty( emitter, new Null() );
-    
     const _events = emitter[ $events ];
     
     let executed = false,
         listener;
     
-    if( type === 'error' && !_events.error ){
-        const error = data[ 0 ];
-        
-        if( error instanceof Error ){
-            throw error;
-        } else {
-            throw new Error( 'Uncaught, unspecified "error" event.' );
+    if( typeof _events !== 'undefined' ){
+        if( type === 'error' && !_events.error ){
+            if( data[ 0 ] instanceof Error ){
+                throw data[ 0 ];
+            } else {
+                throw new Error( 'Uncaught, unspecified "error" event.' );
+            }
         }
-    }
-    
-    // Execute listeners for the given type of event
-    listener = _events[ type ];
-    if( typeof listener !== 'undefined' ){
-        executeListener( listener, data, emitter );
-        executed = true;
-    }
-    
-    // Execute listeners listening for all types of events
-    if( emitEvery ){
-        listener = _events[ $every ];
+        
+        // Execute listeners for the given type of event
+        listener = _events[ type ];
         if( typeof listener !== 'undefined' ){
             executeListener( listener, data, emitter );
             executed = true;
+        }
+        
+        // Execute listeners listening for all types of events
+        if( emitEvery ){
+            listener = _events[ $every ];
+            if( typeof listener !== 'undefined' ){
+                executeListener( listener, data, emitter );
+                executed = true;
+            }
         }
     }
     
@@ -637,9 +633,6 @@ function listenMany( handler, isFunction, emitter, args ){
  * @param {EventListener} listener The event callback.
  */
 function removeEventListener( emitter, type, listener ){
-    // Define the event registry if it does not exist.
-    defineEventsProperty( emitter, new Null() );
-    
     const handler = emitter[ $events ][ type ];
     
     if( handler === listener || ( typeof handler.listener === 'function' && handler.listener === listener ) ){
@@ -770,6 +763,7 @@ function toEmitter( selection, target ){
  * 
  * Like all functional mixins, this should be executed with [call()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call) or [apply()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply).
  * @mixin Emitter~asEmitter
+ * @since 1.1.0
  * @example <caption>Applying Emitter functionality</caption>
  * // Create a base object
  * const greeter = Object.create( null );
@@ -961,19 +955,6 @@ function asEmitter(){
         }
         
         return emitAllEvents( this, type, data );
-        /*
-        // This logic will change once Emitter.every becomes a Symbol
-        
-        if( typeof type === 'string' ){
-            let index = type.lastIndexOf( ':' );
-            
-            return index === -1 ?
-                emitEvent( this, type, data, type === $every ) :
-                emitAllEvents( this, type, data );
-        } else {
-            return emitEvent( this, type, data, false );
-        }
-        */
     };
     
     /**
@@ -1436,6 +1417,7 @@ asEmitter.call( API );
  * @function Emitter
  * @param {APIReference} [selection] A selection of the Emitter.js API that will be applied to the `target`.
  * @param {exteral:Object} target The object to which the Emitter.js API will be applied.
+ * @since 2.0.0
  * @example <caption>Applying all of the API</caption>
  * let greeter = Object.create( null );
  * Emitter( greeter );
@@ -1539,7 +1521,6 @@ export default function Emitter(){
     // Called as constructor
     if( typeof this !== 'undefined' && this.constructor === Emitter ){
         let mapping = arguments[ 0 ];
-        typeof mapping !== 'undefined' && addEventMapping( this, mapping );
         
         /**
          * By default Emitters will emit a `:maxListeners` event if more than **10** listeners are added for a particular event `type`. This property allows that to be changed. Set to **0** for unlimited.
@@ -1568,6 +1549,8 @@ export default function Emitter(){
             configurable: true,
             enumerable: false
         } );
+        
+        typeof mapping !== 'undefined' && addEventMapping( this, mapping );
     
     // Called as function
     } else {
@@ -1660,6 +1643,7 @@ asEmitter.call( Emitter.prototype );
 
 /**
  * Destroys the emitter.
+ * @since 1.0.0
  * @fires Emitter#:destroy
  */
 Emitter.prototype.destroy = function(){
@@ -1671,6 +1655,7 @@ Emitter.prototype.destroy = function(){
 
 /**
  * @returns {external:Object} An plain object representation of the emitter.
+ * @since 1.3.0
  * @example
  * const greeter = new Emitter();
  * greeter.maxListeners = 5;
@@ -1706,6 +1691,7 @@ Emitter.prototype.toJSON = function(){
 
 /**
  * @returns {external:string} A string representation of the emitter.
+ * @since 1.3.0
  * @example
  * const greeter = new Emitter();
  * greeter.maxListeners = 5;
