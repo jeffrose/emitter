@@ -23,10 +23,11 @@ Emitter.js is an event emitter based on the nodejs [EventEmitter](https://nodejs
 * [API](docs/API.md)
 * [CHANGES](docs/CHANGES.md)
 * [ROADMAP](docs/ROADMAP.md)
+* [UPGRADE](docs/UPGRADE.md)
 
 ## Usage
 
-Emitter.js provides both an ES5 and ES6 version as part of the distribution. If `Symbol` is not available, either natively or through a polyfill, strings prefixed with `@@` will be used to store internal references.
+Emitter.js provides both an ES5 and ES6 version as part of the distribution.
 
 Additional examples can be found in the [API](docs/API.md) docs and unit tests.
 
