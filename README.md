@@ -35,7 +35,7 @@ Additional examples can be found in the [API](docs/API.md) docs and unit tests.
 
 ```javascript
 // Depending on the scenario the /index may not be necessary
-import Emitter from '../node_modules/emitter-js/index';
+import Emitter from '../node_modules/emitter-js/dist/emitter';
 
 let greeter = new Emitter();
 
