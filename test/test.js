@@ -61,6 +61,7 @@ describe( 'Emitter', () => {
                 expect( emitter.on ).to.be.a( 'function' );
                 expect( emitter.once ).to.be.a( 'function' );
                 expect( emitter.setMaxListeners ).to.be.a( 'function' );
+                expect( emitter.tick ).to.be.a( 'function' );
                 expect( emitter.toJSON ).to.be.a( 'function' );
                 expect( emitter.toString ).to.be.a( 'function' );
                 expect( emitter.trigger ).to.be.a( 'function' );
@@ -74,6 +75,7 @@ describe( 'Emitter', () => {
     
                     onFoo = sinon.spy(),
                     onFooToo = sinon.spy(),
+                    onFooFirst = sinon.spy(),
                     onBar = sinon.spy();
     
                 emitter.on( ':on', ( event, listener ) => {
@@ -102,6 +104,14 @@ describe( 'Emitter', () => {
                 expect( emitter.listeners( 'foo' )[ 1 ] ).to.equal( onFooToo );
     
                 expect( () => emitter.on( 'foo' ) ).to.throw( TypeError );
+                
+                emitter.first( 'foo', onFooFirst );
+                
+                expect( emitter.listeners( 'foo' )[ 0 ] ).to.equal( onFooFirst );
+                expect( emitter.listeners( 'foo' )[ 1 ] ).to.equal( onFoo );
+                expect( emitter.listeners( 'foo' )[ 2 ] ).to.equal( onFooToo );
+                
+                expect( () => emitter.first( 'foo' ) ).to.throw( TypeError );
             } );
             
             it( 'should provide event subscription at construction time', () => {
@@ -339,17 +349,32 @@ describe( 'Emitter', () => {
             } );
             
             it( 'should provide a way to listen to every event', () => {
-                let onEmit = sinon.spy();
+                const
+                    atEmit = sinon.spy(),
+                    onEmit = sinon.spy(),
+                    onceEmit = sinon.spy(),
+                    firstEmit = sinon.spy(),
+                    manyEmit = sinon.spy();
                 
-                emitter.on( onEmit );                      // +2
-                emitter.on( Emitter.every, onEmit );       // +2
-                emitter.on( undefined, onEmit );           // +2
-                emitter.once( onEmit );                    // +1
-                emitter.once( Emitter.every, onEmit );     // +1
-                emitter.once( undefined, onEmit );         // +1
-                emitter.many( 2, onEmit );                 // +2
-                emitter.many( Emitter.every, 2, onEmit );  // +2
-                emitter.many( undefined, 2, onEmit );      // +2
+                emitter.many( 2, manyEmit );
+                emitter.many( Emitter.every, 2, manyEmit );
+                emitter.many( undefined, 2, manyEmit );
+                
+                emitter.on( onEmit );
+                emitter.on( Emitter.every, onEmit );
+                emitter.on( undefined, onEmit );
+                
+                emitter.at( 1, atEmit );
+                emitter.at( Emitter.every, 1, atEmit );
+                emitter.at( undefined, 1, atEmit );
+                
+                emitter.first( firstEmit );
+                emitter.first( Emitter.every, firstEmit );
+                emitter.first( undefined, firstEmit );
+
+                emitter.once( onceEmit );
+                emitter.once( Emitter.every, onceEmit );
+                emitter.once( undefined, onceEmit );
                 
                 emitter.emit( 'foo' );
                 emitter.emit( 'bar' );
@@ -358,7 +383,11 @@ describe( 'Emitter', () => {
                 
                 emitter.emit( 'qux' );
                 
-                expect( onEmit ).to.have.callCount( 15 );   // = 15
+                expect( atEmit ).to.have.callCount( 6 );
+                expect( firstEmit ).to.have.callCount( 6 );
+                expect( manyEmit ).to.have.callCount( 6 );
+                expect( onEmit ).to.have.callCount( 6 );
+                expect( onceEmit ).to.have.callCount( 3 );
             } );
     
             it( 'should emit events when listeners are added and removed', () => {
@@ -423,6 +452,10 @@ describe( 'Emitter', () => {
                 let noop = function(){},
     
                     onMaxListeners = sinon.spy();
+                
+                emitter.setMaxListeners( 3 );
+                
+                expect( emitter.getMaxListeners() ).to.equal( 3 );
     
                 emitter.maxListeners = 2;
                 
@@ -507,6 +540,15 @@ describe( 'Emitter', () => {
                 expect( count ).to.equal( 0 );
                 expect( count ).to.equal( emitter.listeners( 'test' ).length );
             } );
+            
+            it( 'should provide a list of event types', () => {
+                const onEmit = sinon.spy();
+                
+                emitter.on( 'foo', onEmit );
+                emitter.on( 'bar', onEmit );
+                
+                expect( emitter.eventTypes().length ).to.equal( 2 );
+            } );
         } );
     } );
     
@@ -532,6 +574,7 @@ describe( 'Emitter', () => {
             expect( emitter.on ).to.be.a( 'function' );
             expect( emitter.once ).to.be.a( 'function' );
             expect( emitter.setMaxListeners ).to.be.a( 'function' );
+            expect( emitter.tick ).to.be.a( 'function' );
             expect( emitter.trigger ).to.be.a( 'function' );
             expect( emitter.until ).to.be.a( 'function' );
             

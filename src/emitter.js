@@ -175,12 +175,13 @@ function addEventListener( emitter, type, listener, index ){
         throw new TypeError( 'listener must be a function' );
     }
     
+    // Define the event registry if it does not exist
     defineEventsProperty( emitter, new Null() );
     
     const _events = emitter[ $events ];
     
     if( _events[ ':on' ] ){
-        emitEvent( emitter, ':on', [ type, typeof listener.listener === 'function' ? listener.listener : listener ], true );
+        emitEvent( emitter, ':on', [ type, typeof listener.listener === 'function' ? listener.listener : listener ], false );
         
         // Emitting "on" may have changed the registry.
         _events[ ':on' ] = emitter[ $events ][ ':on' ];
@@ -216,7 +217,7 @@ function addEventListener( emitter, type, listener, index ){
         const max = emitter.maxListeners;
         
         if( max && max > 0 && _events[ type ].length > max ){
-            emitEvent( emitter, ':maxListeners', [ type, listener ], true );
+            emitEvent( emitter, ':maxListeners', [ type, listener ], false );
             
             // Emitting "maxListeners" may have changed the registry.
             _events[ ':maxListeners' ] = emitter[ $events ][ ':maxListeners' ];
@@ -319,7 +320,7 @@ function emitAllEvents( emitter, type, data ){
     }
     
     // Emit single event or the namespaced event root, e.g. "foo", ":bar", Symbol( "@@qux" )
-    executed = ( type && emitEvent( emitter, type, data, true ) ) || executed;
+    executed = ( type && emitEvent( emitter, type, data, type !== $every ) ) || executed;
     
     return executed;
 }
@@ -638,7 +639,7 @@ function removeEventListener( emitter, type, listener ){
     if( handler === listener || ( typeof handler.listener === 'function' && handler.listener === listener ) ){
         delete emitter[ $events ][ type ];
         if( emitter[ $events ][ ':off' ] ){
-            emitEvent( emitter, ':off', [ type, listener ], true );
+            emitEvent( emitter, ':off', [ type, listener ], false );
         }
     } else if( Array.isArray( handler ) ){
         let index = -1;
@@ -659,7 +660,7 @@ function removeEventListener( emitter, type, listener ){
             }
             
             if( emitter[ $events ][ ':off' ] ){
-                emitEvent( emitter, ':off', [ type, listener ], true );
+                emitEvent( emitter, ':off', [ type, listener ], false );
             }
         }
     }
@@ -793,7 +794,7 @@ function asEmitter(){
      * @fires Emitter#:on
      * @fires Emitter#:maxListeners
      */
-    this.at = function( type, index, listener ){
+    this.at = function( type = $every, index, listener ){
         // Shift arguments if type is not provided
         if( typeof type === 'number' && typeof index === 'function' && typeof listener === 'undefined' ){
             listener = index;
@@ -801,7 +802,7 @@ function asEmitter(){
             type = $every;
         }
         
-        if( isPositiveNumber( index ) ){
+        if( !isPositiveNumber( index ) ){
             throw new TypeError( 'index must be a positive number' );
         }
         
@@ -980,7 +981,7 @@ function asEmitter(){
      * @returns {Emitter} The emitter.
      * @since 2.0.0
      */
-    this.first = function( type, listener ){
+    this.first = function( type = $every, listener ){
         // Shift arguments if type is not provided
         if( typeof type === 'function' && typeof listener === 'undefined' ){
             listener = type;
@@ -1600,7 +1601,9 @@ Object.defineProperties( Emitter, {
         writable: true
     },
     /**
-     * The symbol used to listen for events of any `type`. For _most_ methods, when no `type` is given this is the default.
+     * An id used to listen for events of any `type`. For _most_ methods, when no `type` is given this is the default.
+     * 
+     * Listener bound to every event will **not** execute for Emitter lifecycle events, like `:maxListeners`.
      * 
      * Using `Emitter.every` is typically not necessary.
      * @member {external:symbol} Emitter.every
@@ -1647,7 +1650,7 @@ asEmitter.call( Emitter.prototype );
  * @fires Emitter#:destroy
  */
 Emitter.prototype.destroy = function(){
-    emitEvent( this, ':destroy', [], true );
+    emitEvent( this, ':destroy', [], false );
     this.clear();
     this.destroy = this.at = this.clear = this.emit = this.eventTypes = this.first = this.getMaxListeners = this.listenerCount = this.listeners = this.many = this.off = this.on = this.once = this.setMaxListeners = this.tick = this.trigger = this.until = noop;
     this.toJSON = () => 'destroyed';

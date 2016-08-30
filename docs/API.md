@@ -864,7 +864,9 @@ greeter2.on( 'hi', () => alert( 'Hi!' ) );
 <a name="Emitter.every"></a>
 
 ### Emitter.every : <code>[symbol](#external_symbol)</code>
-The symbol used to listen for events of any `type`. For _most_ methods, when no `type` is given this is the default.
+An id used to listen for events of any `type`. For _most_ methods, when no `type` is given this is the default.
+
+Listener bound to every event will **not** execute for Emitter lifecycle events, like `:maxListeners`.
 
 Using `Emitter.every` is typically not necessary.
 
@@ -2529,7 +2531,9 @@ greeter2.on( 'hi', () => alert( 'Hi!' ) );
 <a name="Emitter.every"></a>
 
 ### Emitter.every : <code>[symbol](#external_symbol)</code>
-The symbol used to listen for events of any `type`. For _most_ methods, when no `type` is given this is the default.
+An id used to listen for events of any `type`. For _most_ methods, when no `type` is given this is the default.
+
+Listener bound to every event will **not** execute for Emitter lifecycle events, like `:maxListeners`.
 
 Using `Emitter.every` is typically not necessary.
 
