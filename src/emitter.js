@@ -1652,6 +1652,7 @@ asEmitter.call( Emitter.prototype );
 Emitter.prototype.destroy = function(){
     emitEvent( this, ':destroy', [], false );
     this.clear();
+    delete this.maxListeners;
     this.destroy = this.at = this.clear = this.emit = this.eventTypes = this.first = this.getMaxListeners = this.listenerCount = this.listeners = this.many = this.off = this.on = this.once = this.setMaxListeners = this.tick = this.trigger = this.until = noop;
     this.toJSON = () => 'destroyed';
 };
