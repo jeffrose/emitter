@@ -347,7 +347,7 @@ function emitErrors( emitter, errors ){
  * @throws {external:Error} If `type` is `error` and no listeners are subscribed.
  */
 function emitEvent( emitter, type, data, emitEvery ){
-    const _events = emitter[ $events ];
+    const _events = Object.hasOwnProperty.call( emitter, $events ) ? emitter[ $events ] : undefined;
     
     let executed = false,
         listener;
