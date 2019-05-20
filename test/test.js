@@ -197,6 +197,57 @@ describe( 'Emitter', () => {
                 expect( () => emitter.emit( 'error' ) ).to.throw( Error );
                 expect( () => emitter.emit( 'error', new Error( 'test error' ) ) ).to.throw( Error );
             } );
+
+            it( 'should emit own events only', () => {
+                const getHuman = parent => {
+                        function Human(){}
+                        Human.prototype = parent || emitter;
+                        Emitter( Human.prototype );
+                        return new Human();
+                      },
+                      onEmit = sinon.spy(), 
+                      parent = getHuman();
+
+                parent.child = getHuman( parent );
+                
+                expect( parent.clear ).to.be.a( 'function' );
+                expect( parent.emit ).to.be.a( 'function' );
+                expect( parent.eventTypes ).to.be.a( 'function' );
+                expect( parent.first ).to.be.a( 'function' );
+                expect( parent.getMaxListeners ).to.be.a( 'function' );
+                expect( parent.listenerCount ).to.be.a( 'function' );
+                expect( parent.listeners ).to.be.a( 'function' );
+                expect( parent.many ).to.be.a( 'function' );
+                expect( parent.off ).to.be.a( 'function' );
+                expect( parent.on ).to.be.a( 'function' );
+                expect( parent.once ).to.be.a( 'function' );
+                expect( parent.setMaxListeners ).to.be.a( 'function' );
+                expect( parent.trigger ).to.be.a( 'function' );
+                expect( parent.until ).to.be.a( 'function' );
+
+                expect( parent.child.clear ).to.be.a( 'function' );
+                expect( parent.child.emit ).to.be.a( 'function' );
+                expect( parent.child.eventTypes ).to.be.a( 'function' );
+                expect( parent.child.first ).to.be.a( 'function' );
+                expect( parent.child.getMaxListeners ).to.be.a( 'function' );
+                expect( parent.child.listenerCount ).to.be.a( 'function' );
+                expect( parent.child.listeners ).to.be.a( 'function' );
+                expect( parent.child.many ).to.be.a( 'function' );
+                expect( parent.child.off ).to.be.a( 'function' );
+                expect( parent.child.on ).to.be.a( 'function' );
+                expect( parent.child.once ).to.be.a( 'function' );
+                expect( parent.child.setMaxListeners ).to.be.a( 'function' );
+                expect( parent.child.trigger ).to.be.a( 'function' );
+                expect( parent.child.until ).to.be.a( 'function' );
+
+                parent.on( 'test', onEmit );
+                
+                parent.emit( 'test', 1 );
+                expect( onEmit ).to.have.been.calledWith( 1 );
+
+                parent.child.emit( 'test', 2 );            
+                expect( onEmit ).to.not.have.been.calledWith( 2 );
+            } );
             
             it( 'should catch errors in bad listeners', () => {
                 let onEmit = sinon.spy(),
