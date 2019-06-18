@@ -1,6 +1,6 @@
 {
   "name": "emitter-js",
-  "main": [ "dist/emitter.js", "dist/emitter-umd.js" ],
+  "main": [ "dist/emitter-umd.js" ],
   "version": "2.0.0",
   "homepage": "https://github.com/jeffrose/emitter",
   "authors": [
