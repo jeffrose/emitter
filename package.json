@@ -1,7 +1,7 @@
 {
   "name": "emitter-js",
   "description": "A modern event emitter implementation.",
-  "version": "2.0.0",
+  "version": "2.0.2",
   "repository": "https://github.com/jeffrose/emitter.git",
   "homepage": "https://github.com/jeffrose/emitter",
   "bugs": "https://github.com/jeffrose/emitter/issues",
