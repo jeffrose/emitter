@@ -26,8 +26,8 @@ gulp.task( 'dist', [ 'docs' ], () => mergeStream(
         gulp.src( [ 'src/emitter.js' ] )
             .pipe( sourcemaps.init() )
             .pipe( babel( {
-                plugins: [ 'transform-es2015-modules-umd' ],
-                presets: [ 'es2015' ]
+                plugins: [ '@babel/transform-modules-umd' ],
+                presets: [ '@babel/env' ]
             } ) )
             //.pipe( uglify() )
             .pipe( rename( 'emitter-umd.js' ) )
