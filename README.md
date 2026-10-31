@@ -4,25 +4,21 @@
 
 [![npm](https://img.shields.io/npm/v/emitter-js.svg)](https://www.npmjs.com/package/emitter-js)
 [![CI](https://github.com/jeffrose/emitter/actions/workflows/ci.yml/badge.svg)](https://github.com/jeffrose/emitter/actions/workflows/ci.yml)
-[![license](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Emitter.js is an event emitter based on the nodejs [EventEmitter](https://nodejs.org/api/events.html) but utilizing some of the new [features](https://github.com/lukehoban/es6features) in [ECMAScript](http://www.ecmascript.org/) 6.
+Emitter.js is an event emitter in the spirit of the Node.js [EventEmitter](https://nodejs.org/api/events.html), with a small API and some useful extras: namespaced event types, listeners bound to every event, and helpers for one-time, many-time and conditional subscriptions.
 
 ## Installation
 
-### NPM
+```sh
+npm install emitter-js
+```
 
-`npm install emitter-js`
+Or clone the repository:
 
-### Git
-
-`git clone https://github.com/jeffrose/emitter emitter`
-
-### Bower
-
-`bower install emitter-js`
-
-> **Deprecated:** [Bower](https://bower.io/) is no longer maintained and `bower.json` will be removed in Emitter.js 3.0. Use NPM instead.
+```sh
+git clone https://github.com/jeffrose/emitter emitter
+```
 
 ## Documentation
 
@@ -33,17 +29,17 @@ Emitter.js is an event emitter based on the nodejs [EventEmitter](https://nodejs
 
 ## Usage
 
-Emitter.js provides both an ES module and a UMD build as part of the distribution. The `main` entry point is a CommonJS module, so `require( 'emitter-js' )` and `import 'emitter-js'` both provide the constructor.
+The package ships three builds:
 
 | File                  | Environment                                             |
 | --------------------- | ------------------------------------------------------- |
-| `dist/emitter.js`     | ES module, for bundlers and modern environments         |
+| `dist/emitter.js`     | ES module, for bundlers and modern runtimes             |
 | `dist/emitter-umd.js` | UMD, transpiled to ES5 for browsers and legacy runtimes |
 | `index.js`            | CommonJS entry point used by `main`                     |
 
-Additional examples can be found in the [API](docs/API.md) docs and unit tests.
+`require( 'emitter-js' )` and `import 'emitter-js'` both provide the constructor.
 
-### ECMAScript 2015+
+### ES modules
 
 ```javascript
 import Emitter from 'emitter-js/dist/emitter.js';
@@ -55,11 +51,11 @@ greeter.emit( 'hello', 'World' );
 // Hello, World!
 ```
 
-### ECMAScript 5
+### CommonJS
 
 ```javascript
-var Emitter = require( 'emitter-js' ),
-    greeter = new Emitter();
+const Emitter = require( 'emitter-js' );
+const greeter = new Emitter();
 
 greeter.on( 'hello', function( name ){
     console.log( 'Hello, ' + name + '!' );
@@ -75,16 +71,16 @@ The UMD build registers a global named `emitter`, which exposes the constructor 
 ```html
 <script src="node_modules/emitter-js/dist/emitter-umd.js"></script>
 <script>
-    var Emitter = window.emitter.default,
-        greeter = new Emitter();
+    const Emitter = window.emitter.default;
+    const greeter = new Emitter();
 
-    greeter.on( 'hello', function( name ){
-        console.log( 'Hello, ' + name + '!' );
-    } );
+    greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
     greeter.emit( 'hello', 'World' );
     // Hello, World!
 </script>
 ```
+
+Additional examples can be found in the [API](docs/API.md) docs and the unit tests.
 
 ## Differences from `EventEmitter`
 
@@ -117,4 +113,4 @@ The `dist/` directory is committed, so a release consists of updating the versio
 
 ## License
 
-[Apache-2.0](LICENSE)
+[MIT](LICENSE)

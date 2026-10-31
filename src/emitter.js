@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2015-2026 Jeff Rose
+
 'use strict';
 
 /**
@@ -1704,10 +1707,10 @@ Object.defineProperties(Emitter, {
      * @since 1.1.2
      * @example
      * console.log( Emitter.version );
-     * // 2.1.0
+     * // 2.2.0
      */
     version: {
-        value: '2.1.0',
+        value: '2.2.0',
         configurable: false,
         enumerable: false,
         writable: false

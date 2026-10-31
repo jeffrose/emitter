@@ -910,7 +910,7 @@ The current version of *Emitter.js*.
 **Example**  
 ```js
 console.log( Emitter.version );
-// 2.1.0
+// 2.2.0
 ```
 <a name="Emitter..Null"></a>
 
@@ -2656,7 +2656,7 @@ The current version of *Emitter.js*.
 **Example**  
 ```js
 console.log( Emitter.version );
-// 2.1.0
+// 2.2.0
 ```
 <a name="Emitter..Null"></a>
 
