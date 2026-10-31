@@ -101,7 +101,7 @@
    */
 
   /**
-   * A {@link external:string} or {@link external:symbol} that represents the type of event fired by the Emitter.
+   * A {@link external:string} or {@link external:symbol} that represents the type of event fired by the Emitter. Values other than a `string` or a `symbol` are coerced to a `string`, since they are used as the keys of the event registry.
    * @typedef {external:string|external:symbol} EventType
    */
 
@@ -125,7 +125,7 @@
    */
 
   /**
-   * This event is emitted once the maximum number of listeners has been exceeded for an event type.
+   * This event is emitted once the maximum number of listeners has been exceeded for an event type. It is emitted at most once per event `type`, until the listeners for that `type` are cleared.
    * @event Emitter#:maxListeners
    * @type {external:string} type
    * @type {external:Function} listener
@@ -147,6 +147,7 @@
   var $events = '@@emitter/events',
     $every = '@@emitter/every',
     $maxListeners = '@@emitter/maxListeners',
+    $warned = '@@emitter/warned',
     hasOwnProperty = Object.prototype.hasOwnProperty,
     noop = function noop() {},
     API = new Null();
@@ -188,13 +189,12 @@
 
     // Define the event registry if it does not exist
     defineEventsProperty(emitter, new Null());
-    var _events = emitter[$events];
-    if (_events[':on']) {
+    if (emitter[$events][':on']) {
       emitEvent(emitter, ':on', [type, typeof listener.listener === 'function' ? listener.listener : listener], false);
-
-      // Emitting "on" may have changed the registry.
-      _events[':on'] = emitter[$events][':on'];
     }
+
+    // An ":on" listener may have replaced the event registry, so it is read after the event is emitted
+    var _events = emitter[$events];
 
     // Single listener
     if (!_events[type]) {
@@ -220,17 +220,78 @@
     }
 
     // Track warnings if max listeners is available
-    if ('maxListeners' in emitter && !_events[type].warned) {
-      var max = emitter.maxListeners;
-      if (max && max > 0 && _events[type].length > max) {
-        emitEvent(emitter, ':maxListeners', [type, listener], false);
-
-        // Emitting "maxListeners" may have changed the registry.
-        _events[':maxListeners'] = emitter[$events][':maxListeners'];
-        _events[type].warned = true;
-      }
+    if ('maxListeners' in emitter) {
+      warnMaxListeners(emitter, type, listener);
     }
-    emitter[$events] = _events;
+  }
+
+  /**
+   * Emits the `:maxListeners` event when the number of listeners for an event `type` exceeds the maximum
+   * number of listeners. The event is emitted at most once per event `type`, until the listeners for that
+   * `type` are cleared.
+   * @function Emitter~warnMaxListeners
+   * @param {Emitter} emitter The emitter on which the listener was added.
+   * @param {EventType} type The event type.
+   * @param {EventListener} listener The event callback.
+   * @fires Emitter#:maxListeners
+   */
+  function warnMaxListeners(emitter, type, listener) {
+    var max = emitter.maxListeners;
+    if (!(max > 0) || hasWarned(emitter, type)) {
+      return;
+    }
+    var handler = emitter[$events][type],
+      // A single listener is not stored in an array
+      count = typeof handler === 'function' ? 1 : handler.length;
+    if (count > max) {
+      // Mark the type before emitting so that a listener of the event cannot cause a recursive warning
+      markWarned(emitter, type);
+      emitEvent(emitter, ':maxListeners', [type, listener], false);
+    }
+  }
+
+  /**
+   * @function Emitter~hasWarned
+   * @param {Emitter} emitter The emitter on which max listeners will be retrieved.
+   * @param {EventType} type The event type.
+   * @returns {external:boolean} Whether a `:maxListeners` event has already been emitted for the event type.
+   */
+  function hasWarned(emitter, type) {
+    var warned = emitter[$warned];
+    return typeof warned !== 'undefined' && warned[type] === true;
+  }
+
+  /**
+   * @function Emitter~markWarned
+   * @param {Emitter} emitter The emitter on which max listeners will be retrieved.
+   * @param {EventType} type The event type.
+   */
+  function markWarned(emitter, type) {
+    if (!hasOwnProperty.call(emitter, $warned)) {
+      Object.defineProperty(emitter, $warned, {
+        value: new Null(),
+        configurable: true,
+        enumerable: false,
+        writable: true
+      });
+    }
+    emitter[$warned][type] = true;
+  }
+
+  /**
+   * @function Emitter~resetWarned
+   * @param {Emitter} emitter The emitter on which max listeners will be retrieved.
+   * @param {EventType} [type] The event type, or every event type when omitted.
+   */
+  function resetWarned(emitter, type) {
+    if (!hasOwnProperty.call(emitter, $warned)) {
+      return;
+    }
+    if (typeof type === 'undefined') {
+      delete emitter[$warned];
+    } else {
+      delete emitter[$warned][type];
+    }
   }
 
   /**
@@ -243,7 +304,7 @@
   function addFiniteEventListener(emitter, type, times, listener) {
     function finiteListener() {
       listener.apply(this, arguments);
-      return --times === 0;
+      return --times <= 0;
     }
     finiteListener.listener = listener;
     addConditionalEventListener(emitter, type, finiteListener);
@@ -345,18 +406,19 @@
    * @throws {external:Error} If `type` is `error` and no listeners are subscribed.
    */
   function emitEvent(emitter, type, data, emitEvery) {
-    var _events = Object.hasOwnProperty.call(emitter, $events) ? emitter[$events] : undefined;
+    var _events = hasOwnProperty.call(emitter, $events) ? emitter[$events] : undefined;
     var executed = false,
       listener;
-    if (typeof _events !== 'undefined') {
-      if (type === 'error' && !_events.error) {
-        if (data[0] instanceof Error) {
-          throw data[0];
-        } else {
-          throw new Error('Uncaught, unspecified "error" event.');
-        }
-      }
 
+    // An "error" event without a listener is always an error, whether or not the emitter has been used
+    if (type === 'error' && !(_events && _events.error)) {
+      if (data[0] instanceof Error) {
+        throw data[0];
+      } else {
+        throw new Error('Uncaught, unspecified "error" event.');
+      }
+    }
+    if (typeof _events !== 'undefined') {
       // Execute listeners for the given type of event
       listener = _events[type];
       if (typeof listener !== 'undefined') {
@@ -410,7 +472,8 @@
    * @returns {Array<EventType>} The list of event types registered to the emitter.
    */
   function getEventTypes(emitter) {
-    return Object.keys(emitter[$events]);
+    var _events = emitter[$events];
+    return typeof _events === 'undefined' ? [] : Object.keys(_events);
   }
 
   /**
@@ -606,10 +669,15 @@
    * @param {EventListener} listener The event callback.
    */
   function removeEventListener(emitter, type, listener) {
-    var handler = emitter[$events][type];
+    // Only the emitter's own registry is searched, a listener of an inherited registry cannot be removed
+    var _events = hasOwnProperty.call(emitter, $events) ? emitter[$events] : undefined,
+      handler = _events && _events[type];
+    if (typeof handler === 'undefined') {
+      return;
+    }
     if (handler === listener || typeof handler.listener === 'function' && handler.listener === listener) {
-      delete emitter[$events][type];
-      if (emitter[$events][':off']) {
+      delete _events[type];
+      if (_events[':off']) {
         emitEvent(emitter, ':off', [type, listener], false);
       }
     } else if (Array.isArray(handler)) {
@@ -623,11 +691,11 @@
       if (index > -1) {
         if (handler.length === 1) {
           handler.length = 0;
-          delete emitter[$events][type];
+          delete _events[type];
         } else {
           spliceList(handler, index);
         }
-        if (emitter[$events][':off']) {
+        if (_events[':off']) {
           emitEvent(emitter, ':off', [type, listener], false);
         }
       }
@@ -805,8 +873,8 @@
      * // Hi!
      */
     this.clear = function (type) {
-      // No Events
-      if (!this[$events]) {
+      // No own events
+      if (!hasOwnProperty.call(this, $events)) {
         return this;
       }
 
@@ -814,8 +882,10 @@
       if (!this[$events][':off']) {
         if (arguments.length === 0) {
           this[$events] = new Null();
+          resetWarned(this);
         } else if (this[$events][type]) {
           delete this[$events][type];
+          resetWarned(this, type);
         }
         return this;
       }
@@ -835,6 +905,7 @@
         // Manually clear "off"
         this.clear(':off');
         this[$events] = new Null();
+        resetWarned(this);
         return this;
       }
       var handler = this[$events][type];
@@ -847,6 +918,7 @@
         }
       }
       delete this[$events][type];
+      resetWarned(this, type);
       return this;
     };
 
@@ -855,11 +927,12 @@
      *
      * The `type` can be namespaced using `:`, which will result in multiple events being triggered in succession. Listeners can be associated with the fully namespaced `type` or a subset of the `type`.
      *
-     * Returns `true` if the event had listeners, `false` otherwise.
+     * Returns `true` if the event had listeners, `false` otherwise. An `error` event without an `error` listener always throws, whether or not other listeners are registered.
      * @function Emitter~asEmitter.emit
      * @param {EventType} type The event type.
      * @param {...*} [data] The data passed into the listeners.
      * @returns {external:boolean} Whether or not the event had listeners.
+     * @throws {external:Error} If `type` is `error` and no `error` listener is registered.
      * @since 1.0.0
      * @example <caption>Emitting an event</caption>
      * const greeter = new Emitter();
@@ -1014,9 +1087,7 @@
         listeners = [];
       } else {
         var handler = this[$events][type];
-        if (typeof handler === 'undefined') {
-          listeners = [];
-        } else if (typeof handler === 'function') {
+        if (typeof handler === 'function') {
           listeners = [handler];
         } else {
           listeners = handler.slice();
@@ -1028,6 +1099,8 @@
     /**
      * Adds a *many time* listener for the specified event `type`. If no `type` is given the listener will be triggered any event `type`. After the listener is invoked the specified number of `times`, it is removed.
      * No checks are made to see if the `listener` has already been added. Multiple calls passing the same combination `type` and `listener` will result in the `listener` being added multiple times.
+     *
+     * The `times` must be a positive number. A listener for `0` times is never executed and is not added.
      * @function Emitter~asEmitter.many
      * @param {EventType} type The event type.
      * @param {external:number} times The number times the listener will be executed before being removed.
@@ -1067,7 +1140,11 @@
       if (typeof listener !== 'function') {
         throw new TypeError('listener must be a function');
       }
-      addFiniteEventListener(this, type, times, listener);
+
+      // A listener that would never be executed is not added
+      if (times > 0) {
+        addFiniteEventListener(this, type, times, listener);
+      }
       return this;
     };
 
@@ -1259,11 +1336,12 @@
     /**
      * Execute the listeners for the specified event `type` with the supplied `data`.
      *
-     * Returns `true` if the event had listeners, `false` otherwise.
+     * Returns `true` if the event had listeners, `false` otherwise. An `error` event without an `error` listener always throws, whether or not other listeners are registered.
      * @function Emitter~asEmitter.trigger
      * @param {EventType} [type] The event type.
      * @param {external:Array} data
      * @returns {external:boolean} Whether or not the event had listeners.
+     * @throws {external:Error} If `type` is `error` and no `error` listener is registered.
      * @since 1.0.0
      * @example
      * const greeter = new Emitter();
@@ -1366,12 +1444,14 @@
 
   /**
    * Creates an instance of emitter. If `mapping` are provided they will automatically be passed into `on()` once construction is complete.
+   *
+   * Emitter can be extended, either with the `class` syntax or with a constructor function. The parent constructor must be executed before any listeners are subscribed, which is done with `super()` in a `class` and with `Emitter.call( this )` in a constructor function.
    * @class Emitter
    * @param {EventMapping} [mapping] A mapping of event types to event listeners.
    * @classdesc An object that emits named events which cause functions to be executed.
    * @extends Emitter~Null
    * @mixes Emitter~asEmitter
-   * @see {@link https://github.com/nodejs/node/blob/master/lib/events.js}
+   * @see {@link https://github.com/nodejs/node/blob/main/lib/events.js}
    * @since 1.0.0
    * @example <caption>Using Emitter directly</caption>
    * const greeter = new Emitter();
@@ -1443,8 +1523,8 @@
    * // Hello, Terry!
    */
   function Emitter() {
-    // Called as constructor
-    if (typeof this !== 'undefined' && this.constructor === Emitter) {
+    // Called as constructor, which includes instances of subclasses
+    if (this instanceof Emitter) {
       var mapping = arguments[0];
 
       /**
@@ -1595,8 +1675,9 @@
    * // "destroyed"
    */
   Emitter.prototype.toJSON = function () {
-    var json = new Null(),
-      types = Object.keys(this[$events]),
+    var _events = this[$events],
+      json = new Null(),
+      types = typeof _events === 'undefined' ? [] : Object.keys(_events),
       length = types.length;
     var index = 0,
       type;

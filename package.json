@@ -57,5 +57,10 @@
   },
   "engines": {
     "node": ">= 22.18.0"
+  },
+  "c8": {
+    "include": [ "src/**" ],
+    "exclude": [ "dist/**", "test/**", "scripts/**" ],
+    "reporter": [ "text" ]
   }
 }

@@ -598,6 +598,659 @@ export default function describeEmitter(Emitter, label) {
             });
         });
 
+        describe('event types', () => {
+            let emitter;
+
+            beforeEach(() => (emitter = new Emitter()));
+
+            afterEach(() => emitter.destroy());
+
+            it('should support symbol event types', () => {
+                const type = Symbol('test'),
+                    onEmit = sinon.spy();
+
+                emitter.on(type, onEmit);
+
+                expect(emitter.emit(type, 1)).to.equal(true);
+                expect(emitter.listenerCount(type)).to.equal(1);
+
+                emitter.off(type, onEmit);
+
+                expect(emitter.emit(type, 2)).to.equal(false);
+            });
+
+            it('should treat values other than symbols as strings', () => {
+                const onEmit = sinon.spy();
+
+                emitter.on(42, onEmit);
+
+                expect(emitter.emit('42')).to.equal(true);
+                expect(emitter.listenerCount('42')).to.equal(1);
+                expect(onEmit).to.have.been.calledOnce;
+            });
+
+            it('should execute every listeners once for a namespaced event', () => {
+                const onFoo = sinon.spy(),
+                    onBar = sinon.spy(),
+                    onQux = sinon.spy(),
+                    onEvery = sinon.spy();
+
+                emitter.on('foo', onFoo);
+                emitter.on('foo:bar', onBar);
+                emitter.on('foo:bar:qux', onQux);
+                emitter.on(Emitter.every, onEvery);
+
+                expect(emitter.emit('foo:bar:qux', 1)).to.equal(true);
+
+                expect(onFoo).to.have.been.calledWith(1);
+                expect(onBar).to.have.been.calledWith(1);
+                expect(onQux).to.have.been.calledWith(1);
+
+                // Every listeners execute for the root event only
+                expect(onEvery).to.have.been.calledOnce;
+            });
+
+            it('should not execute every listeners for lifecycle events', () => {
+                const onEvery = sinon.spy();
+
+                emitter.on(onEvery);
+                emitter.on('foo', () => {});
+                emitter.once('bar', () => {});
+                emitter.emit('foo');
+
+                emitter.setMaxListeners(1);
+                emitter.on('baz', () => {});
+                emitter.on('baz', () => {});
+
+                // Only the "foo" event, which was emitted explicitly, is seen by the every listener
+                expect(onEvery).to.have.been.calledOnce;
+                expect(onEvery).to.have.been.calledWith();
+            });
+
+            it('should provide the id for listening to every event', () => {
+                const onEvery = sinon.spy();
+
+                expect(Emitter.every).to.be.a('string');
+
+                emitter.on(Emitter.every, onEvery);
+                emitter.emit('anything', 1);
+                emitter.emit('anything:else', 2);
+
+                expect(onEvery).to.have.been.calledWith(1);
+                expect(onEvery).to.have.been.calledWith(2);
+                expect(onEvery).to.have.been.calledTwice;
+            });
+        });
+
+        describe('listener management', () => {
+            let emitter;
+
+            beforeEach(() => (emitter = new Emitter()));
+
+            afterEach(() => emitter.destroy());
+
+            it('should add listeners at a given index', () => {
+                const calls = [],
+                    one = () => calls.push('one'),
+                    two = () => calls.push('two'),
+                    three = () => calls.push('three');
+
+                emitter.on('test', one);
+                emitter.at('test', 1, two);
+                emitter.at('test', 0, three);
+
+                expect(emitter.listeners('test')).to.deep.equal([three, one, two]);
+
+                emitter.emit('test');
+
+                expect(calls).to.deep.equal(['three', 'one', 'two']);
+            });
+
+            it('should prepend listeners with first()', () => {
+                const calls = [],
+                    one = () => calls.push('one'),
+                    two = () => calls.push('two');
+
+                emitter.on('test', one);
+                emitter.first('test', two);
+                emitter.emit('test');
+
+                expect(calls).to.deep.equal(['two', 'one']);
+            });
+
+            it('should return a copy of the listeners', () => {
+                const listener = () => {};
+
+                emitter.on('test', listener);
+
+                const listeners = emitter.listeners('test');
+
+                listeners.push(() => {});
+
+                expect(listeners).to.have.length(2);
+                expect(emitter.listeners('test')).to.deep.equal([listener]);
+            });
+
+            it('should clear a single event type', () => {
+                emitter.on('foo', () => {});
+                emitter.on('bar', () => {});
+
+                emitter.clear('foo');
+
+                expect(emitter.listenerCount('foo')).to.equal(0);
+                expect(emitter.listenerCount('bar')).to.equal(1);
+                expect(emitter.eventTypes()).to.deep.equal(['bar']);
+            });
+
+            it('should ignore listeners that were never added', () => {
+                emitter.on('test', () => {});
+
+                expect(() => emitter.off('test', () => {})).to.not.throw();
+                expect(() => emitter.off('missing', () => {})).to.not.throw();
+                expect(emitter.listenerCount('test')).to.equal(1);
+            });
+
+            it('should remove once, many and until listeners by their original reference', () => {
+                const once = sinon.spy(),
+                    many = sinon.spy(),
+                    until = sinon.spy();
+
+                emitter.once('test', once);
+                emitter.many('test', 5, many);
+                emitter.until('test', until);
+
+                expect(emitter.listenerCount('test')).to.equal(3);
+
+                emitter.emit('test');
+                emitter.off('test', once);
+                emitter.off('test', many);
+                emitter.off('test', until);
+                emitter.emit('test');
+
+                expect(once).to.have.been.calledOnce;
+                expect(many).to.have.been.calledOnce;
+                expect(until).to.have.been.calledOnce;
+                expect(emitter.listenerCount('test')).to.equal(0);
+            });
+
+            it('should snapshot the listeners when an event is emitted', () => {
+                const calls = [],
+                    added = () => calls.push('added'),
+                    removed = () => calls.push('removed');
+
+                emitter.on('test', () => {
+                    calls.push('first');
+                    emitter.off('test', removed);
+                    emitter.on('test', added);
+                });
+                emitter.on('test', removed);
+                emitter.emit('test');
+
+                expect(calls).to.deep.equal(['first', 'removed']);
+
+                calls.length = 0;
+                emitter.emit('test');
+
+                expect(calls).to.deep.equal(['first', 'added']);
+            });
+        });
+
+        describe('listener invocation', () => {
+            let emitter;
+
+            beforeEach(() => (emitter = new Emitter()));
+
+            afterEach(() => emitter.destroy());
+
+            it('should invoke multiple listeners with one argument', () => {
+                const first = sinon.spy(),
+                    second = sinon.spy();
+
+                emitter.on('test', first);
+                emitter.on('test', second);
+                emitter.emit('test', 1);
+
+                expect(first).to.have.been.calledWith(1);
+                expect(second).to.have.been.calledWith(1);
+            });
+
+            it('should invoke multiple listeners with two arguments', () => {
+                const first = sinon.spy(),
+                    second = sinon.spy();
+
+                emitter.on('test', first);
+                emitter.on('test', second);
+                emitter.emit('test', 1, 2);
+
+                expect(first).to.have.been.calledWith(1, 2);
+                expect(second).to.have.been.calledWith(1, 2);
+            });
+
+            it('should invoke multiple listeners with three arguments', () => {
+                const first = sinon.spy(),
+                    second = sinon.spy();
+
+                emitter.on('test', first);
+                emitter.on('test', second);
+                emitter.emit('test', 1, 2, 3);
+
+                expect(first).to.have.been.calledWith(1, 2, 3);
+                expect(second).to.have.been.calledWith(1, 2, 3);
+            });
+
+            it('should invoke multiple listeners with four or more arguments', () => {
+                const first = sinon.spy(),
+                    second = sinon.spy();
+
+                emitter.on('test', first);
+                emitter.on('test', second);
+                emitter.trigger('test', [1, 2, 3, 4, 5]);
+
+                expect(first).to.have.been.calledWith(1, 2, 3, 4, 5);
+                expect(second).to.have.been.calledWith(1, 2, 3, 4, 5);
+            });
+
+            it('should emit an error thrown by a listener regardless of the number of arguments', () => {
+                const arities = [[], [1], [1, 2], [1, 2, 3], [1, 2, 3, 4]];
+
+                for (const data of arities) {
+                    for (const listenerCount of [1, 2]) {
+                        const emitter = new Emitter(),
+                            error = new Error('boom'),
+                            onError = sinon.spy(),
+                            failing = sinon.spy(() => {
+                                throw error;
+                            }),
+                            survivor = sinon.spy();
+
+                        emitter.on('error', onError);
+                        emitter.on('test', failing);
+
+                        if (listenerCount === 2) {
+                            emitter.on('test', survivor);
+                        }
+
+                        emitter.trigger('test', data);
+
+                        expect(onError).to.have.been.calledOnce;
+                        expect(onError).to.have.been.calledWith(error);
+                        expect(failing).to.have.been.calledWith(...data);
+
+                        if (listenerCount === 2) {
+                            expect(survivor).to.have.been.calledWith(...data);
+                        }
+
+                        emitter.destroy();
+                    }
+                }
+            });
+
+            it('should validate the index and the listener of at()', () => {
+                expect(() => emitter.at('test', 'a', () => {})).to.throw(TypeError, 'index must be a positive number');
+                expect(() => emitter.at('test', -1, () => {})).to.throw(TypeError, 'index must be a positive number');
+                expect(() => emitter.at('test', 1, 'a')).to.throw(TypeError, 'listener must be a function');
+            });
+
+            it('should emit :off for every listener that is cleared', () => {
+                const onOff = sinon.spy(),
+                    first = () => {},
+                    second = () => {};
+
+                emitter.on(':off', onOff);
+                emitter.on('test', first);
+                emitter.on('test', second);
+                emitter.clear('test');
+
+                expect(onOff).to.have.been.calledWith('test', first);
+                expect(onOff).to.have.been.calledWith('test', second);
+                expect(onOff).to.have.been.calledTwice;
+                expect(emitter.listenerCount('test')).to.equal(0);
+            });
+        });
+
+        describe('error events', () => {
+            let emitter;
+
+            beforeEach(() => (emitter = new Emitter()));
+
+            afterEach(() => emitter.destroy());
+
+            it('should emit an error event for every error thrown by a listener', () => {
+                const onError = sinon.spy(),
+                    first = new Error('first'),
+                    second = new Error('second');
+
+                emitter.on('error', onError);
+                emitter.on('test', () => {
+                    throw first;
+                });
+                emitter.on('test', () => {
+                    throw second;
+                });
+                emitter.on('test', () => {});
+
+                expect(emitter.emit('test')).to.equal(true);
+                expect(onError).to.have.been.calledWith(first);
+                expect(onError).to.have.been.calledWith(second);
+                expect(onError).to.have.been.calledTwice;
+            });
+
+            it('should throw the first error when there is no error listener', () => {
+                const error = new Error('boom');
+
+                emitter.on('test', () => {
+                    throw error;
+                });
+
+                expect(() => emitter.emit('test')).to.throw(error);
+            });
+
+            it('should execute every listeners for error events', () => {
+                const onError = sinon.spy(),
+                    onEvery = sinon.spy();
+
+                emitter.on('error', onError);
+                emitter.on(Emitter.every, onEvery);
+                emitter.emit('error', 'not an error');
+
+                expect(onError).to.have.been.calledWith('not an error');
+                expect(onEvery).to.have.been.calledWith('not an error');
+            });
+        });
+
+        describe('inheritance', () => {
+            it('should support class inheritance', () => {
+                class Greeter extends Emitter {
+                    constructor() {
+                        super();
+                        this.on('greet', (name) => (this.greeting = `Hello, ${name}!`));
+                    }
+                }
+
+                const greeter = new Greeter();
+
+                expect(greeter).to.be.an.instanceof(Emitter);
+                expect(greeter.maxListeners).to.equal(Emitter.defaultMaxListeners);
+                expect(greeter.emit('greet', 'World')).to.equal(true);
+                expect(greeter.greeting).to.equal('Hello, World!');
+            });
+
+            it('should support prototypal inheritance', () => {
+                function Greeter() {
+                    Emitter.call(this);
+                    this.on('greet', (name) => (this.greeting = `Hello, ${name}!`));
+                }
+                Greeter.prototype = Object.create(Emitter.prototype);
+
+                Greeter.prototype.greet = function (name) {
+                    return this.emit('greet', name);
+                };
+
+                const greeter = new Greeter();
+
+                expect(greeter).to.be.an.instanceof(Emitter);
+                expect(greeter.maxListeners).to.equal(Emitter.defaultMaxListeners);
+                expect(greeter.greet('World')).to.equal(true);
+                expect(greeter.greeting).to.equal('Hello, World!');
+            });
+
+            it('should not share listeners between instances of a subclass', () => {
+                class Greeter extends Emitter {}
+
+                const one = new Greeter(),
+                    two = new Greeter(),
+                    onEmit = sinon.spy();
+
+                one.on('greet', onEmit);
+                two.emit('greet');
+
+                expect(onEmit).to.not.have.been.called;
+                expect(one.listenerCount('greet')).to.equal(1);
+                expect(two.listenerCount('greet')).to.equal(0);
+            });
+        });
+
+        describe('destroy', () => {
+            it('should emit the :destroy event before the listeners are cleared', () => {
+                const emitter = new Emitter(),
+                    onDestroy = sinon.spy(),
+                    counts = [];
+
+                emitter.on(':destroy', onDestroy);
+                emitter.on(':destroy', () => counts.push(emitter.listenerCount('test')));
+                emitter.on('test', () => {});
+
+                expect(emitter.listenerCount('test')).to.equal(1);
+                expect(emitter.toJSON().listenerCount.test).to.equal(1);
+
+                emitter.destroy();
+
+                expect(onDestroy).to.have.been.calledOnce;
+                expect(counts).to.deep.equal([1]);
+                expect(emitter.toJSON()).to.equal('destroyed');
+            });
+
+            it('should provide no-op methods after being destroyed', () => {
+                const emitter = new Emitter();
+
+                emitter.destroy();
+
+                expect(emitter.emit('test')).to.be.undefined;
+                expect(emitter.listenerCount('test')).to.be.undefined;
+                expect(() => emitter.destroy()).to.not.throw();
+                expect(emitter.toJSON()).to.equal('destroyed');
+                expect(emitter.toString()).to.equal('Emitter "destroyed"');
+            });
+
+            it('should destroy an emitter without listeners', () => {
+                expect(() => new Emitter().destroy()).to.not.throw();
+            });
+        });
+
+        describe('tick', () => {
+            it('should emit asynchronously', async () => {
+                const emitter = new Emitter(),
+                    onEmit = sinon.spy();
+
+                emitter.on('test', onEmit);
+
+                const promise = emitter.tick('test', 1);
+
+                expect(onEmit).to.not.have.been.called;
+
+                await promise;
+
+                expect(onEmit).to.have.been.calledWith(1);
+            });
+
+            it('should resolve when the event had listeners', async () => {
+                const emitter = new Emitter();
+
+                emitter.on('test', () => {});
+
+                await expect(emitter.tick('test')).to.be.fulfilled;
+            });
+
+            it('should reject when the event had no listeners', async () => {
+                const emitter = new Emitter();
+
+                await expect(emitter.tick('test')).to.be.rejected;
+            });
+        });
+
+        describe('max listeners', () => {
+            it('should warn once per event type', () => {
+                const emitter = new Emitter(),
+                    onMaxListeners = sinon.spy();
+
+                emitter.setMaxListeners(1);
+                emitter.on(':maxListeners', onMaxListeners);
+                emitter.on('test', () => {});
+                emitter.on('test', () => {});
+                emitter.on('test', () => {});
+                emitter.on('other', () => {});
+                emitter.on('other', () => {});
+
+                expect(onMaxListeners).to.have.been.calledTwice;
+                expect(onMaxListeners).to.have.been.calledWith('test');
+                expect(onMaxListeners).to.have.been.calledWith('other');
+            });
+
+            it('should warn again after the event type is cleared', () => {
+                const emitter = new Emitter(),
+                    onMaxListeners = sinon.spy();
+
+                emitter.setMaxListeners(1);
+                emitter.on(':maxListeners', onMaxListeners);
+                emitter.on('test', () => {});
+                emitter.on('test', () => {});
+                emitter.clear('test');
+                emitter.on('test', () => {});
+                emitter.on('test', () => {});
+
+                expect(onMaxListeners).to.have.been.calledTwice;
+            });
+
+            it('should not warn for a single listener based on its arity', () => {
+                const emitter = new Emitter(),
+                    onMaxListeners = sinon.spy(),
+                    listener = (one, two, three) => one + two + three;
+
+                emitter.setMaxListeners(2);
+                emitter.on(':maxListeners', onMaxListeners);
+                emitter.on('test', listener);
+
+                expect(onMaxListeners).to.not.have.been.called;
+                expect(listener).to.not.have.property('warned');
+            });
+
+            it('should not recurse when a :maxListeners listener adds listeners', () => {
+                const emitter = new Emitter(),
+                    onMaxListeners = sinon.spy((type) => emitter.on(type, () => {}));
+
+                emitter.setMaxListeners(1);
+                emitter.on(':maxListeners', onMaxListeners);
+                emitter.on('test', () => {});
+                emitter.on('test', () => {});
+
+                expect(onMaxListeners).to.have.been.calledOnce;
+            });
+
+            it('should never warn when the maximum is zero', () => {
+                const emitter = new Emitter(),
+                    onMaxListeners = sinon.spy();
+
+                emitter.setMaxListeners(0);
+                emitter.on(':maxListeners', onMaxListeners);
+
+                for (let index = 0; index < 20; index += 1) {
+                    emitter.on('test', () => {});
+                }
+
+                expect(onMaxListeners).to.not.have.been.called;
+                expect(emitter.listenerCount('test')).to.equal(20);
+            });
+
+            it('should use the default maximum listeners', () => {
+                const original = Emitter.defaultMaxListeners;
+
+                try {
+                    Emitter.defaultMaxListeners = 1;
+
+                    expect(new Emitter().getMaxListeners()).to.equal(1);
+                    expect(new Emitter().maxListeners).to.equal(1);
+                } finally {
+                    Emitter.defaultMaxListeners = original;
+                }
+            });
+        });
+
+        describe('regressions', () => {
+            it('should provide a list of event types and a JSON representation without listeners', () => {
+                const emitter = new Emitter(),
+                    json = emitter.toJSON();
+
+                expect(emitter.eventTypes()).to.deep.equal([]);
+                expect(json.maxListeners).to.equal(Emitter.defaultMaxListeners);
+                expect(Object.keys(json.listenerCount)).to.deep.equal([]);
+                expect(emitter.toString()).to.equal(
+                    `Emitter {"maxListeners":${Emitter.defaultMaxListeners},"listenerCount":{}}`
+                );
+            });
+
+            it('should throw for an error event on an emitter without listeners', () => {
+                expect(() => new Emitter().emit('error')).to.throw('Uncaught, unspecified "error" event.');
+                expect(() => new Emitter().emit('error', new Error('boom'))).to.throw('boom');
+            });
+
+            it('should not remove a listener of an inherited registry', () => {
+                const parent = new Emitter(),
+                    child = Object.create(parent),
+                    onEmit = sinon.spy();
+
+                parent.on('test', onEmit);
+                child.off('test', onEmit);
+
+                expect(parent.listenerCount('test')).to.equal(1);
+                expect(parent.emit('test')).to.equal(true);
+                expect(onEmit).to.have.been.calledOnce;
+            });
+
+            it('should not clear an event type of an inherited registry', () => {
+                const parent = new Emitter(),
+                    child = Object.create(parent);
+
+                parent.on('test', () => {});
+                child.clear('test');
+
+                expect(parent.listenerCount('test')).to.equal(1);
+            });
+
+            it('should never execute a many-time listener registered for zero times', () => {
+                const emitter = new Emitter(),
+                    onEmit = sinon.spy();
+
+                emitter.many('test', 0, onEmit);
+                emitter.emit('test');
+
+                expect(onEmit).to.not.have.been.called;
+                expect(emitter.listenerCount('test')).to.equal(0);
+            });
+
+            it('should remove a conditional listener after its event type was cleared', () => {
+                const emitter = new Emitter();
+
+                let result;
+
+                emitter.until('test', () => {
+                    emitter.clear('test');
+                    return false;
+                });
+                emitter.until('test', () => true);
+
+                expect(() => {
+                    result = emitter.emit('test');
+                }).to.not.throw();
+                expect(result).to.equal(true);
+            });
+
+            it('should not restore a registry that an :on listener cleared', () => {
+                const emitter = new Emitter();
+
+                emitter.on(':on', (type) => {
+                    if (type === 'bar') {
+                        emitter.clear();
+                    }
+                });
+                emitter.on('foo', () => {});
+                emitter.on('bar', () => {});
+
+                expect(emitter.eventTypes()).to.deep.equal(['bar']);
+                expect(emitter.listenerCount('foo')).to.equal(0);
+                expect(emitter.listenerCount('bar')).to.equal(1);
+            });
+        });
+
         describe('as a mixin', () => {
             let emitter;
 
