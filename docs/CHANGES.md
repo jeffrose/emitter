@@ -79,8 +79,9 @@
     - Regenerated the API documentation from the annotations in `src/emitter.js`.
     - Deprecated the `bower.json` manifest, which will be removed in 3.0.
 
-## Unreleased
+## 2.2.0
 
-- Relicensed from Apache-2.0 to MIT. Versions up to 2.1.0 remain available under Apache-2.0.
-- Added the SPDX identifier and a copyright header to `src/emitter.js`.
-- Removed the deprecated Bower instructions and the ECMAScript 5/6 framing from the README.
+- Relicensed from Apache-2.0 to MIT. All contributors have consented to the change. Versions up to 2.1.0 remain available under Apache-2.0.
+    - The source carries an `SPDX-License-Identifier` and a copyright header, which are included in both distribution builds.
+- Removed `bower.json`. Bower has been unmaintained since 2017 and the manifest was deprecated in 2.1. It was never part of the npm package.
+- README: removed the deprecated Bower instructions and the ECMAScript 5/6 framing, and documented the builds that are published: the ES module, CommonJS and UMD builds.
