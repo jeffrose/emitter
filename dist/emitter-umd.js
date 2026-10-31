@@ -720,17 +720,17 @@
 
   /**
    * A functional mixin that provides the Emitter.js API to its target. The `constructor()`, `destroy()`, `toJSON()`, `toString()`, and static properties on `Emitter` are not provided. This mixin is used to populate the `prototype` of `Emitter`.
-   * 
+   *
    * Like all functional mixins, this should be executed with [call()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call) or [apply()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply).
    * @mixin Emitter~asEmitter
    * @since 1.1.0
    * @example <caption>Applying Emitter functionality</caption>
    * // Create a base object
    * const greeter = Object.create( null );
-   * 
+   *
    * // Apply the mixin
    * asEmitter.call( greeter );
-   * 
+   *
    * greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
    * greeter.emit( 'hello', 'World' );
    * // Hello, World!
@@ -741,7 +741,7 @@
   function asEmitter() {
     /**
      * Adds a listener for the specified event `type` at the specified `index`. If no `type` is given the listener will be triggered any event `type`.
-     * 
+     *
      * No checks are made to see if the `listener` has already been added. Multiple calls passing the same combination `type` and `listener` will result in the `listener` being added multiple times.
      * @function Emitter~asEmitter.at
      * @param {EventType} [type] The event type.
@@ -805,8 +805,6 @@
      * // Hi!
      */
     this.clear = function (type) {
-      var handler;
-
       // No Events
       if (!this[$events]) {
         return this;
@@ -839,7 +837,7 @@
         this[$events] = new Null();
         return this;
       }
-      handler = this[$events][type];
+      var handler = this[$events][type];
       if (typeof handler === 'function') {
         removeEventListener(this, type, handler);
       } else if (Array.isArray(handler)) {
@@ -854,9 +852,9 @@
 
     /**
      * Execute the listeners for the specified event `type` with the supplied arguments.
-     * 
+     *
      * The `type` can be namespaced using `:`, which will result in multiple events being triggered in succession. Listeners can be associated with the fully namespaced `type` or a subset of the `type`.
-     * 
+     *
      * Returns `true` if the event had listeners, `false` otherwise.
      * @function Emitter~asEmitter.emit
      * @param {EventType} type The event type.
@@ -879,21 +877,21 @@
      * greeter.on( 'greeting:hello', ( name ) => console.log( `Hello, ${ name }!` ) );
      * greeter.on( 'greeting:hi', ( name ) => console.log( `Hi, ${ name }!` ) );
      * greeter.on( 'greeting', ( name ) => console.log( `${ name } was greeted.` );
-     * 
+     *
      * // This event will not be triggered by emitting "greeting:hello"
      * greeter.on( 'hello', ( name ) => console.log( `Hello again, ${ name }` );
-     * 
+     *
      * greeter.emit( 'greeting:hi', 'Mark' );
      * // Hi, Mark!
      * // Mark was greeted.
-     * 
+     *
      * greeter.emit( 'greeting:hello', 'Jeff' );
      * // Hello, Jeff!
      * // Jeff was greeted.
      */
     this.emit = function (type) {
-      var data = [],
-        length = arguments.length;
+      var length = arguments.length;
+      var data = [];
       if (length > 1) {
         data = Array(length - 1);
         for (var key = 1; key < length; key++) {
@@ -911,7 +909,7 @@
      * const greeter = new Emitter();
      * greeter.on( 'hello', () => console.log( `Hello` ) );
      * greeter.on( 'hi', () => console.log( `Hi` ) );
-     * 
+     *
      * console.log( greeter.eventTypes() );
      * // [ 'hello', 'hi' ]
      */
@@ -948,12 +946,12 @@
      * @since 2.0.0
      * @example
      * const greeter = new Emitter();
-     * 
+     *
      * console.log( greeter.getMaxListeners() );
      * // 10
-     * 
+     *
      * greeter.setMaxListeners( 5 );
-     * 
+     *
      * console.log( greeter.getMaxListeners() );
      * // 5
      */
@@ -1002,11 +1000,11 @@
      *  console.log( 'Hello!' );
      * },
      *  greeter = new Emitter();
-     * 
+     *
      * greeter.on( 'hello', hello );
      * greeter.emit( 'hello' );
      * // Hello!
-     * 
+     *
      * console.log( greeter.listeners( 'hello' )[ 0 ] === hello );
      * // true
      */
@@ -1075,7 +1073,7 @@
 
     /**
      * Removes the `listener` for the specified event `type`. If no `type` is given it is assumed the `listener` is not associated with a specific `type`.
-     * 
+     *
      * If any single listener has been added multiple times for the specified `type`, then `emitter.off()` must be called multiple times to remove each instance.
      * @function Emitter~asEmitter.off
      * @param {EventType} type The event type.
@@ -1087,7 +1085,7 @@
      * function greet( name ){
      *  console.log( `Greetings, ${ name }!` );
      * }
-     * 
+     *
      * const greeter = new Emitter();
      * greeter.on( greet );
      * greeter.emit( 'hello' 'Jeff' );
@@ -1100,7 +1098,7 @@
      * function hello( name ){
      *  console.log( `Hello, ${ name }!` );
      * }
-     * 
+     *
      * const greeter = new Emitter();
      * greeter.on( 'hello', hello );
      * greeter.emit( 'hello', 'Jeff' );
@@ -1128,7 +1126,7 @@
 
     /**
      * Adds a listener for the specified event `type`. If no `type` is given the listener will be triggered any event `type`.
-     * 
+     *
      * No checks are made to see if the `listener` has already been added. Multiple calls passing the same combination `type` and `listener` will result in the `listener` being added multiple times.
      * @function Emitter~asEmitter.on
      * @param {EventType} [type] The event type.
@@ -1213,9 +1211,9 @@
      * @since 2.0.0
      * @example
      * const greeter = new Emitter();
-     * 
+     *
      * greeter.setMaxListeners( 1 );
-     * 
+     *
      * greeter.on( ':maxListeners', ( greeting ) => console.log( `Greeting "${ greeting }" has one too many!` ) );
      * greeter.on( 'hello', () => console.log( 'Hello!' ) );
      * greeter.on( 'hello', () => alert( 'Hello!' ) );
@@ -1228,9 +1226,9 @@
 
     /**
      * Asynchronously emits specified event `type` with the supplied arguments. The listeners will still be synchronously executed in the specified order.
-     * 
+     *
      * The `type` can be namespaced using `:`, which will result in multiple events being triggered in succession. Listeners can be associated with the fully namespaced `type` or a subset of the `type`.
-     * 
+     *
      * Returns {@link external:Promise|promise} which *resolves* if the event had listeners, *rejects* otherwise.
      * @function Emitter~asEmitter.tick
      * @param {EventType} type The event type.
@@ -1247,8 +1245,8 @@
      * // goodbye heard? false
      */
     this.tick = function (type) {
-      var data = [],
-        length = arguments.length;
+      var length = arguments.length;
+      var data = [];
       if (length > 1) {
         data = Array(length - 1);
         for (var key = 1; key < length; key++) {
@@ -1260,7 +1258,7 @@
 
     /**
      * Execute the listeners for the specified event `type` with the supplied `data`.
-     * 
+     *
      * Returns `true` if the event had listeners, `false` otherwise.
      * @function Emitter~asEmitter.trigger
      * @param {EventType} [type] The event type.
@@ -1277,11 +1275,11 @@
      * greeter.on( 'greeting:hello', ( name ) => console.log( `Hello, ${ name }!` ) );
      * greeter.on( 'greeting:hi', ( name ) => console.log( `Hi, ${ name }!` ) );
      * greeter.on( 'greeting', ( name ) => console.log( `${ name } was greeted.` );
-     * 
+     *
      * greeter.trigger( 'greeting:hi', [ 'Mark' ] );
      * // Hi, Mark!
      * // Mark was greeted.
-     * 
+     *
      * greeter.trigger( 'greeting:hello', [ 'Jeff' ] );
      * // Hello, Jeff!
      * // Jeff was greeted.
@@ -1293,7 +1291,7 @@
 
     /**
      * Adds a listeners for the specified event `type` that will be triggered *until* the `listener` returns `true`. If no `type` is given the listener will be triggered any event `type`.
-     * 
+     *
      * No checks are made to see if the `listener` has already been added. Multiple calls passing the same combination `type` and `listener` will result in the `listener` being added multiple times.
      * @function Emitter~asEmitter.until
      * @param {EventType} [type] The event type.
@@ -1386,12 +1384,12 @@
    *      super();
    *      this.on( 'greet', ( name ) => console.log( `Hello, ${ name }!` ) );
    *  }
-   * 
+   *
    *  greet( name ){
    *      this.emit( 'greet', name );
    *  }
    * }
-   * 
+   *
    * const greeter = new Greeter();
    * greeter.greet( 'Jeff' );
    * // Hello, Jeff!
@@ -1401,11 +1399,11 @@
    *  this.on( 'greet', ( name ) => console.log( `Hello, ${ name }!` ) );
    * }
    * Greeter.prototype = Object.create( Emitter.prototype );
-   * 
+   *
    * Greeter.prototype.greet = function( name ){
    *  this.emit( 'greet', name );
    * };
-   * 
+   *
    * const greeter = new Greeter();
    * greeter.greet( 'Jeff' );
    * // Hello, Jeff!
@@ -1426,7 +1424,7 @@
    *      hi: function( name ){ console.log( `Hi, ${name}!` )
    *  },
    *  greeter = new Emitter( greetings );
-   * 
+   *
    * greeter.emit( 'hello', 'Aaron' );
    * // Hello, Aaron!
    * @example <caption>One-time events</caption>
@@ -1455,12 +1453,12 @@
        * @since 1.0.0
        * @example
        * const greeter = new Emitter();
-       * 
+       *
        * console.log( greeter.maxListeners );
        * // 10
-       * 
+       *
        * greeter.maxListeners = 1;
-       * 
+       *
        * greeter.on( ':maxListeners', ( greeting ) => console.log( `Greeting "${ greeting }" has one too many!` ) );
        * greeter.on( 'hello', () => console.log( 'Hello!' ) );
        * greeter.on( 'hello', () => alert( 'Hello!' ) );
@@ -1494,24 +1492,24 @@
   Object.defineProperties(Emitter, {
     /**
      * Sets the default maximum number of listeners for all emitters. Use `emitter.maxListeners` to set the maximum on a per-instance basis.
-     * 
+     *
      * By default Emitter will emit a `:maxListeners` event if more than 10 listeners are added to a specific event type.
      * @member {external:number} Emitter.defaultMaxListeners=10
      * @since 1.0.0
      * @example <caption>Changing the default maximum listeners</caption>
      * console.log( Emitter.defaultMaxListeners );
      * // 10
-     * 
+     *
      * const greeter1 = new Emitter(),
      *  greeter2 = new Emitter();
-     * 
+     *
      * Emitter.defaultMaxListeners = 1;
-     * 
+     *
      * greeter1.on( ':maxListeners', ( greeting ) => console.log( `Greeting "${ greeting }" has one too many!` ) );
      * greeter1.on( 'hello', () => console.log( 'Hello!' ) );
      * greeter1.on( 'hello', () => alert( 'Hello!' ) );
      * // Greeting "hello" has one too many!
-     * 
+     *
      * greeter2.on( ':maxListeners', ( greeting ) => console.log( `Greeting "${ greeting }" has one too many!` ) );
      * greeter2.on( 'hi', () => console.log( 'Hi!' ) );
      * greeter2.on( 'hi', () => alert( 'Hi!' ) );
@@ -1525,9 +1523,9 @@
     },
     /**
      * An id used to listen for events of any `type`. For _most_ methods, when no `type` is given this is the default.
-     * 
+     *
      * Listener bound to every event will **not** execute for Emitter lifecycle events, like `:maxListeners`.
-     * 
+     *
      * Using `Emitter.every` is typically not necessary.
      * @member {external:symbol} Emitter.every
      * @since 1.0.0
@@ -1587,12 +1585,12 @@
    * greeter.maxListeners = 5;
    * greeter.on( 'greet', ( name ) => console.log( `Hello, ${ name }!` ) );
    * greeter.on( 'greet', ( name ) => console.log( `Hi, ${ name }!` ) );
-   * 
+   *
    * console.log( greeter.toJSON() );
    * // { "maxListeners": 5, "listenerCount": { "greet": 2 } }
-   * 
+   *
    * greeter.destroy();
-   * 
+   *
    * console.log( greeter.toJSON() );
    * // "destroyed"
    */
@@ -1619,12 +1617,12 @@
    * greeter.maxListeners = 5;
    * greeter.on( 'greet', ( name ) => console.log( `Hello, ${ name }!` ) );
    * greeter.on( 'greet', ( name ) => console.log( `Hi, ${ name }!` ) );
-   * 
+   *
    * console.log( greeter.toString() );
    * // 'Emitter { "maxListeners": 5, "listenerCount": { "greet": 2 } }'
-   * 
+   *
    * greeter.destroy();
-   * 
+   *
    * console.log( greeter.toString() );
    * // 'Emitter "destroyed"'
    */

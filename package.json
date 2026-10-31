@@ -31,7 +31,7 @@
     "format:check": "prettier --check .",
     "test": "npm run build && npm run test:unit",
     "test:unit": "mocha",
-    "test:src": "mocha test/emitter.test.mjs",
+    "test:src": "mocha --ignore test/dist.test.mjs",
     "coverage": "npm run build && c8 mocha",
     "benchmark": "node test/benchmark.mjs",
     "trace": "node --allow-natives-syntax test/trace.mjs",

@@ -4,38 +4,38 @@
  * JavaScript Array
  * @external Array
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array}
- */ 
+ */
 
 /**
  * JavaScript {@link https://developer.mozilla.org/en-US/docs/Glossary/Prm454mun3!imitive|primitive} boolean
  * @external boolean
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean}
- */ 
+ */
 
 /**
  * JavaScript Error
  * @external Error
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error}
- */ 
+ */
 
 /**
  * JavaScript Function
  * @external Function
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function}
- */ 
- 
+ */
+
 /**
  * JavaScript {@link https://developer.mozilla.org/en-US/docs/Glossary/Primitive|primitive} number
  * @external number
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number}
- */ 
- 
+ */
+
 /**
  * JavaScript null
  * @external null
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/null}
  */
- 
+
 /**
  * JavaScript Object
  * @external Object
@@ -53,7 +53,7 @@
  * @external string
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String}
  */
- 
+
 /**
  * JavaScript {@link https://developer.mozilla.org/en-US/docs/Glossary/Primitive|primitive} symbol
  * @external symbol
@@ -90,12 +90,12 @@
 /**
  * A {@link external:string} or {@link external:symbol} that represents the type of event fired by the Emitter.
  * @typedef {external:string|external:symbol} EventType
- */ 
+ */
 
 /**
  * This event is emitted _before_ an emitter destroys itself.
  * @event Emitter#:destroy
- */ 
+ */
 
 /**
  * This event is emitted _after_ a listener is removed.
@@ -123,19 +123,15 @@
  * @class Emitter~Null
  * @extends external:null
  */
-function Null(){}
-Null.prototype = Object.create( null );
+function Null() {}
+Null.prototype = Object.create(null);
 Null.prototype.constructor = Null;
 
-const
-    $events       = '@@emitter/events',
-    $every        = '@@emitter/every',
+const $events = '@@emitter/events',
+    $every = '@@emitter/every',
     $maxListeners = '@@emitter/maxListeners',
-    
     hasOwnProperty = Object.prototype.hasOwnProperty,
-    
-    noop = function(){},
-    
+    noop = function () {},
     API = new Null();
 
 // Many of these functions are broken out from the prototype for the sake of optimization. The functions on the protoytype
@@ -148,19 +144,18 @@ const
  * @param {EventType} type The event type.
  * @param {EventListener} listener The event callback.
  */
-function addConditionalEventListener( emitter, type, listener ){
-    
-    function conditionalListener(){
-        const done = listener.apply( emitter, arguments );
-        if( done === true ){
-            removeEventListener( emitter, type, conditionalListener );
+function addConditionalEventListener(emitter, type, listener) {
+    function conditionalListener() {
+        const done = listener.apply(emitter, arguments);
+        if (done === true) {
+            removeEventListener(emitter, type, conditionalListener);
         }
     }
-    
+
     // TODO Check beyond just one level of listener references
     conditionalListener.listener = listener.listener || listener;
-    
-    addEventListener( emitter, type, conditionalListener, NaN );
+
+    addEventListener(emitter, type, conditionalListener, NaN);
 }
 
 /**
@@ -170,63 +165,66 @@ function addConditionalEventListener( emitter, type, listener ){
  * @param {EventListener} listener The event callback.
  * @param {external:number} index
  */
-function addEventListener( emitter, type, listener, index ){
-    if( typeof listener !== 'function' ){
-        throw new TypeError( 'listener must be a function' );
+function addEventListener(emitter, type, listener, index) {
+    if (typeof listener !== 'function') {
+        throw new TypeError('listener must be a function');
     }
-    
+
     // Define the event registry if it does not exist
-    defineEventsProperty( emitter, new Null() );
-    
-    const _events = emitter[ $events ];
-    
-    if( _events[ ':on' ] ){
-        emitEvent( emitter, ':on', [ type, typeof listener.listener === 'function' ? listener.listener : listener ], false );
-        
+    defineEventsProperty(emitter, new Null());
+
+    const _events = emitter[$events];
+
+    if (_events[':on']) {
+        emitEvent(
+            emitter,
+            ':on',
+            [type, typeof listener.listener === 'function' ? listener.listener : listener],
+            false
+        );
+
         // Emitting "on" may have changed the registry.
-        _events[ ':on' ] = emitter[ $events ][ ':on' ];
+        _events[':on'] = emitter[$events][':on'];
     }
-    
+
     // Single listener
-    if( !_events[ type ] ){
-        _events[ type ] = listener;
-    
-    // Multiple listeners
-    } else if( Array.isArray( _events[ type ] ) ){
-        switch( isNaN( index ) || index ){
+    if (!_events[type]) {
+        _events[type] = listener;
+
+        // Multiple listeners
+    } else if (Array.isArray(_events[type])) {
+        switch (isNaN(index) || index) {
             case true:
-                _events[ type ].push( listener );
+                _events[type].push(listener);
                 break;
             case 0:
-                _events[ type ].unshift( listener );
+                _events[type].unshift(listener);
                 break;
             default:
-                _events[ type ].splice( index, 0, listener );
+                _events[type].splice(index, 0, listener);
                 break;
         }
-    
-    // Transition from single to multiple listeners
+
+        // Transition from single to multiple listeners
     } else {
-        _events[ type ] = index === 0 ?
-            [ listener, _events[ type ] ] :
-            [ _events[ type ], listener ];
+        _events[type] = index === 0 ? [listener, _events[type]] : [_events[type], listener];
     }
-    
+
     // Track warnings if max listeners is available
-    if( 'maxListeners' in emitter && !_events[ type ].warned ){
+    if ('maxListeners' in emitter && !_events[type].warned) {
         const max = emitter.maxListeners;
-        
-        if( max && max > 0 && _events[ type ].length > max ){
-            emitEvent( emitter, ':maxListeners', [ type, listener ], false );
-            
+
+        if (max && max > 0 && _events[type].length > max) {
+            emitEvent(emitter, ':maxListeners', [type, listener], false);
+
             // Emitting "maxListeners" may have changed the registry.
-            _events[ ':maxListeners' ] = emitter[ $events ][ ':maxListeners' ];
-            
-            _events[ type ].warned = true;
+            _events[':maxListeners'] = emitter[$events][':maxListeners'];
+
+            _events[type].warned = true;
         }
     }
-    
-    emitter[ $events ] = _events;
+
+    emitter[$events] = _events;
 }
 
 /**
@@ -236,16 +234,15 @@ function addEventListener( emitter, type, listener, index ){
  * @param {external:number} times The number times the listener will be executed before being removed.
  * @param {EventListener} listener The event callback.
  */
-function addFiniteEventListener( emitter, type, times, listener ){
-    
-    function finiteListener(){
-        listener.apply( this, arguments );
+function addFiniteEventListener(emitter, type, times, listener) {
+    function finiteListener() {
+        listener.apply(this, arguments);
         return --times === 0;
     }
-    
+
     finiteListener.listener = listener;
-    
-    addConditionalEventListener( emitter, type, finiteListener );
+
+    addConditionalEventListener(emitter, type, finiteListener);
 }
 
 /**
@@ -253,30 +250,32 @@ function addFiniteEventListener( emitter, type, times, listener ){
  * @param {Emitter} emitter The emitter on which the event would be emitted.
  * @param {EventMapping} mapping The event mapping.
  */
-function addEventMapping( emitter, mapping ){
-    const
-        types = Object.keys( mapping ),
+function addEventMapping(emitter, mapping) {
+    const types = Object.keys(mapping),
         typeLength = types.length;
-    
+
     let typeIndex = 0,
-        handler, handlerIndex, handlerLength, type;
-    
-    for( ; typeIndex < typeLength; typeIndex += 1 ){
-        type = types[ typeIndex ];
-        handler = mapping[ type ];
-        
+        handler,
+        handlerIndex,
+        handlerLength,
+        type;
+
+    for (; typeIndex < typeLength; typeIndex += 1) {
+        type = types[typeIndex];
+        handler = mapping[type];
+
         // List of listeners
-        if( Array.isArray( handler ) ){
+        if (Array.isArray(handler)) {
             handlerIndex = 0;
             handlerLength = handler.length;
-                
-            for( ; handlerIndex < handlerLength; handlerIndex += 1 ){
-                addEventListener( emitter, type, handler[ handlerIndex ], NaN );
+
+            for (; handlerIndex < handlerLength; handlerIndex += 1) {
+                addEventListener(emitter, type, handler[handlerIndex], NaN);
             }
-        
-        // Single listener
+
+            // Single listener
         } else {
-            addEventListener( emitter, type, handler, NaN );
+            addEventListener(emitter, type, handler, NaN);
         }
     }
 }
@@ -284,18 +283,18 @@ function addEventMapping( emitter, mapping ){
 /**
  * @function Emitter~defineEventsProperty
  * @param {Emitter} emitter The emitter on which the property will be created.
- */ 
-function defineEventsProperty( emitter, value ){
-    const hasEvents = hasOwnProperty.call( emitter, $events ),
-        emitterPrototype = Object.getPrototypeOf( emitter );
-        
-    if( !hasEvents || ( emitterPrototype && emitter[ $events ] === emitterPrototype[ $events ] ) ){
-        Object.defineProperty( emitter, $events, {
+ */
+function defineEventsProperty(emitter, value) {
+    const hasEvents = hasOwnProperty.call(emitter, $events),
+        emitterPrototype = Object.getPrototypeOf(emitter);
+
+    if (!hasEvents || (emitterPrototype && emitter[$events] === emitterPrototype[$events])) {
+        Object.defineProperty(emitter, $events, {
             value: value,
             configurable: true,
             enumerable: false,
             writable: true
-        } );
+        });
     }
 }
 
@@ -307,21 +306,21 @@ function defineEventsProperty( emitter, value ){
  * @returns {external:boolean} Whether or not a listener for the given event type was executed.
  * @throws {external:Error} If `type` is `error` and no listeners are subscribed.
  */
-function emitAllEvents( emitter, type, data ){
+function emitAllEvents(emitter, type, data) {
     let executed = false,
         // If type is not a string, index will be false
-        index = typeof type === 'string' && type.lastIndexOf( ':' );
-    
+        index = typeof type === 'string' && type.lastIndexOf(':');
+
     // Namespaced event, e.g. Emit "foo:bar:qux", then "foo:bar"
-    while( index > 0 ){
-        executed = ( type && emitEvent( emitter, type, data, false ) ) || executed;
-        type = type.substring( 0, index );
-        index = type.lastIndexOf( ':' );
+    while (index > 0) {
+        executed = (type && emitEvent(emitter, type, data, false)) || executed;
+        type = type.substring(0, index);
+        index = type.lastIndexOf(':');
     }
-    
+
     // Emit single event or the namespaced event root, e.g. "foo", ":bar", Symbol( "@@qux" )
-    executed = ( type && emitEvent( emitter, type, data, type !== $every ) ) || executed;
-    
+    executed = (type && emitEvent(emitter, type, data, type !== $every)) || executed;
+
     return executed;
 }
 
@@ -330,10 +329,10 @@ function emitAllEvents( emitter, type, data ){
  * @param {Emitter} emitter The emitter on which the `errors` will be emitted.
  * @param {Array<external:Error>} errors The array of errors to be emitted.
  */
-function emitErrors( emitter, errors ){
+function emitErrors(emitter, errors) {
     const length = errors.length;
-    for( let index = 0; index < length; index += 1 ){
-        emitEvent( emitter, 'error', [ errors[ index ] ], false );
+    for (let index = 0; index < length; index += 1) {
+        emitEvent(emitter, 'error', [errors[index]], false);
     }
 }
 
@@ -346,38 +345,38 @@ function emitErrors( emitter, errors ){
  * @returns {external:boolean} Whether or not a listener for the given event type was executed.
  * @throws {external:Error} If `type` is `error` and no listeners are subscribed.
  */
-function emitEvent( emitter, type, data, emitEvery ){
-    const _events = Object.hasOwnProperty.call( emitter, $events ) ? emitter[ $events ] : undefined;
-    
+function emitEvent(emitter, type, data, emitEvery) {
+    const _events = Object.hasOwnProperty.call(emitter, $events) ? emitter[$events] : undefined;
+
     let executed = false,
         listener;
-    
-    if( typeof _events !== 'undefined' ){
-        if( type === 'error' && !_events.error ){
-            if( data[ 0 ] instanceof Error ){
-                throw data[ 0 ];
+
+    if (typeof _events !== 'undefined') {
+        if (type === 'error' && !_events.error) {
+            if (data[0] instanceof Error) {
+                throw data[0];
             } else {
-                throw new Error( 'Uncaught, unspecified "error" event.' );
+                throw new Error('Uncaught, unspecified "error" event.');
             }
         }
-        
+
         // Execute listeners for the given type of event
-        listener = _events[ type ];
-        if( typeof listener !== 'undefined' ){
-            executeListener( listener, data, emitter );
+        listener = _events[type];
+        if (typeof listener !== 'undefined') {
+            executeListener(listener, data, emitter);
             executed = true;
         }
-        
+
         // Execute listeners listening for all types of events
-        if( emitEvery ){
-            listener = _events[ $every ];
-            if( typeof listener !== 'undefined' ){
-                executeListener( listener, data, emitter );
+        if (emitEvery) {
+            listener = _events[$every];
+            if (typeof listener !== 'undefined') {
+                executeListener(listener, data, emitter);
                 executed = true;
             }
         }
     }
-    
+
     return executed;
 }
 
@@ -387,25 +386,25 @@ function emitEvent( emitter, type, data, emitEvery ){
  * @param {Array<Listener>|Listener} listener
  * @param {external:Array} data
  * @param {*} scope
- */ 
-function executeListener( listener, data, scope ){
+ */
+function executeListener(listener, data, scope) {
     const isFunction = typeof listener === 'function';
-    
-    switch( data.length ){
+
+    switch (data.length) {
         case 0:
-            listenEmpty    ( listener, isFunction, scope );
+            listenEmpty(listener, isFunction, scope);
             break;
         case 1:
-            listenOne      ( listener, isFunction, scope, data[ 0 ] );
+            listenOne(listener, isFunction, scope, data[0]);
             break;
         case 2:
-            listenTwo      ( listener, isFunction, scope, data[ 0 ], data[ 1 ] );
+            listenTwo(listener, isFunction, scope, data[0], data[1]);
             break;
         case 3:
-            listenThree    ( listener, isFunction, scope, data[ 0 ], data[ 1 ], data[ 2 ] );
+            listenThree(listener, isFunction, scope, data[0], data[1], data[2]);
             break;
         default:
-            listenMany     ( listener, isFunction, scope, data );
+            listenMany(listener, isFunction, scope, data);
             break;
     }
 }
@@ -415,8 +414,8 @@ function executeListener( listener, data, scope ){
  * @param {Emitter} emitter The emitter on which event types will be retrieved.
  * @returns {Array<EventType>} The list of event types registered to the emitter.
  */
-function getEventTypes( emitter ){
-    return Object.keys( emitter[ $events ] );
+function getEventTypes(emitter) {
+    return Object.keys(emitter[$events]);
 }
 
 /**
@@ -424,10 +423,8 @@ function getEventTypes( emitter ){
  * @param {Emitter} emitter The emitter on which max listeners will be retrieved.
  * @returns {external:number} The maximum number of listeners.
  */
-function getMaxListeners( emitter ){
-    return typeof emitter[ $maxListeners ] !== 'undefined' ?
-        emitter[ $maxListeners ] :
-        Emitter.defaultMaxListeners;
+function getMaxListeners(emitter) {
+    return typeof emitter[$maxListeners] !== 'undefined' ? emitter[$maxListeners] : Emitter.defaultMaxListeners;
 }
 
 /**
@@ -436,8 +433,8 @@ function getMaxListeners( emitter ){
  * @param {*} number The value to be tested.
  * @returns {external:boolean} Whether or not the value is a positive number.
  */
-function isPositiveNumber( number ){
-    return typeof number === 'number' && number >= 0 && !isNaN( number );
+function isPositiveNumber(number) {
+    return typeof number === 'number' && number >= 0 && !isNaN(number);
 }
 
 /**
@@ -447,32 +444,32 @@ function isPositiveNumber( number ){
  * @param {external:boolean} isFunction Whether or not the `handler` is a {@link external:Function|function}.
  * @param {Emitter} emitter The emitter.
  */
-function listenEmpty( handler, isFunction, emitter ){
+function listenEmpty(handler, isFunction, emitter) {
     const errors = [];
-    
-    if( isFunction ){
+
+    if (isFunction) {
         try {
-            handler.call( emitter );
-        } catch( error ){
-            errors.push( error );
+            handler.call(emitter);
+        } catch (error) {
+            errors.push(error);
         }
     } else {
         const length = handler.length,
             listeners = handler.slice();
-            
+
         let index = 0;
-        
-        for( ; index < length; index += 1 ){
+
+        for (; index < length; index += 1) {
             try {
-                listeners[ index ].call( emitter );
-            } catch( error ){
-                errors.push( error );
+                listeners[index].call(emitter);
+            } catch (error) {
+                errors.push(error);
             }
         }
     }
-    
-    if( errors.length ){
-        emitErrors( emitter, errors );
+
+    if (errors.length) {
+        emitErrors(emitter, errors);
     }
 }
 
@@ -484,32 +481,32 @@ function listenEmpty( handler, isFunction, emitter ){
  * @param {Emitter} emitter The emitter.
  * @param {*} arg1 The first argument.
  */
-function listenOne( handler, isFunction, emitter, arg1 ){
+function listenOne(handler, isFunction, emitter, arg1) {
     const errors = [];
-    
-    if( isFunction ){
+
+    if (isFunction) {
         try {
-            handler.call( emitter, arg1 );
-        } catch( error ){
-            errors.push( error );
+            handler.call(emitter, arg1);
+        } catch (error) {
+            errors.push(error);
         }
     } else {
         const length = handler.length,
             listeners = handler.slice();
-        
+
         let index = 0;
-        
-        for( ; index < length; index += 1 ){
+
+        for (; index < length; index += 1) {
             try {
-                listeners[ index ].call( emitter, arg1 );
-            } catch( error ){
-                errors.push( error );
+                listeners[index].call(emitter, arg1);
+            } catch (error) {
+                errors.push(error);
             }
         }
     }
-    
-    if( errors.length ){
-        emitErrors( emitter, errors );
+
+    if (errors.length) {
+        emitErrors(emitter, errors);
     }
 }
 
@@ -522,32 +519,32 @@ function listenOne( handler, isFunction, emitter, arg1 ){
  * @param {*} arg1 The first argument.
  * @param {*} arg2 The second argument.
  */
-function listenTwo( handler, isFunction, emitter, arg1, arg2 ){
+function listenTwo(handler, isFunction, emitter, arg1, arg2) {
     const errors = [];
-    
-    if( isFunction ){
+
+    if (isFunction) {
         try {
-            handler.call( emitter, arg1, arg2 );
-        } catch( error ){
-            errors.push( error );
+            handler.call(emitter, arg1, arg2);
+        } catch (error) {
+            errors.push(error);
         }
     } else {
         const length = handler.length,
             listeners = handler.slice();
-        
+
         let index = 0;
-        
-        for( ; index < length; index += 1 ){
+
+        for (; index < length; index += 1) {
             try {
-                listeners[ index ].call( emitter, arg1, arg2 );
-            } catch( error ){
-                errors.push( error );
+                listeners[index].call(emitter, arg1, arg2);
+            } catch (error) {
+                errors.push(error);
             }
         }
     }
-    
-    if( errors.length ){
-        emitErrors( emitter, errors );
+
+    if (errors.length) {
+        emitErrors(emitter, errors);
     }
 }
 
@@ -561,32 +558,32 @@ function listenTwo( handler, isFunction, emitter, arg1, arg2 ){
  * @param {*} arg2 The second argument.
  * @param {*} arg3 The third argument.
  */
-function listenThree( handler, isFunction, emitter, arg1, arg2, arg3 ){
+function listenThree(handler, isFunction, emitter, arg1, arg2, arg3) {
     const errors = [];
-    
-    if( isFunction ){
+
+    if (isFunction) {
         try {
-            handler.call( emitter, arg1, arg2, arg3 );
-        } catch( error ){
-            errors.push( error );
+            handler.call(emitter, arg1, arg2, arg3);
+        } catch (error) {
+            errors.push(error);
         }
     } else {
         const length = handler.length,
             listeners = handler.slice();
-        
+
         let index = 0;
-        
-        for( ; index < length; index += 1 ){
+
+        for (; index < length; index += 1) {
             try {
-                listeners[ index ].call( emitter, arg1, arg2, arg3 );
-            } catch( error ){
-                errors.push( error );
+                listeners[index].call(emitter, arg1, arg2, arg3);
+            } catch (error) {
+                errors.push(error);
             }
         }
     }
-    
-    if( errors.length ){
-        emitErrors( emitter, errors );
+
+    if (errors.length) {
+        emitErrors(emitter, errors);
     }
 }
 
@@ -598,32 +595,32 @@ function listenThree( handler, isFunction, emitter, arg1, arg2, arg3 ){
  * @param {Emitter} emitter The emitter.
  * @param {external:Array} args Four or more arguments.
  */
-function listenMany( handler, isFunction, emitter, args ){
+function listenMany(handler, isFunction, emitter, args) {
     const errors = [];
-    
-    if( isFunction ){
+
+    if (isFunction) {
         try {
-            handler.apply( emitter, args );
-        } catch( error ){
-            errors.push( error );
+            handler.apply(emitter, args);
+        } catch (error) {
+            errors.push(error);
         }
     } else {
         const length = handler.length,
             listeners = handler.slice();
-        
+
         let index = 0;
-        
-        for( ; index < length; index += 1 ){
+
+        for (; index < length; index += 1) {
             try {
-                listeners[ index ].apply( emitter, args );
-            } catch( error ){
-                errors.push( error );
+                listeners[index].apply(emitter, args);
+            } catch (error) {
+                errors.push(error);
             }
         }
     }
-    
-    if( errors.length ){
-        emitErrors( emitter, errors );
+
+    if (errors.length) {
+        emitErrors(emitter, errors);
     }
 }
 
@@ -633,34 +630,34 @@ function listenMany( handler, isFunction, emitter, args ){
  * @param {EventType} type The event type.
  * @param {EventListener} listener The event callback.
  */
-function removeEventListener( emitter, type, listener ){
-    const handler = emitter[ $events ][ type ];
-    
-    if( handler === listener || ( typeof handler.listener === 'function' && handler.listener === listener ) ){
-        delete emitter[ $events ][ type ];
-        if( emitter[ $events ][ ':off' ] ){
-            emitEvent( emitter, ':off', [ type, listener ], false );
+function removeEventListener(emitter, type, listener) {
+    const handler = emitter[$events][type];
+
+    if (handler === listener || (typeof handler.listener === 'function' && handler.listener === listener)) {
+        delete emitter[$events][type];
+        if (emitter[$events][':off']) {
+            emitEvent(emitter, ':off', [type, listener], false);
         }
-    } else if( Array.isArray( handler ) ){
+    } else if (Array.isArray(handler)) {
         let index = -1;
-        
-        for( let i = handler.length; i-- > 0; ){
-            if( handler[ i ] === listener || ( handler[ i ].listener && handler[ i ].listener === listener ) ){
+
+        for (let i = handler.length; i-- > 0;) {
+            if (handler[i] === listener || (handler[i].listener && handler[i].listener === listener)) {
                 index = i;
                 break;
             }
         }
-    
-        if( index > -1 ){
-            if( handler.length === 1 ){
+
+        if (index > -1) {
+            if (handler.length === 1) {
                 handler.length = 0;
-                delete emitter[ $events ][ type ];
+                delete emitter[$events][type];
             } else {
-                spliceList( handler, index );
+                spliceList(handler, index);
             }
-            
-            if( emitter[ $events ][ ':off' ] ){
-                emitEvent( emitter, ':off', [ type, listener ], false );
+
+            if (emitter[$events][':off']) {
+                emitEvent(emitter, ':off', [type, listener], false);
             }
         }
     }
@@ -671,17 +668,17 @@ function removeEventListener( emitter, type, listener ){
  * @param {Emitter} The emitter on which the maximum number of listeners will be set.
  * @param {external:number} max The maximum number of listeners before a warning is issued.
  */
-function setMaxListeners( emitter, max ){
-    if( !isPositiveNumber( max ) ){
-        throw new TypeError( 'max must be a positive number' );
+function setMaxListeners(emitter, max) {
+    if (!isPositiveNumber(max)) {
+        throw new TypeError('max must be a positive number');
     }
-    
-    Object.defineProperty( emitter, $maxListeners, {
+
+    Object.defineProperty(emitter, $maxListeners, {
         value: max,
         configurable: true,
         enumerable: false,
         writable: true
-    } );
+    });
 }
 
 /**
@@ -689,12 +686,12 @@ function setMaxListeners( emitter, max ){
  * @function Emitter~spliceList
  * @param {external:Array} list
  * @param {external:number} index
- */ 
-function spliceList( list, index ){
-    for( let i = index, j = i + 1, length = list.length; j < length; i += 1, j += 1 ){
-        list[ i ] = list[ j ];
+ */
+function spliceList(list, index) {
+    for (let i = index, j = i + 1, length = list.length; j < length; i += 1, j += 1) {
+        list[i] = list[j];
     }
-    
+
     list.pop();
 }
 
@@ -703,8 +700,8 @@ function spliceList( list, index ){
  * @function Emitter~tick
  * @param {external:Function} callback The function to be executed.
  */
-function tick( callback ){
-    return setTimeout( callback, 0 );
+function tick(callback) {
+    return setTimeout(callback, 0);
 }
 
 /**
@@ -714,12 +711,12 @@ function tick( callback ){
  * @param {external:Array} data The data to be passed with the event.
  * @returns {external:Promise} A promise which *resolves* if the event had listeners, *rejects* otherwise.
  */
-function tickAllEvents( emitter, type, data ){
-    return new Promise( function( resolve, reject ){
-        tick( function(){
-            emitAllEvents( emitter, type, data ) ? resolve() : reject();
-        } );
-    } );
+function tickAllEvents(emitter, type, data) {
+    return new Promise(function (resolve, reject) {
+        tick(function () {
+            emitAllEvents(emitter, type, data) ? resolve() : reject();
+        });
+    });
 }
 
 /**
@@ -728,50 +725,47 @@ function tickAllEvents( emitter, type, data ){
  * @param {APIReference} [selection] A selection of the Emitter.js API.
  * @param {external:Object} target The object on which the API will be applied.
  */
-function toEmitter( selection, target ){
-    
+function toEmitter(selection, target) {
     // Apply the entire Emitter API
-    if( selection === API ){
-        asEmitter.call( target );
-    
-    // Apply only the selected API methods
+    if (selection === API) {
+        asEmitter.call(target);
+
+        // Apply only the selected API methods
     } else {
         let index, key, mapping, names, value;
-        
-        if( typeof selection === 'string' ){
-            names = selection.split( ' ' );
+
+        if (typeof selection === 'string') {
+            names = selection.split(' ');
             mapping = API;
         } else {
-            names = Object.keys( selection );
+            names = Object.keys(selection);
             mapping = selection;
         }
-        
+
         index = names.length;
-        
-        while( index-- ){
-            key = names[ index ];
-            value = mapping[ key ];
-            
-            target[ key ] = typeof value === 'function' ?
-                value :
-                API[ value ];
+
+        while (index--) {
+            key = names[index];
+            value = mapping[key];
+
+            target[key] = typeof value === 'function' ? value : API[value];
         }
     }
 }
 
 /**
  * A functional mixin that provides the Emitter.js API to its target. The `constructor()`, `destroy()`, `toJSON()`, `toString()`, and static properties on `Emitter` are not provided. This mixin is used to populate the `prototype` of `Emitter`.
- * 
+ *
  * Like all functional mixins, this should be executed with [call()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/call) or [apply()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply).
  * @mixin Emitter~asEmitter
  * @since 1.1.0
  * @example <caption>Applying Emitter functionality</caption>
  * // Create a base object
  * const greeter = Object.create( null );
- * 
+ *
  * // Apply the mixin
  * asEmitter.call( greeter );
- * 
+ *
  * greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
  * greeter.emit( 'hello', 'World' );
  * // Hello, World!
@@ -779,11 +773,10 @@ function toEmitter( selection, target ){
  * // NO!!!
  * asEmitter(); // Madness ensues
  */
-function asEmitter(){
-    
+function asEmitter() {
     /**
      * Adds a listener for the specified event `type` at the specified `index`. If no `type` is given the listener will be triggered any event `type`.
-     * 
+     *
      * No checks are made to see if the `listener` has already been added. Multiple calls passing the same combination `type` and `listener` will result in the `listener` being added multiple times.
      * @function Emitter~asEmitter.at
      * @param {EventType} [type] The event type.
@@ -794,27 +787,27 @@ function asEmitter(){
      * @fires Emitter#:on
      * @fires Emitter#:maxListeners
      */
-    this.at = function( type = $every, index, listener ){
+    this.at = function (type = $every, index, listener) {
         // Shift arguments if type is not provided
-        if( typeof type === 'number' && typeof index === 'function' && typeof listener === 'undefined' ){
+        if (typeof type === 'number' && typeof index === 'function' && typeof listener === 'undefined') {
             listener = index;
             index = type;
             type = $every;
         }
-        
-        if( !isPositiveNumber( index ) ){
-            throw new TypeError( 'index must be a positive number' );
+
+        if (!isPositiveNumber(index)) {
+            throw new TypeError('index must be a positive number');
         }
-        
-        if( typeof listener !== 'function' ){
-            throw new TypeError( 'listener must be a function' );
+
+        if (typeof listener !== 'function') {
+            throw new TypeError('listener must be a function');
         }
-        
-        addEventListener( this, type, listener, index );
-        
+
+        addEventListener(this, type, listener, index);
+
         return this;
     };
-    
+
     /**
      * Remove all listeners, or those for the specified event `type`.
      * @function Emitter~asEmitter.clear
@@ -847,68 +840,66 @@ function asEmitter(){
      * greeter.emit( 'hi' );
      * // Hi!
      */
-    this.clear = function( type ){
-        let handler;
-        
+    this.clear = function (type) {
         // No Events
-        if( !this[ $events ] ){
+        if (!this[$events]) {
             return this;
         }
-        
+
         // With no "off" listeners, clearing can be simplified
-        if( !this[ $events ][ ':off' ] ){
-            if( arguments.length === 0 ){
-                this[ $events ] = new Null();
-            } else if( this[ $events ][ type ] ){
-                delete this[ $events ][ type ];
+        if (!this[$events][':off']) {
+            if (arguments.length === 0) {
+                this[$events] = new Null();
+            } else if (this[$events][type]) {
+                delete this[$events][type];
             }
-            
+
             return this;
         }
-        
+
         // Clear all listeners
-        if( arguments.length === 0 ){
-            const types = getEventTypes( this );
-            
+        if (arguments.length === 0) {
+            const types = getEventTypes(this);
+
             // Avoid removing "off" listeners until all other types have been removed
-            for( let index = 0, length = types.length; index < length; index += 1 ){
-                if( types[ index ] === ':off' ){
+            for (let index = 0, length = types.length; index < length; index += 1) {
+                if (types[index] === ':off') {
                     continue;
                 }
-                
-                this.clear( types[ index ] );
+
+                this.clear(types[index]);
             }
-            
+
             // Manually clear "off"
-            this.clear( ':off' );
-            
-            this[ $events ] = new Null();
-            
+            this.clear(':off');
+
+            this[$events] = new Null();
+
             return this;
         }
-        
-        handler = this[ $events ][ type ];
-        
-        if( typeof handler === 'function' ){
-            removeEventListener( this, type, handler );
-        } else if( Array.isArray( handler ) ){
+
+        const handler = this[$events][type];
+
+        if (typeof handler === 'function') {
+            removeEventListener(this, type, handler);
+        } else if (Array.isArray(handler)) {
             let index = handler.length;
-            
-            while( index-- ){
-                removeEventListener( this, type, handler[ index ] );
+
+            while (index--) {
+                removeEventListener(this, type, handler[index]);
             }
         }
-        
-        delete this[ $events ][ type ];
-        
+
+        delete this[$events][type];
+
         return this;
     };
-    
+
     /**
      * Execute the listeners for the specified event `type` with the supplied arguments.
-     * 
+     *
      * The `type` can be namespaced using `:`, which will result in multiple events being triggered in succession. Listeners can be associated with the fully namespaced `type` or a subset of the `type`.
-     * 
+     *
      * Returns `true` if the event had listeners, `false` otherwise.
      * @function Emitter~asEmitter.emit
      * @param {EventType} type The event type.
@@ -931,33 +922,34 @@ function asEmitter(){
      * greeter.on( 'greeting:hello', ( name ) => console.log( `Hello, ${ name }!` ) );
      * greeter.on( 'greeting:hi', ( name ) => console.log( `Hi, ${ name }!` ) );
      * greeter.on( 'greeting', ( name ) => console.log( `${ name } was greeted.` );
-     * 
+     *
      * // This event will not be triggered by emitting "greeting:hello"
      * greeter.on( 'hello', ( name ) => console.log( `Hello again, ${ name }` );
-     * 
+     *
      * greeter.emit( 'greeting:hi', 'Mark' );
      * // Hi, Mark!
      * // Mark was greeted.
-     * 
+     *
      * greeter.emit( 'greeting:hello', 'Jeff' );
      * // Hello, Jeff!
      * // Jeff was greeted.
      */
-    this.emit = function( type ){
-        let data = [],
-            length = arguments.length;
-        
-        if( length > 1 ){
-            data = Array( length - 1 );
-            
-            for( let key = 1; key < length; key++ ){
-                data[ key - 1 ] = arguments[ key ];
+    this.emit = function (type) {
+        const length = arguments.length;
+
+        let data = [];
+
+        if (length > 1) {
+            data = Array(length - 1);
+
+            for (let key = 1; key < length; key++) {
+                data[key - 1] = arguments[key];
             }
         }
-        
-        return emitAllEvents( this, type, data );
+
+        return emitAllEvents(this, type, data);
     };
-    
+
     /**
      * @function Emitter~asEmitter.eventTypes
      * @returns {Array<EventType>} The list of event types registered to the emitter.
@@ -966,14 +958,14 @@ function asEmitter(){
      * const greeter = new Emitter();
      * greeter.on( 'hello', () => console.log( `Hello` ) );
      * greeter.on( 'hi', () => console.log( `Hi` ) );
-     * 
+     *
      * console.log( greeter.eventTypes() );
      * // [ 'hello', 'hi' ]
-     */ 
-    this.eventTypes = function(){
-        return getEventTypes( this );
+     */
+    this.eventTypes = function () {
+        return getEventTypes(this);
     };
-    
+
     /**
      * @function Emitter~asEmitter.first
      * @param {EventType} type The event type.
@@ -981,22 +973,22 @@ function asEmitter(){
      * @returns {Emitter} The emitter.
      * @since 2.0.0
      */
-    this.first = function( type = $every, listener ){
+    this.first = function (type = $every, listener) {
         // Shift arguments if type is not provided
-        if( typeof type === 'function' && typeof listener === 'undefined' ){
+        if (typeof type === 'function' && typeof listener === 'undefined') {
             listener = type;
             type = $every;
         }
-        
-        if( typeof listener !== 'function' ){
-            throw new TypeError( 'listener must be a function' );
+
+        if (typeof listener !== 'function') {
+            throw new TypeError('listener must be a function');
         }
-        
-        addEventListener( this, type, listener, 0 );
-        
+
+        addEventListener(this, type, listener, 0);
+
         return this;
     };
-    
+
     /**
      * By default Emitter will emit a `:maxListeners` evet if more than **10** listeners are added for a particular event `type`. This method returns the current value.
      * @function Emitter~asEmitter.getMaxListeners
@@ -1004,19 +996,19 @@ function asEmitter(){
      * @since 2.0.0
      * @example
      * const greeter = new Emitter();
-     * 
+     *
      * console.log( greeter.getMaxListeners() );
      * // 10
-     * 
+     *
      * greeter.setMaxListeners( 5 );
-     * 
+     *
      * console.log( greeter.getMaxListeners() );
      * // 5
      */
-    this.getMaxListeners = function(){
-        return getMaxListeners( this );
+    this.getMaxListeners = function () {
+        return getMaxListeners(this);
     };
-    
+
     /**
      * @function Emitter~asEmitter.listenerCount
      * @param {EventType} type The event type.
@@ -1029,26 +1021,26 @@ function asEmitter(){
      * // 1
      * console.log( greeter.listenerCount( 'goodbye' ) );
      * // 0
-     */ 
-    this.listenerCount = function( type ){
+     */
+    this.listenerCount = function (type) {
         let count;
 
         // Empty
-        if( !this[ $events ] || !this[ $events ][ type ] ){
+        if (!this[$events] || !this[$events][type]) {
             count = 0;
-        
-        // Function
-        } else if( typeof this[ $events ][ type ] === 'function' ){
+
+            // Function
+        } else if (typeof this[$events][type] === 'function') {
             count = 1;
-        
-        // Array
+
+            // Array
         } else {
-            count = this[ $events ][ type ].length;
+            count = this[$events][type].length;
         }
-        
+
         return count;
     };
-    
+
     /**
      * @function Emitter~asEmitter.listeners
      * @param {EventType} type The event type.
@@ -1059,31 +1051,31 @@ function asEmitter(){
      *  console.log( 'Hello!' );
      * },
      *  greeter = new Emitter();
-     * 
+     *
      * greeter.on( 'hello', hello );
      * greeter.emit( 'hello' );
      * // Hello!
-     * 
+     *
      * console.log( greeter.listeners( 'hello' )[ 0 ] === hello );
      * // true
-     */ 
-    this.listeners = function( type ){
+     */
+    this.listeners = function (type) {
         let listeners;
-        
-        if( !this[ $events ] || !this[ $events ][ type ] ){
+
+        if (!this[$events] || !this[$events][type]) {
             listeners = [];
         } else {
-            const handler = this[ $events ][ type ];
-            
-            if( typeof handler === 'undefined' ){
+            const handler = this[$events][type];
+
+            if (typeof handler === 'undefined') {
                 listeners = [];
-            } else if( typeof handler === 'function' ){
-                listeners = [ handler ];
+            } else if (typeof handler === 'function') {
+                listeners = [handler];
             } else {
                 listeners = handler.slice();
             }
         }
-        
+
         return listeners;
     };
 
@@ -1112,31 +1104,31 @@ function asEmitter(){
      * greeter.emit( 'hello', 'Terry' );   // 2
      * // Hello, Terry!
      * greeter.emit( 'hello', 'Steve' );   // 3
-     */ 
-    this.many = function( type = $every, times, listener ){
+     */
+    this.many = function (type = $every, times, listener) {
         // Shift arguments if type is not provided
-        if( typeof type === 'number' && typeof times === 'function' && typeof listener === 'undefined' ){
+        if (typeof type === 'number' && typeof times === 'function' && typeof listener === 'undefined') {
             listener = times;
             times = type;
             type = $every;
         }
-        
-        if( !isPositiveNumber( times ) ){
-            throw new TypeError( 'times must be a positive number' );
+
+        if (!isPositiveNumber(times)) {
+            throw new TypeError('times must be a positive number');
         }
-        
-        if( typeof listener !== 'function' ){
-            throw new TypeError( 'listener must be a function' );
+
+        if (typeof listener !== 'function') {
+            throw new TypeError('listener must be a function');
         }
-        
-        addFiniteEventListener( this, type, times, listener );
-        
+
+        addFiniteEventListener(this, type, times, listener);
+
         return this;
     };
-    
+
     /**
      * Removes the `listener` for the specified event `type`. If no `type` is given it is assumed the `listener` is not associated with a specific `type`.
-     * 
+     *
      * If any single listener has been added multiple times for the specified `type`, then `emitter.off()` must be called multiple times to remove each instance.
      * @function Emitter~asEmitter.off
      * @param {EventType} type The event type.
@@ -1148,7 +1140,7 @@ function asEmitter(){
      * function greet( name ){
      *  console.log( `Greetings, ${ name }!` );
      * }
-     * 
+     *
      * const greeter = new Emitter();
      * greeter.on( greet );
      * greeter.emit( 'hello' 'Jeff' );
@@ -1161,37 +1153,37 @@ function asEmitter(){
      * function hello( name ){
      *  console.log( `Hello, ${ name }!` );
      * }
-     * 
+     *
      * const greeter = new Emitter();
      * greeter.on( 'hello', hello );
      * greeter.emit( 'hello', 'Jeff' );
      * // Hello, Jeff!
      * greeter.off( 'hello', hello );
      * greeter.emit( 'hello', 'Jeff' );
-     */ 
-    this.off = function( type = $every, listener ){
+     */
+    this.off = function (type = $every, listener) {
         // Shift arguments if type is not provided
-        if( typeof type === 'function' && typeof listener === 'undefined' ){
+        if (typeof type === 'function' && typeof listener === 'undefined') {
             listener = type;
             type = $every;
         }
-        
-        if( typeof listener !== 'function' ){
-            throw new TypeError( 'listener must be a function' );
+
+        if (typeof listener !== 'function') {
+            throw new TypeError('listener must be a function');
         }
-        
-        if( !this[ $events ] || !this[ $events ][ type ] ){
+
+        if (!this[$events] || !this[$events][type]) {
             return this;
         }
-        
-        removeEventListener( this, type, listener );
-        
+
+        removeEventListener(this, type, listener);
+
         return this;
     };
-    
+
     /**
      * Adds a listener for the specified event `type`. If no `type` is given the listener will be triggered any event `type`.
-     * 
+     *
      * No checks are made to see if the `listener` has already been added. Multiple calls passing the same combination `type` and `listener` will result in the `listener` being added multiple times.
      * @function Emitter~asEmitter.on
      * @param {EventType} [type] The event type.
@@ -1214,30 +1206,29 @@ function asEmitter(){
      * // Hello, World!
      * greeter.emit( 'hi', 'World' );
      */
-    this.on = function(){
-        let type = arguments[ 0 ] || $every,
-            listener = arguments[ 1 ];
-        
-        if( typeof listener === 'undefined' ){
-            
+    this.on = function () {
+        let type = arguments[0] || $every,
+            listener = arguments[1];
+
+        if (typeof listener === 'undefined') {
             // Type not provided, fall back to "$every"
-            if( typeof type === 'function' ){
+            if (typeof type === 'function') {
                 listener = type;
                 type = $every;
-            
-            // Plain object of event bindings
-            } else if( typeof type === 'object' ){
-                addEventMapping( this, type );
-                
+
+                // Plain object of event bindings
+            } else if (typeof type === 'object') {
+                addEventMapping(this, type);
+
                 return this;
             }
         }
-        
-        addEventListener( this, type, listener, NaN );
-        
+
+        addEventListener(this, type, listener, NaN);
+
         return this;
     };
-    
+
     /**
      * @function Emitter~asEmitter.once
      * @param {EventType} [type] The event type.
@@ -1258,22 +1249,22 @@ function asEmitter(){
      * // Hello, World!
      * greeter.emit( 'hello', 'World' );
      */
-    this.once = function( type = $every, listener ){
+    this.once = function (type = $every, listener) {
         // Shift arguments if type is not provided
-        if( typeof type === 'function' && typeof listener === 'undefined' ){
+        if (typeof type === 'function' && typeof listener === 'undefined') {
             listener = type;
             type = $every;
         }
-        
-        if( typeof listener !== 'function' ){
-            throw new TypeError( 'listener must be a function' );
+
+        if (typeof listener !== 'function') {
+            throw new TypeError('listener must be a function');
         }
-        
-        addFiniteEventListener( this, type, 1, listener );
-        
+
+        addFiniteEventListener(this, type, 1, listener);
+
         return this;
     };
-    
+
     /**
      * By default Emitter will emit a `:maxListeners` evet if more than **10** listeners are added for a particular event `type`. This method allows that to be changed. Set to **0** for unlimited.
      * @function Emitter~asEmitter.setMaxListeners
@@ -1282,24 +1273,24 @@ function asEmitter(){
      * @since 2.0.0
      * @example
      * const greeter = new Emitter();
-     * 
+     *
      * greeter.setMaxListeners( 1 );
-     * 
+     *
      * greeter.on( ':maxListeners', ( greeting ) => console.log( `Greeting "${ greeting }" has one too many!` ) );
      * greeter.on( 'hello', () => console.log( 'Hello!' ) );
      * greeter.on( 'hello', () => alert( 'Hello!' ) );
      * // Greeting "hello" has one too many!
      */
-    this.setMaxListeners = function( max ){
-        setMaxListeners( this, max );
+    this.setMaxListeners = function (max) {
+        setMaxListeners(this, max);
         return this;
     };
-    
+
     /**
      * Asynchronously emits specified event `type` with the supplied arguments. The listeners will still be synchronously executed in the specified order.
-     * 
+     *
      * The `type` can be namespaced using `:`, which will result in multiple events being triggered in succession. Listeners can be associated with the fully namespaced `type` or a subset of the `type`.
-     * 
+     *
      * Returns {@link external:Promise|promise} which *resolves* if the event had listeners, *rejects* otherwise.
      * @function Emitter~asEmitter.tick
      * @param {EventType} type The event type.
@@ -1315,24 +1306,25 @@ function asEmitter(){
      * // hello heard? true
      * // goodbye heard? false
      */
-    this.tick = function( type ){
-        let data = [],
-            length = arguments.length;
-        
-        if( length > 1 ){
-            data = Array( length - 1 );
-            
-            for( let key = 1; key < length; key++ ){
-                data[ key - 1 ] = arguments[ key ];
+    this.tick = function (type) {
+        const length = arguments.length;
+
+        let data = [];
+
+        if (length > 1) {
+            data = Array(length - 1);
+
+            for (let key = 1; key < length; key++) {
+                data[key - 1] = arguments[key];
             }
         }
-        
-        return tickAllEvents( this, type, data );
+
+        return tickAllEvents(this, type, data);
     };
-    
+
     /**
      * Execute the listeners for the specified event `type` with the supplied `data`.
-     * 
+     *
      * Returns `true` if the event had listeners, `false` otherwise.
      * @function Emitter~asEmitter.trigger
      * @param {EventType} [type] The event type.
@@ -1349,22 +1341,22 @@ function asEmitter(){
      * greeter.on( 'greeting:hello', ( name ) => console.log( `Hello, ${ name }!` ) );
      * greeter.on( 'greeting:hi', ( name ) => console.log( `Hi, ${ name }!` ) );
      * greeter.on( 'greeting', ( name ) => console.log( `${ name } was greeted.` );
-     * 
+     *
      * greeter.trigger( 'greeting:hi', [ 'Mark' ] );
      * // Hi, Mark!
      * // Mark was greeted.
-     * 
+     *
      * greeter.trigger( 'greeting:hello', [ 'Jeff' ] );
      * // Hello, Jeff!
      * // Jeff was greeted.
      */
-    this.trigger = function( type, data = [] ){
-        return emitAllEvents( this, type, data );
+    this.trigger = function (type, data = []) {
+        return emitAllEvents(this, type, data);
     };
-    
+
     /**
      * Adds a listeners for the specified event `type` that will be triggered *until* the `listener` returns `true`. If no `type` is given the listener will be triggered any event `type`.
-     * 
+     *
      * No checks are made to see if the `listener` has already been added. Multiple calls passing the same combination `type` and `listener` will result in the `listener` being added multiple times.
      * @function Emitter~asEmitter.until
      * @param {EventType} [type] The event type.
@@ -1394,24 +1386,24 @@ function asEmitter(){
      * // Hello, World!
      * greeter.emit( 'hello', 'Mark' );
      */
-    this.until = function( type = $every, listener ){
+    this.until = function (type = $every, listener) {
         // Shift arguments if type is not provided
-        if( typeof type === 'function' && typeof listener === 'undefined' ){
+        if (typeof type === 'function' && typeof listener === 'undefined') {
             listener = type;
             type = $every;
         }
-        
-        if( typeof listener !== 'function' ){
-            throw new TypeError( 'listener must be a function' );
+
+        if (typeof listener !== 'function') {
+            throw new TypeError('listener must be a function');
         }
-        
-        addConditionalEventListener( this, type, listener );
-        
+
+        addConditionalEventListener(this, type, listener);
+
         return this;
     };
 }
 
-asEmitter.call( API );
+asEmitter.call(API);
 
 /**
  * Applies the Emitter.js API to the target.
@@ -1438,7 +1430,7 @@ asEmitter.call( API );
  * greeter.fire( 'hello' );
  * // Hello!
  */
- 
+
 /**
  * Creates an instance of emitter. If `mapping` are provided they will automatically be passed into `on()` once construction is complete.
  * @class Emitter
@@ -1459,12 +1451,12 @@ asEmitter.call( API );
  *      super();
  *      this.on( 'greet', ( name ) => console.log( `Hello, ${ name }!` ) );
  *  }
- * 
+ *
  *  greet( name ){
  *      this.emit( 'greet', name );
  *  }
  * }
- * 
+ *
  * const greeter = new Greeter();
  * greeter.greet( 'Jeff' );
  * // Hello, Jeff!
@@ -1474,11 +1466,11 @@ asEmitter.call( API );
  *  this.on( 'greet', ( name ) => console.log( `Hello, ${ name }!` ) );
  * }
  * Greeter.prototype = Object.create( Emitter.prototype );
- * 
+ *
  * Greeter.prototype.greet = function( name ){
  *  this.emit( 'greet', name );
  * };
- * 
+ *
  * const greeter = new Greeter();
  * greeter.greet( 'Jeff' );
  * // Hello, Jeff!
@@ -1499,7 +1491,7 @@ asEmitter.call( API );
  *      hi: function( name ){ console.log( `Hi, ${name}!` )
  *  },
  *  greeter = new Emitter( greetings );
- * 
+ *
  * greeter.emit( 'hello', 'Aaron' );
  * // Hello, Aaron!
  * @example <caption>One-time events</caption>
@@ -1517,78 +1509,77 @@ asEmitter.call( API );
  * // Hello, Jeff!
  * // Hello, Terry!
  */
-export default function Emitter(){
-    
+export default function Emitter() {
     // Called as constructor
-    if( typeof this !== 'undefined' && this.constructor === Emitter ){
-        let mapping = arguments[ 0 ];
-        
+    if (typeof this !== 'undefined' && this.constructor === Emitter) {
+        const mapping = arguments[0];
+
         /**
          * By default Emitters will emit a `:maxListeners` event if more than **10** listeners are added for a particular event `type`. This property allows that to be changed. Set to **0** for unlimited.
          * @member {external:number} Emitter#maxListeners
          * @since 1.0.0
          * @example
          * const greeter = new Emitter();
-         * 
+         *
          * console.log( greeter.maxListeners );
          * // 10
-         * 
+         *
          * greeter.maxListeners = 1;
-         * 
+         *
          * greeter.on( ':maxListeners', ( greeting ) => console.log( `Greeting "${ greeting }" has one too many!` ) );
          * greeter.on( 'hello', () => console.log( 'Hello!' ) );
          * greeter.on( 'hello', () => alert( 'Hello!' ) );
          * // Greeting "hello" has one too many!
          */
-        Object.defineProperty( this, 'maxListeners', {
-            get: function(){
-                return getMaxListeners( this );
+        Object.defineProperty(this, 'maxListeners', {
+            get: function () {
+                return getMaxListeners(this);
             },
-            set: function( max ){
-                setMaxListeners( this, max );
+            set: function (max) {
+                setMaxListeners(this, max);
             },
             configurable: true,
             enumerable: false
-        } );
-        
-        typeof mapping !== 'undefined' && addEventMapping( this, mapping );
-    
-    // Called as function
+        });
+
+        typeof mapping !== 'undefined' && addEventMapping(this, mapping);
+
+        // Called as function
     } else {
-        let selection = arguments[ 0 ],
-            target = arguments[ 1 ];
-        
+        let selection = arguments[0],
+            target = arguments[1];
+
         // Shift arguments
-        if( typeof target === 'undefined' ){
+        if (typeof target === 'undefined') {
             target = selection;
             selection = API;
         }
-        
-        toEmitter( selection, target );
+
+        toEmitter(selection, target);
     }
 }
 
-Object.defineProperties( Emitter, {
+Object.defineProperties(Emitter, {
     /**
      * Sets the default maximum number of listeners for all emitters. Use `emitter.maxListeners` to set the maximum on a per-instance basis.
-     * 
+     *
      * By default Emitter will emit a `:maxListeners` event if more than 10 listeners are added to a specific event type.
      * @member {external:number} Emitter.defaultMaxListeners=10
      * @since 1.0.0
      * @example <caption>Changing the default maximum listeners</caption>
      * console.log( Emitter.defaultMaxListeners );
      * // 10
-     * 
+     *
      * const greeter1 = new Emitter(),
      *  greeter2 = new Emitter();
-     * 
+     *
      * Emitter.defaultMaxListeners = 1;
-     * 
+     *
      * greeter1.on( ':maxListeners', ( greeting ) => console.log( `Greeting "${ greeting }" has one too many!` ) );
      * greeter1.on( 'hello', () => console.log( 'Hello!' ) );
      * greeter1.on( 'hello', () => alert( 'Hello!' ) );
      * // Greeting "hello" has one too many!
-     * 
+     *
      * greeter2.on( ':maxListeners', ( greeting ) => console.log( `Greeting "${ greeting }" has one too many!` ) );
      * greeter2.on( 'hi', () => console.log( 'Hi!' ) );
      * greeter2.on( 'hi', () => alert( 'Hi!' ) );
@@ -1602,9 +1593,9 @@ Object.defineProperties( Emitter, {
     },
     /**
      * An id used to listen for events of any `type`. For _most_ methods, when no `type` is given this is the default.
-     * 
+     *
      * Listener bound to every event will **not** execute for Emitter lifecycle events, like `:maxListeners`.
-     * 
+     *
      * Using `Emitter.every` is typically not necessary.
      * @member {external:symbol} Emitter.every
      * @since 1.0.0
@@ -1636,24 +1627,41 @@ Object.defineProperties( Emitter, {
         enumerable: false,
         writable: false
     }
-} );
+});
 
 Emitter.prototype = new Null();
 
 Emitter.prototype.constructor = Emitter;
 
-asEmitter.call( Emitter.prototype );
+asEmitter.call(Emitter.prototype);
 
 /**
  * Destroys the emitter.
  * @since 1.0.0
  * @fires Emitter#:destroy
  */
-Emitter.prototype.destroy = function(){
-    emitEvent( this, ':destroy', [], false );
+Emitter.prototype.destroy = function () {
+    emitEvent(this, ':destroy', [], false);
     this.clear();
     delete this.maxListeners;
-    this.destroy = this.at = this.clear = this.emit = this.eventTypes = this.first = this.getMaxListeners = this.listenerCount = this.listeners = this.many = this.off = this.on = this.once = this.setMaxListeners = this.tick = this.trigger = this.until = noop;
+    this.destroy =
+        this.at =
+        this.clear =
+        this.emit =
+        this.eventTypes =
+        this.first =
+        this.getMaxListeners =
+        this.listenerCount =
+        this.listeners =
+        this.many =
+        this.off =
+        this.on =
+        this.once =
+        this.setMaxListeners =
+        this.tick =
+        this.trigger =
+        this.until =
+            noop;
     this.toJSON = () => 'destroyed';
 };
 
@@ -1665,31 +1673,31 @@ Emitter.prototype.destroy = function(){
  * greeter.maxListeners = 5;
  * greeter.on( 'greet', ( name ) => console.log( `Hello, ${ name }!` ) );
  * greeter.on( 'greet', ( name ) => console.log( `Hi, ${ name }!` ) );
- * 
+ *
  * console.log( greeter.toJSON() );
  * // { "maxListeners": 5, "listenerCount": { "greet": 2 } }
- * 
+ *
  * greeter.destroy();
- * 
+ *
  * console.log( greeter.toJSON() );
  * // "destroyed"
  */
-Emitter.prototype.toJSON = function(){
+Emitter.prototype.toJSON = function () {
     const json = new Null(),
-        types = Object.keys( this[ $events ] ),
+        types = Object.keys(this[$events]),
         length = types.length;
-        
+
     let index = 0,
         type;
-    
+
     json.maxListeners = this.maxListeners;
     json.listenerCount = new Null();
-    
-    for( ; index < length; index++ ){
-        type = types[ index ];
-        json.listenerCount[ type ] = this.listenerCount( type );
+
+    for (; index < length; index++) {
+        type = types[index];
+        json.listenerCount[type] = this.listenerCount(type);
     }
-    
+
     return json;
 };
 
@@ -1701,15 +1709,15 @@ Emitter.prototype.toJSON = function(){
  * greeter.maxListeners = 5;
  * greeter.on( 'greet', ( name ) => console.log( `Hello, ${ name }!` ) );
  * greeter.on( 'greet', ( name ) => console.log( `Hi, ${ name }!` ) );
- * 
+ *
  * console.log( greeter.toString() );
  * // 'Emitter { "maxListeners": 5, "listenerCount": { "greet": 2 } }'
- * 
+ *
  * greeter.destroy();
- * 
+ *
  * console.log( greeter.toString() );
  * // 'Emitter "destroyed"'
  */
-Emitter.prototype.toString = function(){
-    return `${ this.constructor.name } ${ JSON.stringify( this.toJSON() ) }`.trim();
+Emitter.prototype.toString = function () {
+    return `${this.constructor.name} ${JSON.stringify(this.toJSON())}`.trim();
 };
