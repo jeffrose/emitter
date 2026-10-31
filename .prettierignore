@@ -1,0 +1,11 @@
+# Generated
+dist/
+coverage/
+node_modules/
+
+# Generated documentation
+docs/API.md
+docs/API-1.x.md
+
+# Dependency lockfiles are not formatted
+package-lock.json

@@ -1,1 +1,1 @@
-module.exports = require( './dist/emitter-umd' ).default;
+module.exports = require('./dist/emitter-umd').default;
