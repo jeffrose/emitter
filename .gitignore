@@ -1,6 +1,17 @@
-.c9/**
-benchmark/**
-coverage/**
-node_modules/**
-perf/**
-npm-debug.log
+# Dependencies
+node_modules/
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Benchmark output
+benchmark/
+perf/
+
+# Cloud9 IDE
+.c9/
+
+# Logs and packages
+npm-debug.log*
+*.tgz
