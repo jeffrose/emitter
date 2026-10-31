@@ -9,7 +9,7 @@
   "homepage": "https://github.com/jeffrose/emitter",
   "bugs": "https://github.com/jeffrose/emitter/issues",
   "author": "Jeff Rose <jeff_rose@outlook.com> (http://github.com/jeffrose)",
-  "license": "Apache-2.0",
+  "license": "MIT",
   "keywords": [
     "emitter",
     "eventemitter",

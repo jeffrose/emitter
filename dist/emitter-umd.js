@@ -11,6 +11,9 @@
     global.emitter = mod.exports;
   }
 })(typeof globalThis !== "undefined" ? globalThis : typeof self !== "undefined" ? self : this, function (_exports) {
+  // SPDX-License-Identifier: MIT
+  // Copyright (c) 2015-2026 Jeff Rose
+
   'use strict';
 
   /**

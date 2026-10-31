@@ -7,6 +7,6 @@
   "description": "A modern event emitter implementation.",
   "keywords": ["emitter", "eventemitter", "event", "events", "es6", "es2015"],
   "moduleType": ["amd", "es6", "globals", "node"],
-  "license": "Apache-2.0",
+  "license": "MIT",
   "ignore": ["**/.*", "*.json", "gulpfile.babel.js", "coverage", "node_modules", "src", "test"]
 }
