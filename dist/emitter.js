@@ -7,7 +7,7 @@
  */
 
 /**
- * JavaScript {@link https://developer.mozilla.org/en-US/docs/Glossary/Prm454mun3!imitive|primitive} boolean
+ * JavaScript {@link https://developer.mozilla.org/en-US/docs/Glossary/Primitive|primitive} boolean
  * @external boolean
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean}
  */
@@ -135,7 +135,7 @@ const $events = '@@emitter/events',
     noop = function () {},
     API = new Null();
 
-// Many of these functions are broken out from the prototype for the sake of optimization. The functions on the protoytype
+// Many of these functions are broken out from the prototype for the sake of optimization. The functions on the prototype
 // take a variable number of arguments and can be deoptimized as a result. These functions have a fixed number of arguments
 // and therefore do not get deoptimized.
 
@@ -836,8 +836,8 @@ function toEmitter(selection, target) {
  * // Create a base object
  * const greeter = Object.create( null );
  *
- * // Apply the mixin
- * asEmitter.call( greeter );
+ * // Apply the mixin with the public API
+ * Emitter( greeter );
  *
  * greeter.on( 'hello', ( name ) => console.log( `Hello, ${ name }!` ) );
  * greeter.emit( 'hello', 'World' );
@@ -884,7 +884,7 @@ function asEmitter() {
     /**
      * Remove all listeners, or those for the specified event `type`.
      * @function Emitter~asEmitter.clear
-     * @param {String} [type] The event type.
+     * @param {external:string} [type] The event type.
      * @returns {Emitter} The emitter.
      * @since 1.0.0
      * @example <caption>Clearing all event types</caption>
@@ -999,7 +999,7 @@ function asEmitter() {
      * const greeter = new Emitter();
      * greeter.on( 'greeting:hello', ( name ) => console.log( `Hello, ${ name }!` ) );
      * greeter.on( 'greeting:hi', ( name ) => console.log( `Hi, ${ name }!` ) );
-     * greeter.on( 'greeting', ( name ) => console.log( `${ name } was greeted.` );
+     * greeter.on( 'greeting', ( name ) => console.log( `${ name } was greeted.` ) );
      *
      * // This event will not be triggered by emitting "greeting:hello"
      * greeter.on( 'hello', ( name ) => console.log( `Hello again, ${ name }` );
@@ -1068,7 +1068,7 @@ function asEmitter() {
     };
 
     /**
-     * By default Emitter will emit a `:maxListeners` evet if more than **10** listeners are added for a particular event `type`. This method returns the current value.
+     * By default Emitter will emit a `:maxListeners` event if more than **10** listeners are added for a particular event `type`. This method returns the current value.
      * @function Emitter~asEmitter.getMaxListeners
      * @returns {external:number} The maximum number of listeners.
      * @since 2.0.0
@@ -1318,6 +1318,7 @@ function asEmitter() {
      * @since 1.0.0
      * @fires Emitter#:on
      * @fires Emitter#:maxListeners
+     * @example <caption>Listen once to any event type</caption>
      * const greeter = new Emitter();
      * greeter.once( () => console.log( 'Greeted' ) );
      * greeter.emit( 'hello' );
@@ -1347,7 +1348,7 @@ function asEmitter() {
     };
 
     /**
-     * By default Emitter will emit a `:maxListeners` evet if more than **10** listeners are added for a particular event `type`. This method allows that to be changed. Set to **0** for unlimited.
+     * By default Emitter will emit a `:maxListeners` event if more than **10** listeners are added for a particular event `type`. This method allows that to be changed. Set to **0** for unlimited.
      * @function Emitter~asEmitter.setMaxListeners
      * @param {external:number} max The maximum number of listeners before a warning is issued.
      * @returns {Emitter} The emitter.
@@ -1422,7 +1423,7 @@ function asEmitter() {
      * const greeter = new Emitter();
      * greeter.on( 'greeting:hello', ( name ) => console.log( `Hello, ${ name }!` ) );
      * greeter.on( 'greeting:hi', ( name ) => console.log( `Hi, ${ name }!` ) );
-     * greeter.on( 'greeting', ( name ) => console.log( `${ name } was greeted.` );
+     * greeter.on( 'greeting', ( name ) => console.log( `${ name } was greeted.` ) );
      *
      * greeter.trigger( 'greeting:hi', [ 'Mark' ] );
      * // Hi, Mark!
@@ -1437,7 +1438,7 @@ function asEmitter() {
     };
 
     /**
-     * Adds a listeners for the specified event `type` that will be triggered *until* the `listener` returns `true`. If no `type` is given the listener will be triggered any event `type`.
+     * Adds a listener for the specified event `type` that will be triggered *until* the `listener` returns `true`. If no `type` is given the listener will be triggered any event `type`.
      *
      * No checks are made to see if the `listener` has already been added. Multiple calls passing the same combination `type` and `listener` will result in the `listener` being added multiple times.
      * @function Emitter~asEmitter.until
@@ -1491,7 +1492,7 @@ asEmitter.call(API);
  * Applies the Emitter.js API to the target.
  * @function Emitter
  * @param {APIReference} [selection] A selection of the Emitter.js API that will be applied to the `target`.
- * @param {exteral:Object} target The object to which the Emitter.js API will be applied.
+ * @param {external:Object} target The object to which the Emitter.js API will be applied.
  * @since 2.0.0
  * @example <caption>Applying all of the API</caption>
  * let greeter = Object.create( null );
@@ -1562,7 +1563,7 @@ asEmitter.call(API);
  * const greeter = new Emitter();
  * greeter.on( 'greeting:hello', ( name ) => console.log( `Hello, ${ name }!` ) );
  * greeter.on( 'greeting:hi', ( name ) => console.log( `Hi, ${ name }!` ) );
- * greeter.on( 'greeting', ( name ) => console.log( `${ name } was greeted.` );
+ * greeter.on( 'greeting', ( name ) => console.log( `${ name } was greeted.` ) );
  * greeter.emit( 'greeting:hi', 'Mark' );
  * greeter.emit( 'greeting:hello', 'Jeff' );
  * // Hi, Mark!
@@ -1571,8 +1572,8 @@ asEmitter.call(API);
  * // Jeff was greeted.
  * @example <caption>Predefined events</caption>
  * const greetings = {
- *      hello: function( name ){ console.log( `Hello, ${name}!` ),
- *      hi: function( name ){ console.log( `Hi, ${name}!` )
+ *      hello: function( name ){ console.log( `Hello, ${ name }!` ); },
+ *      hi: function( name ){ console.log( `Hi, ${ name }!` ); }
  *  },
  *  greeter = new Emitter( greetings );
  *
@@ -1703,10 +1704,10 @@ Object.defineProperties(Emitter, {
      * @since 1.1.2
      * @example
      * console.log( Emitter.version );
-     * // 2.0.0
+     * // 2.1.0
      */
     version: {
-        value: '2.0.0',
+        value: '2.1.0',
         configurable: false,
         enumerable: false,
         writable: false
@@ -1750,7 +1751,7 @@ Emitter.prototype.destroy = function () {
 };
 
 /**
- * @returns {external:Object} An plain object representation of the emitter.
+ * @returns {external:Object} A plain object representation of the emitter.
  * @since 1.3.0
  * @example
  * const greeter = new Emitter();

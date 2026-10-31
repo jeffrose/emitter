@@ -56,3 +56,25 @@
 - `Symbol` values are now `String` values due to browser support.
 - `Emitter.asEmitter()` is now built into `Emitter()`.
 - Mixin has expanded syntax to allow for more flexibility.
+
+## 2.1.0
+
+- Updated the development environment to Node.js 22.18 and current releases of Babel, mocha, chai, sinon, ESLint and Prettier.
+    - Gulp cannot run on supported versions of Node.js and was replaced with npm scripts and a GitHub Actions workflow.
+    - The UMD source map is a separate file instead of an inlined base64 string, which reduces the size of the published package by roughly 150 kB.
+- Fixed defects:
+    - `eventTypes()` and `toJSON()` no longer throw before the first listener has been added, they describe an empty emitter.
+    - `emit()` and `trigger()` always throw for an `error` event without an `error` listener, including on an emitter that never had a listener.
+    - A single listener is no longer mistaken for an array of listeners when the number of listeners is compared to the maximum, which emitted a spurious `:maxListeners` event for a listener with a higher arity than the maximum, and stamped a `warned` property onto the listener.
+    - `:maxListeners` is emitted at most once per event `type`, and no longer recurses when a listener of that event adds listeners of the same `type`. Clearing the listeners of an event `type` resets the warning.
+    - `off()` and `clear()` only modify the listeners of the emitter itself, never an inherited event registry.
+    - `many()` ignores a `times` of `0` instead of registering a listener that was never removed.
+    - `class Greeter extends Emitter` now works, instances of a subclass are initialized by the constructor, as documented. Previously the mixin path was taken and threw a `TypeError`.
+    - A conditional listener no longer throws when it is removed after its event `type` was cleared while the event was being emitted.
+    - An `:on` listener that clears the emitter no longer causes the cleared event registry to be restored.
+    - `Emitter.version` matches the version of `package.json` again, which is now verified by a test.
+- Expanded the test suite, which runs against `src/emitter.js` and both distribution builds, to 100% statement, branch, function and line coverage.
+- Documentation:
+    - Corrected the ECMAScript 5 example and documented the distribution files.
+    - Regenerated the API documentation from the annotations in `src/emitter.js`.
+    - Deprecated the `bower.json` manifest, which will be removed in 3.0.
